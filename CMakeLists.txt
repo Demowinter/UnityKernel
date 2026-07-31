@@ -46,7 +46,7 @@ add_custom_target(iso
 
 add_custom_target(run
     COMMAND qemu-system-i386
-    -cdrom ${CMAKE_BINARY_DIR}/kernel.iso
+    -cdrom ${CMAKE_BINARY_DIR}/kernel.iso -enable-kvm -cpu host
 
     DEPENDS iso
 )
