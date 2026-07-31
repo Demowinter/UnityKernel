@@ -8,4 +8,4 @@ target_link_options(kernel0 PRIVATE
     -nostdlib
 )
 
-target_link_libraries(kernel0 PRIVATE libkernel32)
+target_link_libraries(kernel0 PRIVATE libkernel32 libkstd32)
