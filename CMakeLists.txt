@@ -11,25 +11,72 @@ set(KERNEL_FLAGS
     -fno-pie
     -fno-stack-protector
     -mno-red-zone
+    -g
 )
 
-add_subdirectory(libkrt)
-add_subdirectory(libkstd)
-add_subdirectory(libkernel)
-add_subdirectory(kernel0)
-add_subdirectory(kernel64)
+add_executable(kernel64 src/kernel64/asm/boot.s src/kernel64/kernel64.cpp)
+add_executable(kernel32 src/kernel32/asm/boot.s src/kernel32/kernel32.cpp)
+
+target_include_directories(kernel64 PRIVATE "include/")
+target_include_directories(kernel32 PRIVATE "include/")
+
+target_compile_options(kernel64 PRIVATE ${KERNEL_FLAGS} -m64)
+target_compile_options(kernel32 PRIVATE ${KERNEL_FLAGS} -m32)
+
+target_link_options(kernel64 PRIVATE
+    -no-pie
+    -T${CMAKE_SOURCE_DIR}/linker/kernel64.ld
+    -nostdlib
+    -g
+)
+
+target_link_options(kernel32 PRIVATE
+    -no-pie
+    -T${CMAKE_SOURCE_DIR}/linker/kernel32.ld
+    -nostdlib
+    -g
+)
+
+target_link_libraries(kernel64 PRIVATE libkernel64)
+target_link_libraries(kernel64 PRIVATE libkstd64)
+target_link_libraries(kernel32 PRIVATE libkernel32)
+target_link_libraries(kernel32 PRIVATE libkstd32)
+
+
+add_library(libkernel64 STATIC src/libkernel/cpu.cpp src/libkernel/console.cpp)
+add_library(libkernel32 STATIC src/libkernel/cpu.cpp src/libkernel/console.cpp)
+add_library(libkstd64 STATIC src/libkstd/memory.cpp src/libkstd/string.cpp)
+add_library(libkstd32 STATIC src/libkstd/memory.cpp src/libkstd/string.cpp)
+# add_library(libkrt64 STATIC src/libkrt/ src/libkrt/)
+# add_library(libkrt32 STATIC src/libkrt/ src/libkrt/)
+
+target_include_directories(libkernel64 PRIVATE "include/")
+target_include_directories(libkernel32 PRIVATE "include/")
+target_include_directories(libkstd64 PRIVATE "include/")
+target_include_directories(libkstd32 PRIVATE "include/")
+
+target_compile_options(libkernel64 PRIVATE ${KERNEL_FLAGS} -m64)
+target_compile_options(libkernel32 PRIVATE ${KERNEL_FLAGS} -m32)
+target_compile_options(libkstd64 PRIVATE ${KERNEL_FLAGS} -m64)
+target_compile_options(libkstd32 PRIVATE ${KERNEL_FLAGS} -m32)
+
+set_target_properties(libkernel64 PROPERTIES PREFIX "")
+set_target_properties(libkernel32 PROPERTIES PREFIX "")
+set_target_properties(libkstd64 PROPERTIES PREFIX "")
+set_target_properties(libkstd32 PROPERTIES PREFIX "")
+
 
 add_custom_target(iso
     COMMAND ${CMAKE_COMMAND} -E make_directory
         ${CMAKE_BINARY_DIR}/iso/boot/grub
 
     COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:kernel0>
-        ${CMAKE_BINARY_DIR}/iso/boot/kernel0
+        $<TARGET_FILE:kernel32>
+        ${CMAKE_BINARY_DIR}/iso/boot/kernel32
 
     COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:kernel0>
-        ${CMAKE_BINARY_DIR}/iso/boot/kernel0
+        $<TARGET_FILE:kernel32>
+        ${CMAKE_BINARY_DIR}/iso/boot/kernel32
 
     COMMAND ${CMAKE_COMMAND} -E copy
         $<TARGET_FILE:kernel64>
@@ -44,7 +91,7 @@ add_custom_target(iso
         ${CMAKE_BINARY_DIR}/iso
 
     DEPENDS
-        kernel0
+        kernel32
         kernel64
 )
 
@@ -55,11 +102,38 @@ add_custom_target(run-bios
     DEPENDS iso
 )
 
-add_custom_target(run-uefi
+add_custom_target(run-bios-gdb
     COMMAND qemu-system-x86_64
     -cdrom ${CMAKE_BINARY_DIR}/kernel.iso -enable-kvm -cpu host
+    -S -s
+
+    DEPENDS iso
+)
+
+add_custom_target(run-uefi
+    COMMAND qemu-system-x86_64
+    -cdrom ${CMAKE_BINARY_DIR}/kernel.iso
     -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd
     -drive if=pflash,format=raw,file=${CMAKE_SOURCE_DIR}/utils/OVMF_VARS.fd
+    -accel tcg
+    -no-reboot
+    -d in_asm,int,mmu,guest_errors,unimp,cpu_reset
+    -D qemu.log
+
+    DEPENDS iso
+)
+
+add_custom_target(run-uefi-gdb
+    COMMAND qemu-system-x86_64
+    -cdrom ${CMAKE_BINARY_DIR}/kernel.iso
+    -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd
+    -drive if=pflash,format=raw,file=${CMAKE_SOURCE_DIR}/utils/OVMF_VARS.fd
+    -accel tcg
+    -S -s
+    -no-reboot
+    -d int,in_asm
+    -D qemu.log
+    
 
     DEPENDS iso
 )

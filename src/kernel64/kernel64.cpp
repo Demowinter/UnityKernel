@@ -1,20 +1,19 @@
 #include <cstdint>
 #include <cstddef>
-#include "cpu.hpp"
-#include "console.hpp"
+#include <libkernel/cpu.hpp>
+#include <libkernel/console.hpp>
 
 namespace Kernel {
-    extern "C" void kernel64(uint64_t mbMagic, uint64_t mbi) {
+    extern "C" void kernel64(uint64_t mbMagic, void* mbi) {
         Console::clear();
 
-        CPU::Info info;
-        CPU::cpuid(0, info);
+        CPU::Info info = CPU::cpuid(0);
 
-        // Console::print("CPU manufacturer: ");
-        // Console::write(&info.ebx, sizeof(info) - sizeof(info.eax));
-        // Console::newline();
+        Console::print("CPU manufacturer: ");
+        Console::write(&info.ebx, sizeof(info) - sizeof(info.eax));
+        Console::newline();
 
-        Console::println("Started kernel0");
+        Console::println("Started kernel64");
 
         // while (true) {}
         

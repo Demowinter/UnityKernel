@@ -1,7 +1,7 @@
 #include <string_view>
 #include <cstddef>
 #include <cstdint>
-#include <console.hpp>
+#include <libkernel/console.hpp>
 
 namespace Kernel::Console {
     static uint16_t* video = reinterpret_cast<uint16_t*>(0xB8000);

@@ -18,7 +18,7 @@ header_end:
 
 .global _start
 
-.extern kernel0
+.extern kernel32
 
 .extern stack_top
 .extern stack_bottom
@@ -29,7 +29,7 @@ _start:
     push %ebx
     push %eax
 
-    call kernel0
+    call kernel32
 
     cli
 
