@@ -22,6 +22,7 @@ namespace Kernel {
         Console::print("CPU manufacturer: ");
         Console::write(&info.ebx, sizeof(info) - sizeof(info.eax));
         Console::newline();
+
         Console::println("Started kernel0");
         Console::println("Welcome to UnityKernel! v0.1.0-alpha");
     }
