@@ -1,48 +1,47 @@
-#include <array>
-#include <string_view>
-#include <typeinfo>
-#include <variant>
-#include <type_traits>
 #include <cstdint>
 #include <cstddef>
 #include "cpu.hpp"
 #include "console.hpp"
 
 namespace Kernel {
-    extern "C" void kernel64(uint32_t mbMagic, uint32_t mbAddr) {
+    extern "C" void kernel64(uint64_t mbMagic, uint64_t mbi) {
         Console::clear();
 
-        CPU::Info info = CPU::cpuid(0);
+        CPU::Info info;
+        CPU::cpuid(0, info);
 
-        Console::print("CPU manufacturer: ");
-        Console::write(&info.ebx, sizeof(info) - sizeof(info.eax));
-        Console::newline();
+        // Console::print("CPU manufacturer: ");
+        // Console::write(&info.ebx, sizeof(info) - sizeof(info.eax));
+        // Console::newline();
 
         Console::println("Started kernel0");
 
-        Console::newline();
+        // while (true) {}
+        
 
-        std::variant<int, float, std::string_view> v = "Hello, Developer! This is the std::string_view in std::variant!";
+        // Console::newline();
 
-        Console::println("Testing std::variant...");
+        // std::variant<int, float, std::string_view> v = "Hello, Developer! This is the std::string_view in std::variant!";
 
-        std::visit([](auto&& obj) -> void {
-            Console::println("Visiting std::variant...");
+        // Console::println("Testing std::variant...");
 
-            using T = std::decay_t<decltype(obj)>;
+        // std::visit([](auto&& obj) -> void {
+        //     Console::println("Visiting std::variant...");
 
-            if constexpr (std::is_same_v<T, int>) Console::println("std::variant has type int");
-            else if constexpr (std::is_same_v<T, float>) Console::println("std::variant has type float");
-            else if constexpr (std::is_same_v<T, std::string_view>) {
-                Console::println("std::variant has type std::string_view");
+        //     using T = std::decay_t<decltype(obj)>;
 
-                Console::print("Extracted value: ");
-                Console::print(obj);
-            }
+        //     if constexpr (std::is_same_v<T, int>) Console::println("std::variant has type int");
+        //     else if constexpr (std::is_same_v<T, float>) Console::println("std::variant has type float");
+        //     else if constexpr (std::is_same_v<T, std::string_view>) {
+        //         Console::println("std::variant has type std::string_view");
 
-        }, v);
+        //         Console::print("Extracted value: ");
+        //         Console::print(obj);
+        //     }
 
-        Console::newline();
-        Console::print("Hello!");
+        // }, v);
+
+        // Console::newline();
+        // Console::print("Hello!");
     }
 }
