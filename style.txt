@@ -1,0 +1,8 @@
+data types (classes, structures, Enum) -> PascalCase
+namespaces -> PascalCase
+Enum entries -> PascalCase
+
+functions -> camelCase
+variables -> camelCase
+constants -> camelCase
+constexpr -> camelCase
