@@ -30,7 +30,7 @@ namespace Kernel::CPU {
         else asm("cli");
     }
 
-    void halt() {
-        asm("hlt");
+    [[noreturn]] void halt() {
+        while (true) asm("hlt");
     }
 }

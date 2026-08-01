@@ -15,5 +15,5 @@ namespace Kernel::CPU {
     std::array<uint32_t, 3> manufacturer(const Info& info);
 
     void interrupts(bool on);
-    void halt();
+    [[noreturn]] void halt();
 }
