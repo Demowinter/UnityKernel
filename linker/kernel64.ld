@@ -20,6 +20,15 @@ SECTIONS {
         *(.bss)
     }
 
+    .heap ALIGN(16) : {
+        heap_bottom = .;
+
+        . += 1M;
+        .  = ALIGN(16);
+
+        heap_top = .;
+    }
+
     .stack ALIGN(16) : {
         stack_bottom = .;
 
