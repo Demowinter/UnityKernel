@@ -8,8 +8,5 @@ namespace Kernel::GRUB {
 
     };
 
-    inline bool checkMultiboot(uint32_t magic) {
-        return magic == multibootMagic;
-    }
-
+    bool checkMultiboot(uint32_t magic);
 }

@@ -23,7 +23,7 @@ set(KERNEL_LINK_FLAGS
 )
 
 add_executable(kernel64 src/kernel64/asm/boot.s src/kernel64/kernel64.cpp)
-add_executable(kernel32 src/kernel32/asm/boot.s src/kernel32/kernel32.cpp)
+add_executable(kernel32 src/kernel32/asm/boot.s src/kernel32/grub.cpp src/kernel32/kernel32.cpp)
 
 target_include_directories(kernel64 PRIVATE "include/")
 target_include_directories(kernel32 PRIVATE "include/")
