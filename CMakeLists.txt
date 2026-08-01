@@ -51,10 +51,21 @@ target_link_libraries(kernel32 PRIVATE libkernel32)
 target_link_libraries(kernel32 PRIVATE libkbase32)
 
 
-add_library(libkernel64 STATIC src/libkernel/cpu.cpp src/libkernel/console.cpp)
-add_library(libkernel32 STATIC src/libkernel/cpu.cpp src/libkernel/console.cpp)
-add_library(libkbase64 STATIC src/libkbase/memory.cpp src/libkbase/string.cpp)
-add_library(libkbase32 STATIC src/libkbase/memory.cpp src/libkbase/string.cpp)
+set(LIBKERNEL_SOURCES
+    src/libkernel/cpu.cpp
+    src/libkernel/memory.cpp
+    src/libkernel/console.cpp
+)
+
+set(LIBKBASE_SOURCES
+    src/libkbase/memory.cpp
+    src/libkbase/string.cpp
+)
+
+add_library(libkernel64 STATIC ${LIBKERNEL_SOURCES})
+add_library(libkernel32 STATIC ${LIBKERNEL_SOURCES})
+add_library(libkbase64 STATIC ${LIBKBASE_SOURCES})
+add_library(libkbase32 STATIC ${LIBKBASE_SOURCES})
 # add_library(libkrt64 STATIC src/libkrt/ src/libkrt/)
 # add_library(libkrt32 STATIC src/libkrt/ src/libkrt/)
 
