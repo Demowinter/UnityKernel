@@ -22,7 +22,10 @@ SECTIONS {
 
     .stack ALIGN(16) : {
         stack_bottom = .;
-        . += 16K;
+
+        . += 32K;
+        .  = ALIGN(16); /* stack top ALWAYS must be aligned of 16 bytes! */
+
         stack_top = .;
     }
 }
