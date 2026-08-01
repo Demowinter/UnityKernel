@@ -2,15 +2,13 @@
 #include <cstddef>
 #include <libkernel/cpu.hpp>
 #include <libkernel/console.hpp>
+#include <kernel32/grub.hpp>
 
-namespace Kernel {
-    constexpr uint32_t multibootMagic = 0x36D76289;
-
-    
+namespace Kernel {    
     extern "C" [[noreturn]] void kernel32(uint32_t mbMagic, uint32_t mbAddr) {
         Console::clear();
 
-        if (mbMagic != multibootMagic) Console::println("Multiboot structure is corrupted");
+        if (!GRUB::checkMultiboot(mbMagic)) Console::println("Multiboot structure is corrupted");
         else Console::println("Multiboot structure is OK");
 
         CPU::Info info = CPU::cpuid(0);
