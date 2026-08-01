@@ -1,6 +1,6 @@
 #include <cstddef>
 #include <cstdint>
-#include <libkstd/string.hpp>
+#include <libkbase/string.hpp>
 
 extern "C" {
     size_t strlen(const char* str) {

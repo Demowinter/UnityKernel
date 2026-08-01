@@ -1,6 +1,6 @@
 #include <cstddef>
 #include <cstdint>
-#include <libkstd/memory.hpp>
+#include <libkbase/memory.hpp>
 
 extern "C" {
     void* memset(void* dest, uint8_t byte, size_t size) {

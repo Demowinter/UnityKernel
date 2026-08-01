@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.25)
-project(kernel LANGUAGES CXX ASM)
+project(UnityKernel LANGUAGES CXX ASM)
 
 set(KERNEL_FLAGS
     -O2
+    -g
     -Wall
     -ffreestanding
     -fno-exceptions
@@ -10,8 +11,8 @@ set(KERNEL_FLAGS
     -fno-pic 
     -fno-pie
     -fno-stack-protector
+    -fno-builtin
     -mno-red-zone
-    -g
 )
 
 add_executable(kernel64 src/kernel64/asm/boot.s src/kernel64/kernel64.cpp)
@@ -38,32 +39,32 @@ target_link_options(kernel32 PRIVATE
 )
 
 target_link_libraries(kernel64 PRIVATE libkernel64)
-target_link_libraries(kernel64 PRIVATE libkstd64)
+target_link_libraries(kernel64 PRIVATE libkbase64)
 target_link_libraries(kernel32 PRIVATE libkernel32)
-target_link_libraries(kernel32 PRIVATE libkstd32)
+target_link_libraries(kernel32 PRIVATE libkbase32)
 
 
 add_library(libkernel64 STATIC src/libkernel/cpu.cpp src/libkernel/console.cpp)
 add_library(libkernel32 STATIC src/libkernel/cpu.cpp src/libkernel/console.cpp)
-add_library(libkstd64 STATIC src/libkstd/memory.cpp src/libkstd/string.cpp)
-add_library(libkstd32 STATIC src/libkstd/memory.cpp src/libkstd/string.cpp)
+add_library(libkbase64 STATIC src/libkbase/memory.cpp src/libkbase/string.cpp)
+add_library(libkbase32 STATIC src/libkbase/memory.cpp src/libkbase/string.cpp)
 # add_library(libkrt64 STATIC src/libkrt/ src/libkrt/)
 # add_library(libkrt32 STATIC src/libkrt/ src/libkrt/)
 
 target_include_directories(libkernel64 PRIVATE "include/")
 target_include_directories(libkernel32 PRIVATE "include/")
-target_include_directories(libkstd64 PRIVATE "include/")
-target_include_directories(libkstd32 PRIVATE "include/")
+target_include_directories(libkbase64 PRIVATE "include/")
+target_include_directories(libkbase32 PRIVATE "include/")
 
 target_compile_options(libkernel64 PRIVATE ${KERNEL_FLAGS} -m64)
 target_compile_options(libkernel32 PRIVATE ${KERNEL_FLAGS} -m32)
-target_compile_options(libkstd64 PRIVATE ${KERNEL_FLAGS} -m64)
-target_compile_options(libkstd32 PRIVATE ${KERNEL_FLAGS} -m32)
+target_compile_options(libkbase64 PRIVATE ${KERNEL_FLAGS} -m64)
+target_compile_options(libkbase32 PRIVATE ${KERNEL_FLAGS} -m32)
 
 set_target_properties(libkernel64 PROPERTIES PREFIX "")
 set_target_properties(libkernel32 PROPERTIES PREFIX "")
-set_target_properties(libkstd64 PROPERTIES PREFIX "")
-set_target_properties(libkstd32 PROPERTIES PREFIX "")
+set_target_properties(libkbase64 PROPERTIES PREFIX "")
+set_target_properties(libkbase32 PROPERTIES PREFIX "")
 
 
 add_custom_target(iso
