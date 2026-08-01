@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(UnityKernel LANGUAGES CXX ASM)
 
-set(KERNEL_FLAGS
+set(KERNEL_COMPILE_FLAGS
     -O2
     -g
     -Wall
@@ -15,28 +15,24 @@ set(KERNEL_FLAGS
     -mno-red-zone
 )
 
+set(KERNEL_LINK_FLAGS
+    -no-pie
+    -nostdlib
+    -lgcc
+    -g
+)
+
 add_executable(kernel64 src/kernel64/asm/boot.s src/kernel64/kernel64.cpp)
 add_executable(kernel32 src/kernel32/asm/boot.s src/kernel32/kernel32.cpp)
 
 target_include_directories(kernel64 PRIVATE "include/")
 target_include_directories(kernel32 PRIVATE "include/")
 
-target_compile_options(kernel64 PRIVATE ${KERNEL_FLAGS} -m64)
-target_compile_options(kernel32 PRIVATE ${KERNEL_FLAGS} -m32)
+target_compile_options(kernel64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
+target_compile_options(kernel32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
 
-target_link_options(kernel64 PRIVATE
-    -no-pie
-    -T${CMAKE_SOURCE_DIR}/linker/kernel64.ld
-    -nostdlib
-    -g
-)
-
-target_link_options(kernel32 PRIVATE
-    -no-pie
-    -T${CMAKE_SOURCE_DIR}/linker/kernel32.ld
-    -nostdlib
-    -g
-)
+target_link_options(kernel64 PRIVATE ${KERNEL_LINK_FLAGS} -m64 -T ${CMAKE_SOURCE_DIR}/linker/kernel64.ld)
+target_link_options(kernel32 PRIVATE ${KERNEL_LINK_FLAGS} -m32 -T ${CMAKE_SOURCE_DIR}/linker/kernel32.ld)
 
 target_link_libraries(kernel64 PRIVATE libkernel64)
 target_link_libraries(kernel64 PRIVATE libkbase64)
@@ -56,10 +52,10 @@ target_include_directories(libkernel32 PRIVATE "include/")
 target_include_directories(libkbase64 PRIVATE "include/")
 target_include_directories(libkbase32 PRIVATE "include/")
 
-target_compile_options(libkernel64 PRIVATE ${KERNEL_FLAGS} -m64)
-target_compile_options(libkernel32 PRIVATE ${KERNEL_FLAGS} -m32)
-target_compile_options(libkbase64 PRIVATE ${KERNEL_FLAGS} -m64)
-target_compile_options(libkbase32 PRIVATE ${KERNEL_FLAGS} -m32)
+target_compile_options(libkernel64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
+target_compile_options(libkernel32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
+target_compile_options(libkbase64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
+target_compile_options(libkbase32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
 
 set_target_properties(libkernel64 PROPERTIES PREFIX "")
 set_target_properties(libkernel32 PROPERTIES PREFIX "")
