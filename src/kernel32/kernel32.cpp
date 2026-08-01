@@ -17,14 +17,15 @@ namespace Kernel {
         auto binaryName = CPU::manufacturer(info);
 
         Console::print("CPU manufacturer: ");
-        Console::write(binaryName.data(), binaryName.size() * sizeof(uint32_t));
+        Console::write(binaryName.data(), binaryName.size() * sizeof(uint32_t), 5);
         Console::newline();
 
         Console::println("Started kernel32!");
         
         Console::newline();
 
-        Console::println("Welcome to UnityKernel! v0.1.0-alpha");
+        Console::print("Welcome to ");
+        Console::print("UnityKernel! v0.1.0-alpha", 5);
 
         CPU::interrupts(false);
         CPU::halt();
