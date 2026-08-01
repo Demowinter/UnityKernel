@@ -6,16 +6,16 @@ ENTRY(_start)
 SECTIONS {
     . = 1M;
 
-    .text : {
+    .text ALIGN(16) : {
         *(.multiboot)
         *(.text)
     }
 
-    .rodata : {*(.rodata)}
+    .rodata ALIGN(16) : {*(.rodata)}
 
-    .data : {*(.data)}
+    .data ALIGN(16) : {*(.data)}
 
-    .bss : {
+    .bss ALIGN(16) : {
         *(COMMON)
         *(.bss)
     }
