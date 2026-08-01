@@ -24,4 +24,8 @@ extern "C" {
         }
         return dest;
     }
+
+    uintptr_t align(uintptr_t value, uint16_t alignment) {
+        return value + (alignment - (value % alignment)) % alignment;
+    }
 }
