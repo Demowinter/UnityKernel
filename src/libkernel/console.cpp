@@ -104,7 +104,7 @@ namespace Kernel::Console {
         }
 
         void eraseRow(uint32_t row) {
-            const uint32_t background = color(0x01);
+            const uint32_t background = color(0x00);
             for (uint32_t y = row * cellHeight; y < (row + 1) * cellHeight && y < framebuffer.height; ++y) {
                 for (uint32_t x = 0; x < framebuffer.width; ++x) putPixel(x, y, background);
             }
@@ -188,7 +188,7 @@ namespace Kernel::Console {
     void clear() {
         if (!isReady()) return;
         for (uint32_t y = 0; y < framebuffer.height; ++y) {
-            for (uint32_t x = 0; x < framebuffer.width; ++x) putPixel(x, y, color(0x01));
+            for (uint32_t x = 0; x < framebuffer.width; ++x) putPixel(x, y, color(0x00));
         }
         cursorX = 0;
         cursorY = 0;
