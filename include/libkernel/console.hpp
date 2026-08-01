@@ -4,9 +4,23 @@
 #include <cstdint>
 
 namespace Kernel::Console {
-    constexpr uint32_t rows = 32;
-    constexpr uint32_t columns = 80;
-    constexpr uint32_t screenSize = rows * columns;
+    struct Framebuffer {
+        uintptr_t address;
+        uint32_t pitch;
+        uint32_t width;
+        uint32_t height;
+        uint8_t bpp;
+        uint8_t type;
+        uint8_t redPosition;
+        uint8_t redMaskSize;
+        uint8_t greenPosition;
+        uint8_t greenMaskSize;
+        uint8_t bluePosition;
+        uint8_t blueMaskSize;
+    };
+
+    bool initialize(const Framebuffer& framebuffer);
+    bool isReady();
 
     void clear();
     void newline();
