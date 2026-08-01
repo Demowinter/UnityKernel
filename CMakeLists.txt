@@ -132,7 +132,7 @@ add_custom_target(run-uefi-gdb
     -accel tcg
     -S -s
     -no-reboot
-    -d int,in_asm
+    -d in_asm,int,mmu,guest_errors,unimp,cpu_reset
     -D qemu.log
     
 
