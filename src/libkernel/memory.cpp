@@ -1,8 +1,8 @@
 #include <cstddef>
 #include <cstdint>
-#include <libkbase/math.hpp>
-#include <libkernel/memory.hpp>
+#include <libkbase/algo.hpp>
 #include <libkernel/console.hpp>
+#include <libkernel/memory.hpp>
 
 namespace Kernel::Memory {
     namespace {
@@ -13,11 +13,15 @@ namespace Kernel::Memory {
 
         constexpr uint64_t memoryBlockMagic = 0xF5CD3EE914E9D29F;
 
+        constexpr uint8_t used = 0x01;
+        constexpr uint8_t reserved1 = 0x02;
+        constexpr uint8_t reserved2 = 0x04;
+
         struct MemoryBlock {
             uint64_t magic;
 
             size_t size;
-            uint8_t used;
+            uint8_t flags;
 
             MemoryBlock* next;
             MemoryBlock* prev;
@@ -26,7 +30,7 @@ namespace Kernel::Memory {
         class MemorySubsystem {
         public:
             void initialize() {
-                if (firstBlock || lastBlock) return;
+                if (firstMemoryBlock || lastMemoryBlock) return;
 
                 Console::info("Initializing memory subsystem...");
 
@@ -35,53 +39,132 @@ namespace Kernel::Memory {
 
                 MemoryBlock* mb = createBlock(heapStart, heapEnd - heapStart);
 
-                firstBlock = mb;
-                lastBlock = mb;
+                firstMemoryBlock = mb;
+                lastMemoryBlock = mb;
 
                 Console::ok("Memory subsystem initialized");
             }
 
             uint8_t* allocate(size_t size) {
-                if (!firstBlock || !lastBlock || size > heapEnd - heapStart) return nullptr;
+                if (!firstMemoryBlock || !lastMemoryBlock || size > heapEnd - heapStart) return nullptr;
+
+                for (auto mb = firstMemoryBlock; mb != nullptr; mb = mb->next) {
+                    if (mb->flags & used) continue;
+
+                    if (mb->size >= size + minBlockSize) {
+                        auto newBlock = split(mb, size);
+
+                        if (newBlock) return getDataBlock(newBlock);
+                    }
+
+                    if (mb->size >= size) {
+                        mb->flags |= used;
+
+                        return getDataBlock(mb);
+                    } 
+                }
 
                 return nullptr;
             }
 
             void deallocate(uint8_t* ptr) {
-                if (!ptr || !firstBlock || !lastBlock) return;
+                if (!ptr || !firstMemoryBlock || !lastMemoryBlock) return;
 
-                [[maybe_unused]]
-                MemoryBlock* mb = reinterpret_cast<MemoryBlock*>(ptr - sizeof(MemoryBlock));
+                MemoryBlock* mb = getMemoryBlock(ptr);
+                
+                if (mb->magic != memoryBlockMagic) return;
+
+                mb->flags &= ~used;
+
+                if (mb->prev) merge(mb->prev, mb);
             }
 
         private:
-            uint8_t* blockStart(MemoryBlock* mb) {
-                return reinterpret_cast<uint8_t*>(mb) + sizeof(MemoryBlock);
+            MemoryBlock* split(MemoryBlock* mb, size_t size) {
+                if(!mb) return nullptr;
+                if (mb->magic != memoryBlockMagic) return nullptr;
+                if (mb->flags & used || size > mb->size) return nullptr;
+
+                uintptr_t fullDataBlockEnd = dataBlockEnd(mb);
+
+                uintptr_t secondBlockAddr = alignAddress(dataBlockStart(mb) + size + sizeof(MemoryBlock)) - sizeof(MemoryBlock);
+
+                if (secondBlockAddr + sizeof(MemoryBlock) + minBlockSize >= fullDataBlockEnd) return mb;
+
+                MemoryBlock* firstBlock = mb;
+                MemoryBlock* secondBlock = reinterpret_cast<MemoryBlock*>(secondBlockAddr);
+
+                *secondBlock = *mb;
+
+                firstBlock->size = size;
+                firstBlock->next = secondBlock;
+
+                secondBlock->size = fullDataBlockEnd - dataBlockStart(secondBlock);
+                secondBlock->prev = firstBlock;
+
+                if (secondBlock->next) secondBlock->next->prev = secondBlock;
+                if (lastMemoryBlock == mb) lastMemoryBlock = secondBlock;
+
+                return firstBlock;
             }
 
-            uint8_t* blockEnd(MemoryBlock* mb) {
-                return blockStart(mb) + mb->size;
+            void merge(MemoryBlock* mb1, MemoryBlock* mb2) {
+                if(!mb1 || !mb2) return;
+                if (mb1->magic != memoryBlockMagic || mb2->magic != memoryBlockMagic) return;
+                if (mb1->next != mb2 || mb2->flags & used) return;
+
+                mb1->size = dataBlockEnd(mb2) - dataBlockStart(mb1);
+                mb1->next = mb2->next;
+
+                if (mb2->next) mb2->next->prev = mb1;
+                if (lastMemoryBlock == mb2) lastMemoryBlock = mb1;
+            }
+
+            uintptr_t alignAddress(uintptr_t addr) {
+                uintptr_t blockAddrAligned = alignUp(addr + sizeof(MemoryBlock), heapAlignment);
+                uintptr_t blockAddr = blockAddrAligned - sizeof(MemoryBlock);
+
+                return blockAddr;
+            }
+
+            uintptr_t dataBlockStart(MemoryBlock* mb) {
+                if(!mb) return 0;
+
+                return (mb->magic == memoryBlockMagic) ? reinterpret_cast<uintptr_t>(mb) + sizeof(MemoryBlock) : 0;
+            }
+
+            uintptr_t dataBlockEnd(MemoryBlock* mb) {
+                if(!mb) return 0;
+
+                return (mb->magic == memoryBlockMagic) ? dataBlockStart(mb) + mb->size : 0;
             }
 
             MemoryBlock* createBlock(uintptr_t addr, size_t size) {
-                uintptr_t blockAddrAligned = alignUp(addr + sizeof(MemoryBlock), heapAlignment);
-                uintptr_t blockAddr = blockAddrAligned - sizeof(MemoryBlock);
+                uintptr_t blockAddr = alignAddress(addr);
 
                 MemoryBlock* mb = reinterpret_cast<MemoryBlock*>(blockAddr);
                 mb->magic = memoryBlockMagic;
                 mb->size = size;
-                mb->used = 0;
+                mb->flags = 0;
                 mb->prev = nullptr;
                 mb->next = nullptr;
 
                 return mb;
             }
 
+            uint8_t* getDataBlock(MemoryBlock* mb) {
+                return reinterpret_cast<uint8_t*>(dataBlockStart(mb));
+            }
+
+            MemoryBlock* getMemoryBlock(uint8_t* ptr) {
+                return reinterpret_cast<MemoryBlock*>(ptr - sizeof(MemoryBlock));
+            }
+
             uintptr_t heapStart;
             uintptr_t heapEnd;
 
-            MemoryBlock* firstBlock;
-            MemoryBlock* lastBlock;
+            MemoryBlock* firstMemoryBlock;
+            MemoryBlock* lastMemoryBlock;
         };
 
         static_assert(std::is_trivially_constructible_v<MemorySubsystem>);
@@ -95,13 +178,13 @@ namespace Kernel::Memory {
     }
 
     void* allocate(size_t size) {
-        Console::println("Kernel::Memory::allocate not implemented yet!");
+        Console::println("Kernel::Memory::allocate: allocating memory...");
 
         return memory.allocate(size);
     }
 
     void deallocate(void* ptr) {
-        Console::println("Kernel::Memory::deallocate not implemented yet!");
+        Console::println("Kernel::Memory::deallocate: deallocating memory...");
 
         memory.deallocate(reinterpret_cast<uint8_t*>(ptr));
     }
