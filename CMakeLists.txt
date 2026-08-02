@@ -70,6 +70,7 @@ set(LIBKERNEL_SOURCES
 )
 
 set(LIBKBASE_SOURCES
+    src/libkbase/algo.cpp
     src/libkbase/math.cpp
     src/libkbase/memory.cpp
     src/libkbase/string.cpp
