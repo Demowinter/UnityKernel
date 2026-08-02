@@ -21,11 +21,10 @@ header_end:
 
 .extern kernel64
 
-.extern stack_top
-.extern stack_bottom
+.extern __stack_top
 
 _start:
-    mov $stack_top, %rsp
+    mov $__stack_top, %rsp
 
     mov %rax, %rdi
     mov %rbx, %rsi

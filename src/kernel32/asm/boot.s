@@ -20,11 +20,10 @@ header_end:
 
 .extern kernel32
 
-.extern stack_top
-.extern stack_bottom
+.extern __stack_top
 
 _start:
-    mov $stack_top, %esp
+    mov $__stack_top, %esp
 
     push %ebx
     push %eax
