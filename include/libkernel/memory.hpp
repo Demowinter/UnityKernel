@@ -4,6 +4,7 @@
 
 namespace Kernel::Memory {
     constexpr size_t heapAlignment = 16;
+    constexpr size_t minBlockSize = 32;
 
     void initialize();
 
