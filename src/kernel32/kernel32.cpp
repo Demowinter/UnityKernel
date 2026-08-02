@@ -31,7 +31,18 @@ namespace Kernel {
         Console::newline();
 
         Console::print("Welcome to ");
-        Console::print("UnityKernel! v0.1.0-alpha", 5);
+        Console::println("UnityKernel! v0.1.0-alpha", 5);
+
+        Console::newline();
+
+        Console::info("Testing log messages:");
+        Console::newline();
+
+        Console::ok("Ok");
+        Console::info("Information");
+        Console::warn("Warning");
+        Console::fail("Failed");
+
 
         CPU::interrupts(false);
         CPU::halt();
