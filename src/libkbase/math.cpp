@@ -2,14 +2,6 @@
 #include <libkbase/math.hpp>
 
 extern "C" {
-    uint64_t alignUp(uint64_t value, uint64_t alignment) {
-        return value + (alignment - (value % alignment)) % alignment;
-    }
-
-    uint64_t alignDown(uint64_t value, uint64_t alignment) {
-        return value - (value % alignment);
-    }
-
     bool isPowerOfTwo(uint64_t value) {
         return value != 0 && (value & (value - 1)) == 0;
     }
