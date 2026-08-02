@@ -12,13 +12,14 @@ set(KERNEL_COMPILE_FLAGS
     -fno-pie
     -fno-stack-protector
     -fno-builtin
+    -fno-asynchronous-unwind-tables
+    -fno-unwind-tables
     -mno-red-zone
 )
 
 set(KERNEL_LINK_FLAGS
     -no-pie
     -nostdlib
-    -lgcc
     -g
 )
 
@@ -33,6 +34,20 @@ set(KERNEL32_SOURCES
     src/kernel32/kernel32.cpp
 )
 
+set(KERNEL64_LINK_LIBS
+    libkernel64
+    libkbase64
+    libkrt64
+    gcc
+)
+
+set(KERNEL32_LINK_LIBS
+    libkernel32
+    libkbase32
+    libkrt32
+    gcc
+)
+
 add_executable(kernel64 ${KERNEL64_SOURCES})
 add_executable(kernel32 ${KERNEL32_SOURCES})
 
@@ -45,11 +60,8 @@ target_compile_options(kernel32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
 target_link_options(kernel64 PRIVATE ${KERNEL_LINK_FLAGS} -m64 -T ${CMAKE_SOURCE_DIR}/linker/kernel64.ld)
 target_link_options(kernel32 PRIVATE ${KERNEL_LINK_FLAGS} -m32 -T ${CMAKE_SOURCE_DIR}/linker/kernel32.ld)
 
-target_link_libraries(kernel64 PRIVATE libkernel64)
-target_link_libraries(kernel64 PRIVATE libkbase64)
-target_link_libraries(kernel32 PRIVATE libkernel32)
-target_link_libraries(kernel32 PRIVATE libkbase32)
-
+target_link_libraries(kernel64 PRIVATE ${KERNEL64_LINK_LIBS})
+target_link_libraries(kernel32 PRIVATE ${KERNEL32_LINK_LIBS})
 
 set(LIBKERNEL_SOURCES
     src/libkernel/cpu.cpp
@@ -58,31 +70,45 @@ set(LIBKERNEL_SOURCES
 )
 
 set(LIBKBASE_SOURCES
+    src/libkbase/math.cpp
     src/libkbase/memory.cpp
     src/libkbase/string.cpp
+)
+
+set(LIBKRT_SOURCES
+    src/libkrt/init.cpp
+    src/libkrt/new.cpp
+    src/libkrt/cxa.cpp
+    src/libkrt/guard.cpp
 )
 
 add_library(libkernel64 STATIC ${LIBKERNEL_SOURCES})
 add_library(libkernel32 STATIC ${LIBKERNEL_SOURCES})
 add_library(libkbase64 STATIC ${LIBKBASE_SOURCES})
 add_library(libkbase32 STATIC ${LIBKBASE_SOURCES})
-# add_library(libkrt64 STATIC src/libkrt/ src/libkrt/)
-# add_library(libkrt32 STATIC src/libkrt/ src/libkrt/)
+add_library(libkrt64 STATIC ${LIBKRT_SOURCES})
+add_library(libkrt32 STATIC ${LIBKRT_SOURCES})
 
 target_include_directories(libkernel64 PRIVATE "include/")
 target_include_directories(libkernel32 PRIVATE "include/")
 target_include_directories(libkbase64 PRIVATE "include/")
 target_include_directories(libkbase32 PRIVATE "include/")
+target_include_directories(libkrt64 PRIVATE "include/")
+target_include_directories(libkrt32 PRIVATE "include/")
 
 target_compile_options(libkernel64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
 target_compile_options(libkernel32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
 target_compile_options(libkbase64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
 target_compile_options(libkbase32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
+target_compile_options(libkrt64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
+target_compile_options(libkrt32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
 
 set_target_properties(libkernel64 PROPERTIES PREFIX "")
 set_target_properties(libkernel32 PROPERTIES PREFIX "")
 set_target_properties(libkbase64 PROPERTIES PREFIX "")
 set_target_properties(libkbase32 PROPERTIES PREFIX "")
+set_target_properties(libkrt64 PROPERTIES PREFIX "")
+set_target_properties(libkrt32 PROPERTIES PREFIX "")
 
 
 add_custom_target(iso
