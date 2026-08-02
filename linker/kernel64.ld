@@ -29,16 +29,16 @@ SECTIONS {
         *(.bss)
     }
 
-    .heap ALIGN(16) : {
-        __heap_bottom = .;
+    .heap ALIGN(16) (NOLOAD) : {
+        __heap_start = .;
 
         . += 1M;
         .  = ALIGN(16);
 
-        __heap_top = .;
+        __heap_end = .;
     }
 
-    .stack ALIGN(16) : {
+    .stack ALIGN(16) (NOLOAD) : {
         __stack_bottom = .;
 
         . += 32K;
