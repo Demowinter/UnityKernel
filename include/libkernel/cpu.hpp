@@ -1,5 +1,4 @@
 #pragma once
-#include <array>
 #include <cstdint>
 
 namespace Kernel::CPU {
@@ -12,7 +11,7 @@ namespace Kernel::CPU {
 
     Info cpuid(uint32_t leaf);
 
-    std::array<uint32_t, 3> manufacturer(const Info& info);
+    char* manufacturer(const Info& info);
 
     void interrupts(bool on);
     [[noreturn]] void halt();

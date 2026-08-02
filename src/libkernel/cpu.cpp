@@ -1,5 +1,5 @@
-#include <array>
 #include <cstdint>
+#include <libkernel/memory.hpp>
 #include <libkernel/cpu.hpp>
 
 namespace Kernel::CPU {
@@ -16,13 +16,13 @@ namespace Kernel::CPU {
         return info;
     }
 
-    std::array<uint32_t, 3> manufacturer(const Info& info) {
-        std::array<uint32_t, 3> binName;
-        binName[0] = info.ebx;
-        binName[1] = info.edx;
-        binName[2] = info.ecx;
+    char* manufacturer(const Info& info) {
+        uint32_t* mf = new uint32_t[3];
+        mf[0] = info.ebx;
+        mf[1] = info.edx;
+        mf[2] = info.ecx;
 
-        return binName;
+        return reinterpret_cast<char*>(mf);
     }
 
     void interrupts(bool on) {
