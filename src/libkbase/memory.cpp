@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <cstdint>
+#include <libkernel/memory.hpp>
 #include <libkbase/memory.hpp>
 
 extern "C" {
@@ -25,7 +26,11 @@ extern "C" {
         return dest;
     }
 
-    uintptr_t align(uintptr_t value, uint16_t alignment) {
-        return value + (alignment - (value % alignment)) % alignment;
+    void* malloc(size_t size) {
+        return Kernel::Memory::allocate(size);
+    }
+
+    void free(void* ptr) {
+        Kernel::Memory::deallocate(ptr);
     }
 }
