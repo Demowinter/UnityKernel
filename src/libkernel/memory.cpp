@@ -178,14 +178,10 @@ namespace Kernel::Memory {
     }
 
     void* allocate(size_t size) {
-        Console::println("Kernel::Memory::allocate: allocating memory...");
-
         return memory.allocate(size);
     }
 
     void deallocate(void* ptr) {
-        Console::println("Kernel::Memory::deallocate: deallocating memory...");
-
         memory.deallocate(reinterpret_cast<uint8_t*>(ptr));
     }
 }
