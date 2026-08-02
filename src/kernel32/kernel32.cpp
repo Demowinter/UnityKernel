@@ -18,13 +18,15 @@ namespace Kernel {
         else Console::info("Multiboot structure is OK");
 
         CPU::Info info = CPU::cpuid(0);
-        auto binaryName = CPU::manufacturer(info);
+        auto name = CPU::manufacturer(info);
 
         Console::info("CPU manufacturer: ", false);
-        Console::write(binaryName.data(), binaryName.size() * sizeof(uint32_t), 5);
+        Console::write(name, sizeof(info) - sizeof(info.eax), 5);
         Console::newline();
 
         Console::ok("Started kernel32");
+        delete[] name;
+
         
         Console::newline();
 

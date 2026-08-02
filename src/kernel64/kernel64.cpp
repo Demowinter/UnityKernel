@@ -1,11 +1,16 @@
 #include <cstdint>
 #include <cstddef>
+#include <libkrt/krt.hpp>
 #include <libkernel/cpu.hpp>
+#include <libkernel/memory.hpp>
 #include <libkernel/console.hpp>
 
 namespace Kernel {
     extern "C" void kernel64(uint64_t mbMagic, void* mbi) {
         Console::clear();
+
+        Memory::initialize();
+        KernelRT::initialize();
 
         CPU::Info info = CPU::cpuid(0);
 
