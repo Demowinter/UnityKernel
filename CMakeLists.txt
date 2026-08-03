@@ -34,18 +34,13 @@ target_compile_options(kernel32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
 target_link_options(kernel64 PRIVATE ${KERNEL_LINK_FLAGS} -m64 -T ${CMAKE_SOURCE_DIR}/linker/kernel64.ld)
 target_link_options(kernel32 PRIVATE ${KERNEL_LINK_FLAGS} -m32 -T ${CMAKE_SOURCE_DIR}/linker/kernel32.ld)
 
-target_link_libraries(kernel64 PRIVATE libkernel64)
-target_link_libraries(kernel64 PRIVATE libkbase64)
-target_link_libraries(kernel32 PRIVATE libkernel32)
-target_link_libraries(kernel32 PRIVATE libkbase32)
-
+target_link_libraries(kernel64 PRIVATE libkernel64 libkbase64)
+target_link_libraries(kernel32 PRIVATE libkernel32 libkbase32)
 
 add_library(libkernel64 STATIC src/libkernel/cpu.cpp src/libkernel/console.cpp)
 add_library(libkernel32 STATIC src/libkernel/cpu.cpp src/libkernel/console.cpp)
 add_library(libkbase64 STATIC src/libkbase/memory.cpp src/libkbase/string.cpp)
 add_library(libkbase32 STATIC src/libkbase/memory.cpp src/libkbase/string.cpp)
-# add_library(libkrt64 STATIC src/libkrt/ src/libkrt/)
-# add_library(libkrt32 STATIC src/libkrt/ src/libkrt/)
 
 target_include_directories(libkernel64 PRIVATE "include/")
 target_include_directories(libkernel32 PRIVATE "include/")
