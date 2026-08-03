@@ -38,6 +38,7 @@ namespace Kernel::Memory {
                 heapEnd = reinterpret_cast<uintptr_t>(__heap_end);
 
                 MemoryBlock* mb = createBlock(heapStart, heapEnd - heapStart);
+                if (!mb) return;
 
                 firstMemoryBlock = mb;
                 lastMemoryBlock = mb;
@@ -53,15 +54,16 @@ namespace Kernel::Memory {
 
                     if (mb->size >= size + minBlockSize) {
                         auto newBlock = split(mb, size);
-
-                        if (newBlock) return getDataBlock(newBlock);
+                        if (newBlock) {
+                            newBlock->flags |= used;
+                            return getDataBlock(newBlock);
+                        }
                     }
 
                     if (mb->size >= size) {
                         mb->flags |= used;
-
                         return getDataBlock(mb);
-                    } 
+                    }
                 }
 
                 return nullptr;
@@ -76,7 +78,14 @@ namespace Kernel::Memory {
 
                 mb->flags &= ~used;
 
-                if (mb->prev) merge(mb->prev, mb);
+                if (mb->prev) {
+                    merge(mb->prev, mb);
+                    mb = mb->prev;
+                }
+
+                if (mb->next && !(mb->next->flags & used)) {
+                    merge(mb, mb->next);
+                }
             }
 
         private:
@@ -141,10 +150,13 @@ namespace Kernel::Memory {
 
             MemoryBlock* createBlock(uintptr_t addr, size_t size) {
                 uintptr_t blockAddr = alignAddress(addr);
+                if (blockAddr + sizeof(MemoryBlock) > addr + size) return nullptr;
+
+                size_t usableSize = size - (blockAddr - addr) - sizeof(MemoryBlock);
 
                 MemoryBlock* mb = reinterpret_cast<MemoryBlock*>(blockAddr);
                 mb->magic = memoryBlockMagic;
-                mb->size = size;
+                mb->size = usableSize;
                 mb->flags = 0;
                 mb->prev = nullptr;
                 mb->next = nullptr;
