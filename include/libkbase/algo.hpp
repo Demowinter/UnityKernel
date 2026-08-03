@@ -4,6 +4,8 @@
 extern "C" {
     uint64_t alignUp(uint64_t value, uint64_t alignment);
     uint64_t alignDown(uint64_t value, uint64_t alignment);
+    uint64_t alignUpPow2(uint64_t value, uint64_t alignment);
+    uint64_t alignDownPow2(uint64_t value, uint64_t alignment);
 
     bool inRangeII(int64_t value, int64_t min, int64_t max);
     bool inRangeEI(int64_t value, int64_t min, int64_t max);

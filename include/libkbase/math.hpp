@@ -3,8 +3,6 @@
 
 extern "C" {
     bool isPowerOfTwo(uint64_t value);
-    uint64_t alignUpPow2(uint64_t value, uint64_t alignment);
-    uint64_t alignDownPow2(uint64_t value, uint64_t alignment);
     uint64_t roundUpDiv(uint64_t value, uint64_t divisor);
     uint64_t roundDownDiv(uint64_t value, uint64_t divisor);
     uint64_t minUint64(uint64_t a, uint64_t b);

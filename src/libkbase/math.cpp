@@ -6,14 +6,6 @@ extern "C" {
         return value != 0 && (value & (value - 1)) == 0;
     }
 
-    uint64_t alignUpPow2(uint64_t value, uint64_t alignment) {
-        return (value + (alignment - 1)) & ~(alignment - 1);
-    }
-
-    uint64_t alignDownPow2(uint64_t value, uint64_t alignment) {
-        return value & ~(alignment - 1);
-    }
-
     uint64_t roundUpDiv(uint64_t value, uint64_t divisor) {
         return (value + divisor - 1) / divisor;
     }
