@@ -15,8 +15,6 @@ namespace Kernel::Console {
     void write(const void* str, size_t size, uint8_t color = 0x07);
 
     void print(std::string_view str, uint8_t color = 0x07);
-    void print(int64_t number, uint8_t color = 0x07);
-
     void println(std::string_view str, uint8_t color = 0x07);
 
     void ok(std::string_view str, bool newline = true);
