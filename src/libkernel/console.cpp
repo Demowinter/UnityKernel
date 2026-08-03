@@ -1,4 +1,6 @@
 #include <string_view>
+#include <array>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <libkernel/console.hpp>
@@ -14,11 +16,17 @@ namespace Kernel::Console {
     }
 
     void newline() {
-        cursor += columns - (cursor  % columns);
+        if (cursor >= columns * rows) {
+            for (size_t i = columns; i < cursor + columns; i++) video[i - columns] = video[i];
+
+            cursor -= columns;
+        }
+
+        cursor += columns - (cursor % columns);
     }
 
-    void write(std::byte byte) {
-        video[cursor++] = (0x07 << 8) | static_cast<uint8_t>(byte);
+    void write(std::byte byte, uint8_t color) {
+        video[cursor++] = (color << 8) | static_cast<uint8_t>(byte);
     }
 
     void write(const void* str, size_t size, uint8_t color) {
@@ -27,6 +35,28 @@ namespace Kernel::Console {
 
     void print(std::string_view str, uint8_t color) {
         for (char ch : str) video[cursor++] = (color << 8) | ch;
+    }
+
+    void print(int64_t value, uint8_t color) {
+        char buffer[11]; // 10 цифр для uint32_t + '\0'
+        char* ptr = &buffer[10];
+
+        *ptr = '\0';
+
+        if (value == 0)
+        {
+            Console::print("0", color);
+            return;
+        }
+
+        while (value > 0)
+        {
+            --ptr;
+            *ptr = '0' + (value % 10);
+            value /= 10;
+        }
+
+        Console::print(ptr, color);
     }
 
     void println(std::string_view str, uint8_t color) {
