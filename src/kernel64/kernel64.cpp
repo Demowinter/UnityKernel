@@ -10,6 +10,7 @@ namespace Kernel {
         Console::clear();
 
         Memory::initialize();
+        Memory::runTests();
         KernelRT::initialize();
 
         CPU::Info info = CPU::cpuid(0);

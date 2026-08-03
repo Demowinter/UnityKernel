@@ -196,4 +196,40 @@ namespace Kernel::Memory {
     void deallocate(void* ptr) {
         memory.deallocate(reinterpret_cast<uint8_t*>(ptr));
     }
+
+    bool runTests() {
+        Console::info("Memory subsystem tests:");
+
+        initialize();
+
+        auto report = [](const char* name, bool result) {
+            if (result) Console::ok(name);
+            else Console::fail(name);
+            return result;
+        };
+
+        bool allPassed = true;
+
+        uint8_t* a = reinterpret_cast<uint8_t*>(allocate(64));
+        uint8_t* b = reinterpret_cast<uint8_t*>(allocate(64));
+        allPassed &= report("Allocate 64+64", a != nullptr && b != nullptr);
+
+        if (b) deallocate(b);
+        if (a) deallocate(a);
+
+        void* c = allocate(96);
+        allPassed &= report("Free merge allocate 96", c != nullptr);
+        if (c) deallocate(c);
+
+        uintptr_t heapSize = reinterpret_cast<uintptr_t>(__heap_end) - reinterpret_cast<uintptr_t>(__heap_start);
+        size_t largeSize = heapSize > 128 ? heapSize - 128 : 0;
+        void* d = largeSize ? allocate(largeSize) : nullptr;
+        allPassed &= report("Large allocation", d != nullptr);
+        if (d) deallocate(d);
+
+        if (allPassed) Console::ok("Memory subsystem tests passed");
+        else Console::fail("Memory subsystem tests failed");
+
+        return allPassed;
+    }
 }

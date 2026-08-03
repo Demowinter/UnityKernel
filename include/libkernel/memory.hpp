@@ -10,4 +10,6 @@ namespace Kernel::Memory {
 
     void* allocate(size_t size);
     void deallocate(void* ptr);
+
+    bool runTests();
 }

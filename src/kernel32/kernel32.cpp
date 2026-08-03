@@ -12,6 +12,7 @@ namespace Kernel {
         Console::info("Starting kernel32...");
 
         Memory::initialize();
+        Memory::runTests();
         KernelRT::initialize();
 
         if (!GRUB::checkMultiboot(mbMagic)) Console::info("Multiboot structure is corrupted");
