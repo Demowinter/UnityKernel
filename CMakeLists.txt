@@ -38,6 +38,7 @@ set(KERNEL64_LINK_LIBS
     libkernel64
     libkbase64
     libkrt64
+    libkstd64
     gcc
 )
 
@@ -45,6 +46,7 @@ set(KERNEL32_LINK_LIBS
     libkernel32
     libkbase32
     libkrt32
+    libkstd32
     gcc
 )
 
@@ -83,12 +85,18 @@ set(LIBKRT_SOURCES
     src/libkrt/guard.cpp
 )
 
+set(LIBKSTD_SOURCES
+    src/libkstd/assert.cpp
+)
+
 add_library(libkernel64 STATIC ${LIBKERNEL_SOURCES})
 add_library(libkernel32 STATIC ${LIBKERNEL_SOURCES})
 add_library(libkbase64 STATIC ${LIBKBASE_SOURCES})
 add_library(libkbase32 STATIC ${LIBKBASE_SOURCES})
 add_library(libkrt64 STATIC ${LIBKRT_SOURCES})
 add_library(libkrt32 STATIC ${LIBKRT_SOURCES})
+add_library(libkstd64 STATIC ${LIBKSTD_SOURCES})
+add_library(libkstd32 STATIC ${LIBKSTD_SOURCES})
 
 target_include_directories(libkernel64 PRIVATE "include/")
 target_include_directories(libkernel32 PRIVATE "include/")
@@ -96,6 +104,8 @@ target_include_directories(libkbase64 PRIVATE "include/")
 target_include_directories(libkbase32 PRIVATE "include/")
 target_include_directories(libkrt64 PRIVATE "include/")
 target_include_directories(libkrt32 PRIVATE "include/")
+target_include_directories(libkstd64 PRIVATE "include/")
+target_include_directories(libkstd32 PRIVATE "include/")
 
 target_compile_options(libkernel64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
 target_compile_options(libkernel32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
@@ -103,6 +113,8 @@ target_compile_options(libkbase64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
 target_compile_options(libkbase32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
 target_compile_options(libkrt64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
 target_compile_options(libkrt32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
+target_compile_options(libkstd64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
+target_compile_options(libkstd32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
 
 set_target_properties(libkernel64 PROPERTIES PREFIX "")
 set_target_properties(libkernel32 PROPERTIES PREFIX "")
@@ -110,6 +122,8 @@ set_target_properties(libkbase64 PROPERTIES PREFIX "")
 set_target_properties(libkbase32 PROPERTIES PREFIX "")
 set_target_properties(libkrt64 PROPERTIES PREFIX "")
 set_target_properties(libkrt32 PROPERTIES PREFIX "")
+set_target_properties(libkstd64 PROPERTIES PREFIX "")
+set_target_properties(libkstd32 PROPERTIES PREFIX "")
 
 
 add_custom_target(iso
