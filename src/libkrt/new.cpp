@@ -13,6 +13,14 @@ void operator delete(void* ptr) {
     Kernel::Memory::deallocate(ptr);
 }
 
+void operator delete(void* ptr, size_t) {
+    Kernel::Memory::deallocate(ptr);
+}
+
 void operator delete[](void* ptr) {
+    Kernel::Memory::deallocate(ptr);
+}
+
+void operator delete[](void* ptr, size_t) {
     Kernel::Memory::deallocate(ptr);
 }
