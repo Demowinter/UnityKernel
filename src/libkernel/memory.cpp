@@ -48,27 +48,29 @@ namespace Kernel::Memory {
                     std::unique_ptr<char[]> buffer{new char[16]};
                     Console::println(ltoa(heapDataAddr, buffer.get(), 16));
                 }
+
+                else Console::fail("Memory subsystem initialization failed");
             }
 
-            void validate() {
-                Console::info("Starting heap validation...");
+            // void validate() {
+            //     Console::info("Starting heap validation...");
 
-                uint8_t ok = 0;
+            //     uint8_t ok = 0;
 
-                // if (!firstMemoryBlock || !lastMemoryBlock) return false;
-                // if (firstMemoryBlock->prev || lastMemoryBlock->next) return false;
+            //     // if (!firstMemoryBlock || !lastMemoryBlock) return false;
+            //     // if (firstMemoryBlock->prev || lastMemoryBlock->next) return false;
 
-                // for (auto mbh = firstMemoryBlock; mbh != nullptr; mbh = mbh->next) {
-                //     if (mbh->magic != memoryBlockMagic) return false;
-                //     if (!mbh->next && lastMemoryBlock != mbh) return false;
-                //     if (mbh->next->prev != mbh) return false;
-                // }
+            //     // for (auto mbh = firstMemoryBlock; mbh != nullptr; mbh = mbh->next) {
+            //     //     if (mbh->magic != memoryBlockMagic) return false;
+            //     //     if (!mbh->next && lastMemoryBlock != mbh) return false;
+            //     //     if (mbh->next->prev != mbh) return false;
+            //     // }
 
-                Console::info("Heap validated");
+            //     Console::info("Heap validated");
 
-                if (ok) Console::ok("Heap is OK!");
-                else Console::fail("Heap is corrupted!");
-            }
+            //     if (ok) Console::ok("Heap is OK!");
+            //     else Console::fail("Heap is corrupted!");
+            // }
 
             uint8_t* allocate(size_t size) {
                 if (!firstMemoryBlock || !lastMemoryBlock) return nullptr;
@@ -103,6 +105,7 @@ namespace Kernel::Memory {
                 MemoryBlockHeader* mbh = getHeader(ptr);
                 
                 if (mbh->magic != memoryBlockMagic) return;
+                if (!(mbh->flags & used)) return;
 
                 mbh->flags &= ~used;
 
@@ -111,9 +114,9 @@ namespace Kernel::Memory {
             }
 
         private:
-            void validateBlock(MemoryBlockHeader* mbh) {
+            // void validateBlock(MemoryBlockHeader* mbh) {
 
-            }
+            // }
 
             MemoryBlockHeader* split(MemoryBlockHeader* mbh, size_t size) {
                 if(!mbh) return nullptr;
@@ -218,15 +221,15 @@ namespace Kernel::Memory {
         memory.initialize();
     }
 
-    bool validate() {
+    // bool validate() {
 
-    }
+    // }
 
     void* allocate(size_t size) {
         return memory.allocate(size);
     }
 
     void deallocate(void* ptr) {
-        memory.deallocate(reinterpret_cast<uint8_t*>(ptr));
+        memory.deallocate(static_cast<uint8_t*>(ptr));
     }
 }
