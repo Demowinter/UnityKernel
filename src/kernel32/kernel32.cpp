@@ -79,7 +79,7 @@ namespace Kernel::Tests
 
     void testAlignment()
     {
-        constexpr size_t alignment = 16;
+        constexpr size_t alignment = Memory::heapAlignment;
 
         bool valid = true;
 
@@ -309,7 +309,6 @@ namespace Kernel {
         // }
 
         Tests::runMemoryTests();
-
 
         CPU::interrupts(false);
         CPU::halt();
