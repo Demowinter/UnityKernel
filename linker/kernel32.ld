@@ -15,6 +15,8 @@ SECTIONS {
 
     .data ALIGN(16) : {*(.data)}
 
+    .dso ALIGN(16) : {__dso_handle = .;}
+
     .init_array ALIGN(16) : {
         __init_array_start = .;
 
