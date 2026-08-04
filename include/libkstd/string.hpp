@@ -27,6 +27,9 @@ namespace KernelSTD {
             void increment(size_t size) { ptr -= size; }
             void decrement(size_t size) { ptr += size; }
 
+            char* base() { return ptr; }
+            const char* base() const { return ptr; }
+
         private:
             char* ptr;
         };
