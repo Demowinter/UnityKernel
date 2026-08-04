@@ -1,3 +1,5 @@
+#include <memory>
+#include <type_traits>
 #include <cstddef>
 #include <cstdint>
 #include <libkbase/algo.hpp>
@@ -34,21 +36,24 @@ namespace Kernel::Memory {
 
                 Console::info("Initializing memory subsystem...");
 
-                heapStart = reinterpret_cast<uintptr_t>(__heap_start);
-                heapEnd = reinterpret_cast<uintptr_t>(__heap_end);
+                uintptr_t heapStartAddr = reinterpret_cast<uintptr_t>(__heap_start);
+                uintptr_t heapEndAddr = reinterpret_cast<uintptr_t>(__heap_end);
 
-                MemoryBlockHeader* mbh = createBlock(heapStart, heapEnd - heapStart);
+                uintptr_t heapDataAddr = initMemory(heapStartAddr, heapEndAddr);
 
-                firstMemoryBlock = mbh;
-                lastMemoryBlock = mbh;
+                if (heapDataAddr) {
+                    Console::ok("Memory subsystem initialized");
+                    Console::info("Heap starts on: 0x", false);
 
-                Console::ok("Memory subsystem initialized");
+                    std::unique_ptr<char[]> buffer{new char[16]};
+                    Console::println(ltoa(heapDataAddr, buffer.get(), 16));
+                }
             }
 
             void validate() {
                 Console::info("Starting heap validation...");
 
-                uint8_t fail = 0;
+                uint8_t ok = 0;
 
                 // if (!firstMemoryBlock || !lastMemoryBlock) return false;
                 // if (firstMemoryBlock->prev || lastMemoryBlock->next) return false;
@@ -61,12 +66,12 @@ namespace Kernel::Memory {
 
                 Console::info("Heap validated");
 
-                if (fail) Console::fail("Heap is corrupted!");
-                else Console::ok("Heap is OK!");
+                if (ok) Console::ok("Heap is OK!");
+                else Console::fail("Heap is corrupted!");
             }
 
             uint8_t* allocate(size_t size) {
-                if (!firstMemoryBlock || !lastMemoryBlock || size > heapEnd - heapStart) return nullptr;
+                if (!firstMemoryBlock || !lastMemoryBlock || size > usableHeapSize) return nullptr;
 
                 for (auto mbh = firstMemoryBlock; mbh != nullptr; mbh = mbh->next) {
                     if (mbh->flags & used) continue;
@@ -74,13 +79,17 @@ namespace Kernel::Memory {
                     if (mbh->size >= size + minBlockSize) {
                         auto newBlock = split(mbh, size);
 
-                        if (newBlock) return getDataBlock(newBlock);
+                        if (newBlock) {
+                            newBlock->flags |= used;
+
+                            return getData(newBlock);
+                        }
                     }
 
                     if (mbh->size >= size) {
                         mbh->flags |= used;
 
-                        return getDataBlock(mbh);
+                        return getData(mbh);
                     } 
                 }
 
@@ -90,13 +99,14 @@ namespace Kernel::Memory {
             void deallocate(uint8_t* ptr) {
                 if (!ptr || !firstMemoryBlock || !lastMemoryBlock) return;
 
-                MemoryBlockHeader* mbh = getMemoryBlockHeader(ptr);
+                MemoryBlockHeader* mbh = getHeader(ptr);
                 
                 if (mbh->magic != memoryBlockMagic) return;
 
                 mbh->flags &= ~used;
 
-                if (mbh->prev) merge(mbh->prev, mbh);
+                if (mbh->next && !(mbh->next->flags & used)) merge(mbh, mbh->next);
+                if (mbh->prev && !(mbh->prev->flags & used)) merge(mbh->prev, mbh);
             }
 
         private:
@@ -109,21 +119,23 @@ namespace Kernel::Memory {
                 if (mbh->magic != memoryBlockMagic) return nullptr;
                 if (mbh->flags & used || size > mbh->size) return nullptr;
 
-                uintptr_t fullDataBlockEnd = dataEnd(mbh);
+                uintptr_t fullDataStartAddr = dataStart(mbh);
+                uintptr_t fullDataEndAddr = dataEnd(mbh);
 
-                uintptr_t secondBlockAddr = alignAddress(dataStart(mbh) + size + sizeof(MemoryBlockHeader)) - sizeof(MemoryBlockHeader);
+                uintptr_t secondDataAddr = alignAddress(fullDataStartAddr + size + sizeof(MemoryBlockHeader));
+                uintptr_t secondHeaderAddr = secondDataAddr - sizeof(MemoryBlockHeader);
 
-                if (secondBlockAddr + sizeof(MemoryBlockHeader) + minBlockSize >= fullDataBlockEnd) return mbh;
+                if (secondDataAddr + minBlockSize >= fullDataEndAddr) return mbh;
 
                 MemoryBlockHeader* firstBlock = mbh;
-                MemoryBlockHeader* secondBlock = reinterpret_cast<MemoryBlockHeader*>(secondBlockAddr);
+                MemoryBlockHeader* secondBlock = reinterpret_cast<MemoryBlockHeader*>(secondHeaderAddr);
 
                 *secondBlock = *mbh;
 
                 firstBlock->size = size;
                 firstBlock->next = secondBlock;
 
-                secondBlock->size = fullDataBlockEnd - dataStart(secondBlock);
+                secondBlock->size = fullDataEndAddr - secondDataAddr;
                 secondBlock->prev = firstBlock;
 
                 if (secondBlock->next) secondBlock->next->prev = secondBlock;
@@ -160,30 +172,36 @@ namespace Kernel::Memory {
                 return (mbh->magic == memoryBlockMagic) ? dataStart(mbh) + mbh->size : 0;
             }
 
-            MemoryBlockHeader* createBlock(uintptr_t addr, size_t size) {
-                uintptr_t dataAddr = alignAddress(addr + sizeof(MemoryBlockHeader));
+            uintptr_t initMemory(uintptr_t heapStartAddr, uintptr_t heapEndAddr) {
+                uintptr_t dataAddr = alignAddress(heapStartAddr + sizeof(MemoryBlockHeader));
                 uintptr_t headerAddr = dataAddr - sizeof(MemoryBlockHeader);
+
+                usableHeapSize = heapEndAddr - dataAddr;
+
+                if (dataAddr + minBlockSize >= heapEndAddr) return 0;
 
                 MemoryBlockHeader* mbh = reinterpret_cast<MemoryBlockHeader*>(headerAddr);
                 mbh->magic = memoryBlockMagic;
-                mbh->size = size;
+                mbh->size = usableHeapSize;
                 mbh->flags = 0;
                 mbh->prev = nullptr;
                 mbh->next = nullptr;
 
-                return mbh;
+                firstMemoryBlock = mbh;
+                lastMemoryBlock = mbh;
+
+                return dataAddr;
             }
 
-            uint8_t* getDataBlock(MemoryBlockHeader* mbh) {
+            uint8_t* getData(MemoryBlockHeader* mbh) {
                 return reinterpret_cast<uint8_t*>(dataStart(mbh));
             }
 
-            MemoryBlockHeader* getMemoryBlockHeader(uint8_t* ptr) {
+            MemoryBlockHeader* getHeader(uint8_t* ptr) {
                 return reinterpret_cast<MemoryBlockHeader*>(ptr - sizeof(MemoryBlockHeader));
             }
 
-            uintptr_t heapStart;
-            uintptr_t heapEnd;
+            size_t usableHeapSize;
 
             MemoryBlockHeader* firstMemoryBlock;
             MemoryBlockHeader* lastMemoryBlock;
