@@ -71,7 +71,8 @@ namespace Kernel::Memory {
             }
 
             uint8_t* allocate(size_t size) {
-                if (!firstMemoryBlock || !lastMemoryBlock || size > usableHeapSize) return nullptr;
+                if (!firstMemoryBlock || !lastMemoryBlock) return nullptr;
+                if (!size || size > usableHeapSize) return nullptr;
 
                 for (auto mbh = firstMemoryBlock; mbh != nullptr; mbh = mbh->next) {
                     if (mbh->flags & used) continue;
