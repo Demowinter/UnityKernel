@@ -1,38 +1,11 @@
 #pragma once
 #include <memory>
 #include <cstddef>
-#include <libkstd/iterator.hpp>
-#include <libkbase/string.hpp>
 
 namespace KernelSTD {
     class String {
-        class ForwardIterator : public Iterator<char, ForwardIterator> {
-        public:
-            ForwardIterator(char* ptr) : ptr(ptr) {}
-
-            void increment(size_t size) { ptr += size; }
-            void decrement(size_t size) { ptr -= size; }
-
-            char* base() { return ptr; }
-            const char* base() const { return ptr; }
-
-        private:
-            char* ptr;
-        };
-
-        class ReverseIterator : public Iterator<char, ReverseIterator> {
-        public:
-            ReverseIterator(char* ptr, bool sentiel = false);
-
-            void increment(size_t size) { ptr -= size; }
-            void decrement(size_t size) { ptr += size; }
-
-            char* base() { return ptr; }
-            const char* base() const { return ptr; }
-
-        private:
-            char* ptr;
-        };
+        class ForwardIterator;
+        class ReverseIterator;
 
     public:
         String() = default;
@@ -56,14 +29,65 @@ namespace KernelSTD {
 
         void resize();
 
-        ForwardIterator begin() {
-            return buffer.get();
-        }
+        ForwardIterator begin();
+        ForwardIterator end();
 
     private:
         std::unique_ptr<char[]> buffer;
 
         size_t capacity;
         size_t size;
+    };
+
+    class String::ForwardIterator {
+    public:
+        ForwardIterator(char* ptr);
+
+        ForwardIterator& operator++();
+        ForwardIterator& operator--();
+
+        ForwardIterator operator++(int);
+        ForwardIterator operator--(int);
+
+        ForwardIterator& operator+=(size_t size);
+        ForwardIterator& operator-=(size_t size);
+
+        ForwardIterator operator+(size_t size);
+        ForwardIterator operator-(size_t size);
+
+        char& operator*();
+        char* operator->();
+
+        char* base();
+        const char* base() const;
+
+    private:
+        char* ptr = nullptr;
+    };
+
+    class String::ReverseIterator {
+    public:
+        ReverseIterator(char* ptr);
+
+        ReverseIterator& operator++();
+        ReverseIterator& operator--();
+
+        ReverseIterator operator++(int);
+        ReverseIterator operator--(int);
+
+        ReverseIterator& operator+=(size_t size);
+        ReverseIterator& operator-=(size_t size);
+
+        ReverseIterator operator+(size_t size);
+        ReverseIterator operator-(size_t size);
+
+        char& operator*();
+        char* operator->();
+
+        char* base();
+        const char* base() const;
+
+    private:
+        char* ptr = nullptr;
     };
 }
