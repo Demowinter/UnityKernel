@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <libkstd/string.hpp>
 
 namespace Kernel::CPU {
     struct Info {
@@ -11,7 +12,7 @@ namespace Kernel::CPU {
 
     Info cpuid(uint32_t leaf);
 
-    char* manufacturer(const Info& info);
+    KernelSTD::String manufacturer(const Info& info);
 
     void interrupts(bool on);
     [[noreturn]] void halt();

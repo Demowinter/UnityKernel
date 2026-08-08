@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <libkernel/memory.hpp>
 #include <libkernel/cpu.hpp>
+#include <libkstd/string.hpp>
 
 namespace Kernel::CPU {
     Info cpuid(uint32_t leaf) {
@@ -16,13 +17,13 @@ namespace Kernel::CPU {
         return info;
     }
 
-    char* manufacturer(const Info& info) {
+    KernelSTD::String manufacturer(const Info& info) {
         uint32_t* mf = new uint32_t[3];
         mf[0] = info.ebx;
         mf[1] = info.edx;
         mf[2] = info.ecx;
 
-        return reinterpret_cast<char*>(mf);
+        return KernelSTD::String(reinterpret_cast<char*>(mf), 12);
     }
 
     void interrupts(bool on) {
