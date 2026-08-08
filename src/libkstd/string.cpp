@@ -7,7 +7,6 @@
 #include <libkstd/string.hpp>
 
 namespace KernelSTD {
-//----------------------------------------------------
     String::String(const char* str) { insert(0, str); }
     String::String(const char* str, size_t size) { insert(0, str, size); }
     String::String(char ch, size_t size) { insert(0, ch, size); }
