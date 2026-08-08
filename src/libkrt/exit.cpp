@@ -47,7 +47,7 @@ namespace KernelRT {
             entry->func(entry->param);
     }
 
-    void deinitialize() {
+    void finalize() {
         finalizeAll();
     }
 }

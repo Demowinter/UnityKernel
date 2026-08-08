@@ -2,5 +2,5 @@
 
 namespace KernelRT {
     void initialize();
-    void deinitialize();
+    void finalize();
 }
