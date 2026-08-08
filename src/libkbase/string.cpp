@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <libkbase/string.hpp>
@@ -12,17 +13,20 @@ extern "C" {
     }
 
     int32_t strcmp(const char* str1, const char* str2) {
+        size_t l1 = strlen(str1);
+        size_t l2 = strlen(str2);
+
+        size_t minLength = std::min(l1, l2);
+        size_t maxLength = std::max(l1, l2);
+
+        const char* longStr = (l1 > l2) ? str1 : str2;
+
+        size_t index = 0;
+
         int32_t diff = 0;
 
-        for (size_t i = 0; diff; i++) {
-            char ch1 = str1[i];
-            char ch2 = str2[i];
-
-            if (!ch1) return -1;
-            if (!ch2) return 1;
-
-            diff = ch1 - ch2;
-        }
+        for (; index < minLength; index++) diff += str1[index] - str2[index];
+        for (; index < maxLength; index++) diff += longStr[index];
 
         return diff;
     }
