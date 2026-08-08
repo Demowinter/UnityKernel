@@ -10,9 +10,9 @@ extern "C" {
     }
 
     void __cxa_guard_release(int64_t* guardObject) {
-        // unlock(mutex)
-
         *guardObject = 1;
+        
+        // unlock(mutex)
     }
 
     void __cxa_guard_abort(int64_t* guardObject) {
