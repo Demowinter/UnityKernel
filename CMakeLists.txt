@@ -35,14 +35,12 @@ set(KERNEL32_SOURCES
 )
 
 set(KERNEL64_LINK_LIBS
-    libkstd64
-    "$<LINK_GROUP:RESCAN,libkbase64,libkrt64,libkernel64>"
+    "$<LINK_GROUP:RESCAN,libkstd64,libkbase64,libkrt64,libkernel64>"
     gcc
 )
 
 set(KERNEL32_LINK_LIBS
-    libkstd32
-    "$<LINK_GROUP:RESCAN,libkbase32,libkrt32,libkernel32>"
+    "$<LINK_GROUP:RESCAN,libkstd32,libkbase32,libkrt32,libkernel32>"
     gcc
 )
 
