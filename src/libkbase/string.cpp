@@ -14,7 +14,15 @@ extern "C" {
     int32_t strcmp(const char* str1, const char* str2) {
         int32_t diff = 0;
 
-        for (size_t i = 0; diff; i++) diff = str1[i] - str2[i];
+        for (size_t i = 0; diff; i++) {
+            char ch1 = str1[i];
+            char ch2 = str2[i];
+
+            if (!ch1) return -1;
+            if (!ch2) return 1;
+
+            diff = ch1 - ch2;
+        }
 
         return diff;
     }
