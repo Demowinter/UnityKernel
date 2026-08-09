@@ -33,6 +33,8 @@ namespace KernelSTD {
 
     template<typename Type>
     Vector<Type>& Vector<Type>::operator=(std::initializer_list<Type> list) {
+        clear();
+
         insert(begin(), list.begin(), list.end());
     }
 
@@ -182,11 +184,11 @@ namespace KernelSTD {
 
     template<typename Type>
     typename Vector<Type>::ReverseIterator Vector<Type>::rbegin() {
-        return std::reverse_iterator{end()};
+        return ReverseIterator{end()};
     }
 
     template<typename Type>
     typename Vector<Type>::ReverseIterator Vector<Type>::rend() {
-        return std::reverse_iterator{begin()};
+        return ReverseIterator{begin()};
     }
 }
