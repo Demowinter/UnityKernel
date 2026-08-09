@@ -8,6 +8,8 @@
 #include <libkernel/memory.hpp>
 #include <libkernel/console.hpp>
 #include <libkstd/string.hpp>
+#include <libkstd/vector.hpp>
+#include <libkstd/list.hpp>
 
 KernelSTD::String string = "Global init string!";
 
@@ -56,7 +58,7 @@ namespace Kernel {
 
         // std::vector<int> v;
         // std::map<int, int> m;
-
+        // v.push_back(1);
         // v.begin();
         // m.begin();
 
@@ -79,6 +81,22 @@ namespace Kernel {
         }
 
         Console::info(string);
+
+        {
+
+            KernelSTD::Vector<KernelSTD::String> vect = {"Hello", "World", "Slava", "Ukraini"};
+            vect.push_back("putin");
+            vect.push_back("huilo");
+
+            Console::info("Trying to print vector...");
+
+            for (auto str : vect) Console::ok(str);
+        }
+
+        KernelSTD::LinkedList<KernelSTD::String> list = {"Unity", "Kernel"};
+
+        for (auto str : list) Console::ok(str);
+
 
         KernelRT::finalize();
 
