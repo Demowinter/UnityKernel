@@ -1,0 +1,168 @@
+#pragma once
+
+namespace KernelSTD {
+    template<typename Type>
+    LinkedList<Type>::LinkedList(const Type& data, size_t size) {
+        insert(begin(), data, size);
+    }
+
+    template<typename Type>
+    LinkedList<Type>::LinkedList(std::initializer_list<Type> list) {
+        insert(begin(), list.begin(), list.end());
+    }
+
+    template<typename Type>
+    LinkedList<Type>::LinkedList(const LinkedList& obj) {
+        copy(obj);
+    }
+
+    template<typename Type>
+    LinkedList<Type>::LinkedList(LinkedList&& obj) {
+        swap(obj);
+    }
+
+    template<typename Type>
+    LinkedList<Type>::~LinkedList() {
+        clear();
+
+        delete tail;
+    }
+
+    template<typename Type>
+    LinkedList<Type>& LinkedList<Type>::operator=(std::initializer_list<Type> list) {
+        clear();
+
+        insert(begin(), list.begin(), list.end());
+
+        return *this;
+    }
+
+    template<typename Type>
+    LinkedList<Type>& LinkedList<Type>::operator=(const LinkedList& obj) {
+        copy(obj);
+
+        return *this;
+    }
+
+    template<typename Type>
+    LinkedList<Type>& LinkedList<Type>::operator=(LinkedList&& obj) {
+        swap(obj);
+
+        return *this;
+    }
+
+    template<typename Type>
+    void LinkedList<Type>::copy(const LinkedList& obj) {
+        clear();
+
+        insert(begin(), obj.begin(), obj.end());
+    }
+
+    template<typename Type>
+    void LinkedList<Type>::swap(LinkedList& obj) {
+        std::swap(head, obj.head);
+        std::swap(tail, obj.tail);
+        std::swap(count, obj.count);
+    }
+
+    template<typename Type>
+    size_t LinkedList<Type>::size() const {
+        return count;
+    }
+
+    template<typename Type>
+    void LinkedList<Type>::insert(Iterator pos, const Type& value) {
+        LinkedNode<Type>* posNode = pos.baseNode();
+
+        if (!posNode) return;
+
+        LinkedNode<Type>* newNode = new LinkedNode<Type>{value};
+
+        LinkedNode<Type>* next = posNode;
+        LinkedNode<Type>* prev = posNode->prev;
+
+        newNode->next = next;
+        newNode->prev = prev;
+
+        if (next) next->prev = newNode;
+        if (prev) prev->next = newNode;
+
+        if (pos == begin()) head = newNode;
+    }
+
+    template<typename Type>
+    void LinkedList<Type>::insert(Iterator pos, const Type& value, size_t size) {
+        while (size--) insert(pos++, value);
+    }
+
+    template<typename Type>
+    void LinkedList<Type>::erase(Iterator pos) {
+        LinkedNode<Type>* posNode = pos.baseNode();
+
+        LinkedNode<Type>* next = posNode->next;
+        LinkedNode<Type>* prev = posNode->prev;
+
+        next->prev = prev;
+        if (prev) prev->next = next;
+
+        delete posNode;
+    }
+
+    template<typename Type>
+    void LinkedList<Type>::erase(Iterator begin, Iterator end) {
+        for (auto it = begin; it != end; it++) erase(it);
+    }
+
+    template<typename Type>
+    void LinkedList<Type>::push_back(const Type& value) {
+        insert(end(), value);
+    }
+
+    template<typename Type>
+    void LinkedList<Type>::push_front(const Type& value) {
+        insert(begin(), value);
+    }
+
+    template<typename Type>
+    void LinkedList<Type>::pop_back() {
+        erase(--end());
+    }
+
+    template<typename Type>
+    void LinkedList<Type>::pop_front() {
+        erase(begin());
+    }
+
+    template<typename Type>
+    void LinkedList<Type>::clear() {
+        auto node = head;
+
+        while (node != tail) {
+            auto next = node->next;
+
+            delete node;
+
+            node = next;
+        }
+    }
+
+    template<typename Type>
+    typename LinkedList<Type>::Iterator LinkedList<Type>::begin() {
+        return head;
+    }
+
+    template<typename Type>
+    typename LinkedList<Type>::Iterator LinkedList<Type>::end() {
+        return tail;
+    }
+
+    template<typename Type>
+    typename LinkedList<Type>::ReverseIterator LinkedList<Type>::rbegin() {
+        return ReverseIterator{end()};
+    }
+
+    template<typename Type>
+    typename LinkedList<Type>::ReverseIterator LinkedList<Type>::rend() {
+        return ReverseIterator{begin()};
+    }
+}
