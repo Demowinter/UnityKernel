@@ -39,7 +39,7 @@ extern "C" {
         for (auto entry = exitListEnd; entry != nullptr; entry = entry->prev)
             if (entry->dso == dso) entry->func(entry->param);
     }
-
+    
     void abort() {
         KernelRT::finalize();
     }
@@ -53,5 +53,9 @@ namespace KernelRT {
 
     void finalize() {
         finalizeAll();
+    }
+
+    void abort() {
+        ::abort();
     }
 }
