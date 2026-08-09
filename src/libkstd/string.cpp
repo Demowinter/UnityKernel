@@ -2,8 +2,9 @@
 #include <optional>
 #include <utility>
 #include <cstddef>
-#include <libkbase/string.hpp>
-#include <libkbase/memory.hpp>
+#include <libkbase/string.hpp> // strlen()
+#include <libkbase/memory.hpp> // memset(), memcpy(), memmove(), memcmp()
+#include <libkrt/krt.hpp>
 #include <libkstd/string.hpp>
 
 namespace KernelSTD {
@@ -68,7 +69,7 @@ namespace KernelSTD {
     }
 
     void String::resize(size_t size){
-        std::unique_ptr<char[]> newbuffer{new char[size + 1]};
+        std::unique_ptr<char[]> newbuffer{new char[size]};
 
         memcpy(newbuffer.get(), buffer.get(), std::min(size, length));
 
@@ -80,7 +81,11 @@ namespace KernelSTD {
         return length;
     }
 
-    std::optional<std::reference_wrapper<char>> at(size_t index);
+    char& String::at(size_t index) {
+        if (index >= length) KernelRT::abort();
+
+        return buffer[index];
+    }
 
     void String::append(char ch) {
         if (length >= capacity) resize(length + 1);
@@ -113,7 +118,7 @@ namespace KernelSTD {
     }
 
     void String::insert(size_t pos, char ch, size_t size) {
-        if (length + size >= capacity) resize(length + size);
+        if (length + size > capacity) resize(length + size);
 
         // for (size_t index = length - 1; index >= pos; index--) buffer[index + size] = buffer[index];
         memmove(buffer.get() + pos + size, buffer.get() + pos, length - pos);
@@ -127,7 +132,7 @@ namespace KernelSTD {
     }
 
     void String::insert(size_t pos, const char* str, size_t size) {
-        if (length + size >= capacity) resize(length + size);
+        if (length + size > capacity) resize(length + size);
 
         // for (size_t index = length - 1; index >= pos; index--) buffer[index + size] = buffer[index];
         memmove(buffer.get() + pos + size, buffer.get() + pos, length - pos);

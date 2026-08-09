@@ -2,6 +2,7 @@
 #include <memory>
 #include <string_view>
 #include <optional>
+#include <utility>
 #include <iterator>
 #include <cstddef>
 #include <libkstd/iterator.hpp>
@@ -19,7 +20,7 @@ namespace KernelSTD {
         String(const String& obj);
         String(String&& obj);
 
-        template<class InputIterator>
+        template<typename InputIterator>
         String(InputIterator begin, InputIterator end) { insert(this->begin(), begin, end); }
 
         String& operator=(const char* str);
@@ -38,7 +39,7 @@ namespace KernelSTD {
         void resize(size_t size);
         size_t size();
 
-        std::optional<std::reference_wrapper<char>> at(size_t index);
+        char& at(size_t index);
 
         void append(char ch);
         void append(char ch, size_t size);
@@ -57,7 +58,7 @@ namespace KernelSTD {
         void insert(Iterator pos, const char* str, size_t size);
         void insert(Iterator pos, const String& obj);
 
-        template<class InputIterator>
+        template<typename InputIterator>
         void insert(Iterator pos, InputIterator begin, InputIterator end) {
             insert(pos, begin.base(), end - begin);
         }
@@ -92,7 +93,7 @@ namespace KernelSTD {
         operator std::string_view();
 
     private:
-        std::unique_ptr<char[]> buffer;
+        std::unique_ptr<char[]> buffer = nullptr;
 
         size_t capacity = 0;
         size_t length = 0;
