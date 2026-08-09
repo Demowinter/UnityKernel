@@ -14,7 +14,7 @@ namespace KernelSTD {
     };
 
     template<typename Type>
-    class ListIterator {
+    class LinkedIterator {
     public:
         //-----------STL compatibility header-----------
         using iterator_category = std::bidirectional_iterator_tag;
@@ -24,29 +24,29 @@ namespace KernelSTD {
         using reference = value_type&;
         //-----------STL compatibility header-----------
 
-        ListIterator() : node{nullptr} {}
-        ListIterator(LinkedNode<Type>* node) : node{node} {}
+        LinkedIterator() : node{nullptr} {}
+        LinkedIterator(LinkedNode<Type>* node) : node{node} {}
 
-        ListIterator& operator++() {
+        LinkedIterator& operator++() {
             node = node->next;
 
             return *this;
         }
 
-        ListIterator& operator--() {
+        LinkedIterator& operator--() {
             node = node->prev;
 
             return *this;
         }
 
-        ListIterator operator++(int) {
+        LinkedIterator operator++(int) {
             LinkedNode<Type>* copy = node;
             node = node->next;
 
             return copy;
         }
 
-        ListIterator operator--(int) {
+        LinkedIterator operator--(int) {
             LinkedNode<Type>* copy = node;
             node = node->prev;
 
@@ -77,11 +77,11 @@ namespace KernelSTD {
             return node;
         }
 
-        bool operator==(const ListIterator& obj) {
+        bool operator==(const LinkedIterator& obj) {
             return node == obj.baseNode();
         }
 
-        bool operator!=(const ListIterator& obj) {
+        bool operator!=(const LinkedIterator& obj) {
             return !(*this == obj);
         }
 
@@ -92,7 +92,7 @@ namespace KernelSTD {
     template<typename Type>
     class LinkedList {
     public:
-        using Iterator = ListIterator<Type>;
+        using Iterator = LinkedIterator<Type>;
         using ReverseIterator = std::reverse_iterator<Iterator>;
 
         LinkedList() = default;
