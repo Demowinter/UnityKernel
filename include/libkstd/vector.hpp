@@ -2,7 +2,6 @@
 #include <memory>
 #include <initializer_list>
 #include <algorithm>
-#include <optional>
 #include <iterator>
 #include <cstddef>
 #include <libkstd/iterator.hpp>
