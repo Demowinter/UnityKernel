@@ -11,6 +11,7 @@ namespace KernelSTD {
     String::String(const char* str) { insert(0, str); }
     String::String(const char* str, size_t size) { insert(0, str, size); }
     String::String(char ch, size_t size) { insert(0, ch, size); }
+    String::String(std::string_view view) { insert(begin(), view.begin(), view.end()); }
     String::String(const String& obj) { copy(obj); }
     String::String(String&& obj) { swap(obj); }
 
@@ -18,6 +19,14 @@ namespace KernelSTD {
         clear();
 
         insert(0, str);
+
+        return *this;
+    }
+
+    String& String::operator=(std::string_view view) {
+        clear();
+
+        insert(begin(), view.begin(), view.end());
 
         return *this;
     }
@@ -42,6 +51,12 @@ namespace KernelSTD {
 
     String& String::operator+=(const char* str) {
         append(str);
+
+        return *this;
+    }
+
+    String& String::operator+=(std::string_view view) {
+        insert(end(), view.begin(), view.end());
 
         return *this;
     }
@@ -77,7 +92,7 @@ namespace KernelSTD {
         buffer = std::move(newbuffer);
     }
 
-    size_t String::size() {
+    size_t String::size() const {
         return length;
     }
 
@@ -195,7 +210,7 @@ namespace KernelSTD {
         return buffer.get();
     }
 
-    const char* String::c_str() const {
+    const char* String::data() const {
         return buffer.get();
     }
 
@@ -235,6 +250,14 @@ namespace KernelSTD {
         return buffer.get() + length;
     }
 
+    String::ConstIterator String::begin() const {
+        return buffer.get();
+    }
+
+    String::ConstIterator String::end() const {
+        return buffer.get() + length;
+    }
+
     String::ReverseIterator String::rbegin() {
         return ReverseIterator{end()};
     }
@@ -243,11 +266,61 @@ namespace KernelSTD {
         return ReverseIterator{begin()};
     }
 
+    String::ConstReverseIterator String::rbegin() const {
+        return ConstReverseIterator{end()};
+    }
+
+    String::ConstReverseIterator String::rend() const {
+        return ConstReverseIterator{begin()};
+    }
+
     std::string_view String::view() {
         return std::string_view{buffer.get(), length};
     }
 
     String::operator std::string_view() {
         return view();
+    }
+
+    String operator+(const String& lhs, const String& rhs) {
+        String tmp;
+        tmp += lhs;
+        tmp += rhs;
+
+        return tmp;
+    }
+
+    String operator+(const String& lhs, char rhs) {
+        String tmp;
+        tmp += lhs;
+        tmp += rhs;
+
+        return tmp;
+    }
+
+    String operator+(char lhs, const String& rhs) {
+        String tmp;
+        tmp += lhs;
+        tmp += rhs;
+
+        return tmp;
+    }
+
+    bool operator==(const String& lhs, const String& rhs) {
+        if (lhs.size() != rhs.size()) return false;
+
+        return !memcmp(lhs.data(), rhs.data(), lhs.size());
+    }
+
+    bool operator==(const String& lhs, char rhs) {
+        if (lhs.size() == 1);
+
+        return *lhs.begin() == rhs;
+    }
+
+    bool operator==(char lhs, const String& rhs) {
+        if (rhs.size() == 1);
+
+        return *rhs.begin() == lhs;
     }
 }

@@ -10,13 +10,16 @@
 namespace KernelSTD {
     class String {
     public:
-        using Iterator = NormalIterator<char>;
+        using Iterator = NormalIterator<char*>;
+        using ConstIterator = NormalIterator<const char*>;
         using ReverseIterator = std::reverse_iterator<Iterator>;
+        using ConstReverseIterator = std::reverse_iterator<ConstIterator>;
 
         String() = default;
         String(const char* str);
         String(const char* str, size_t size);
         String(char ch, size_t size);
+        String(std::string_view view);
         String(const String& obj);
         String(String&& obj);
 
@@ -24,11 +27,13 @@ namespace KernelSTD {
         String(InputIterator begin, InputIterator end) { insert(this->begin(), begin, end); }
 
         String& operator=(const char* str);
+        String& operator=(std::string_view view);
         String& operator=(const String& obj);
         String& operator=(String&& obj);
 
         String& operator+=(char ch);
         String& operator+=(const char* str);
+        String& operator+=(std::string_view view);
         String& operator+=(const String& obj);
 
         char& operator[](size_t index);
@@ -37,7 +42,7 @@ namespace KernelSTD {
         void swap(String& obj);
 
         void resize(size_t size);
-        size_t size();
+        size_t size() const;
 
         char& at(size_t index);
 
@@ -60,7 +65,9 @@ namespace KernelSTD {
 
         template<typename InputIterator>
         void insert(Iterator pos, InputIterator begin, InputIterator end) {
-            insert(pos, begin.base(), end - begin);
+            size_t numPos = pos - this->begin();
+
+            for (auto it = begin; it != end; it++) insert(numPos++, *it);
         }
 
         void erase(size_t pos);
@@ -72,7 +79,7 @@ namespace KernelSTD {
         void pop_back();
 
         char* data();
-        const char* c_str() const; 
+        const char* data() const; 
 
         void clear();
 
@@ -85,8 +92,14 @@ namespace KernelSTD {
         Iterator begin();
         Iterator end();
 
+        ConstIterator begin() const;
+        ConstIterator end() const;
+
         ReverseIterator rbegin();
         ReverseIterator rend();
+
+        ConstReverseIterator rbegin() const;
+        ConstReverseIterator rend() const;
 
         std::string_view view();
 
@@ -98,4 +111,16 @@ namespace KernelSTD {
         size_t capacity = 0;
         size_t length = 0;
     };
+
+    String operator+(const String& lhs, const String& rhs);
+    String operator+(const String& lhs, char rhs);
+    // String operator+(const String& lhs, const char* rhs);
+    String operator+(char lhs, const String& rhs);
+    // String operator+(const char* lhs, const String& rhs);
+
+    bool operator==(const String& lhs, const String& rhs);
+    bool operator==(const String& lhs, char rhs);
+    // String operator==(const String& lhs, const char* rhs);
+    bool operator==(char lhs, const String& rhs);
+    // String operator==(const char* lhs, const String& rhs);
 }
