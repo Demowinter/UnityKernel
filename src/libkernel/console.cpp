@@ -10,7 +10,13 @@ namespace Kernel::Console {
     void scroll() {
         for (size_t i = columns; i < screenSize; i++) video[i - columns] = video[i];
         for (size_t i = screenSize - columns; i < screenSize; i++) video[i] = 0x00;
+
         cursor -= columns;
+    }
+
+    void checkScroll() {
+        if (cursor >= screenSize)
+            while (cursor >= screenSize) scroll();
     }
 
     void clear() {
@@ -20,20 +26,15 @@ namespace Kernel::Console {
     }
 
     void newline() {
-        if (cursor >= columns * rows) {
-            while (cursor >= screenSize) scroll();
-        }
+        checkScroll();
 
         cursor += columns - (cursor % columns);
-        if (cursor >= screenSize) {
-            while (cursor >= screenSize) scroll();
-        }
+
+        checkScroll();
     }
 
     void write(std::byte byte, uint8_t color) {
-        if (cursor >= screenSize) {
-            while (cursor >= screenSize) scroll();
-        }
+        checkScroll();
 
         video[cursor++] = (color << 8) | static_cast<uint8_t>(byte);
     }
