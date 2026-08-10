@@ -10,7 +10,7 @@ namespace KernelSTD {
     template<typename Type>
     class Vector {
     public:
-        using Iterator = NormalIterator<Type>;
+        using Iterator = NormalIterator<Type*>;
         using ReverseIterator = std::reverse_iterator<Iterator>;
 
         Vector() = default;

@@ -2,15 +2,17 @@
 #include <iterator>
 
 namespace KernelSTD {
-    template<typename Type>
+    template<typename It>
     class NormalIterator {
     public:
+        typedef std::iterator_traits<It> iteratorTraits;
+
         //-----------STL compatibility header-----------
-        using iterator_category = std::random_access_iterator_tag;
-        using value_type = Type;
-        using difference_type = std::ptrdiff_t;
-        using pointer = value_type*;
-        using reference = value_type&;
+        typedef typename iteratorTraits::iterator_category  iterator_category;
+        typedef typename iteratorTraits::value_type         value_type;
+        typedef typename iteratorTraits::difference_type    difference_type;
+        typedef typename iteratorTraits::pointer            pointer;
+        typedef typename iteratorTraits::reference          reference;
         //-----------STL compatibility header-----------
 
         NormalIterator() : ptr{nullptr} {}
@@ -89,42 +91,42 @@ namespace KernelSTD {
         pointer ptr;
     };
 
-    template<typename Type>
-    class ConstIterator {
-    public:
-        //-----------STL compatibility header-----------
-        using iterator_category = std::random_access_iterator_tag;
-        using value_type = Type;
-        using difference_type = std::ptrdiff_t;
-        using pointer = value_type*;
-        using reference = value_type&;
-        //-----------STL compatibility header-----------
+    // template<typename Type>
+    // class ConstIterator {
+    // public:
+    //     //-----------STL compatibility header-----------
+    //     using iterator_category = std::random_access_iterator_tag;
+    //     using value_type = Type;
+    //     using difference_type = std::ptrdiff_t;
+    //     using pointer = value_type*;
+    //     using reference = value_type&;
+    //     //-----------STL compatibility header-----------
 
-        ConstIterator() : ptr{nullptr} {}
-        ConstIterator(pointer ptr) : ptr{ptr} {}
-        ConstIterator(const NormalIterator<Type>& it) : ptr{it.base()} {}
+    //     ConstIterator() : ptr{nullptr} {}
+    //     ConstIterator(pointer ptr) : ptr{ptr} {}
+    //     ConstIterator(const NormalIterator<Type>& it) : ptr{it.base()} {}
 
-        ConstIterator operator+(difference_type diff) const {
-            return ptr + diff;
-        }
+    //     ConstIterator operator+(difference_type diff) const {
+    //         return ptr + diff;
+    //     }
 
-        ConstIterator operator-(difference_type diff) const {
-            return ptr - diff;
-        }
+    //     ConstIterator operator-(difference_type diff) const {
+    //         return ptr - diff;
+    //     }
 
-        const reference operator*() const;
-        const pointer operator->() const;
+    //     const reference operator*() const;
+    //     const pointer operator->() const;
 
-        const pointer base() const;
+    //     const pointer base() const;
 
-        difference_type operator-(const ConstIterator& it) const;
+    //     difference_type operator-(const ConstIterator& it) const;
 
-        bool operator==(const ConstIterator& it) const;
-        bool operator!=(const ConstIterator& it) const;
+    //     bool operator==(const ConstIterator& it) const;
+    //     bool operator!=(const ConstIterator& it) const;
 
-    private:
-        pointer ptr;
-    };
+    // private:
+    //     pointer ptr;
+    // };
 
     template<typename Type>
     bool operator==(const NormalIterator<Type>& it1, const NormalIterator<Type>& it2) {
