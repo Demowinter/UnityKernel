@@ -323,4 +323,16 @@ namespace KernelSTD {
 
         return *rhs.begin() == lhs;
     }
+
+    bool operator!=(const String& lhs, const String& rhs) {
+        return !(lhs == rhs);
+    }
+
+    bool operator!=(const String& lhs, char rhs) {
+        return !(lhs == rhs);
+    }
+
+    bool operator!=(char lhs, const String& rhs) {
+        return !(lhs == rhs);
+    }
 }

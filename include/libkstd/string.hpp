@@ -114,13 +114,13 @@ namespace KernelSTD {
 
     String operator+(const String& lhs, const String& rhs);
     String operator+(const String& lhs, char rhs);
-    // String operator+(const String& lhs, const char* rhs);
     String operator+(char lhs, const String& rhs);
-    // String operator+(const char* lhs, const String& rhs);
 
     bool operator==(const String& lhs, const String& rhs);
     bool operator==(const String& lhs, char rhs);
-    // String operator==(const String& lhs, const char* rhs);
     bool operator==(char lhs, const String& rhs);
-    // String operator==(const char* lhs, const String& rhs);
+
+    bool operator!=(const String& lhs, const String& rhs);
+    bool operator!=(const String& lhs, char rhs);
+    bool operator!=(char lhs, const String& rhs);
 }
