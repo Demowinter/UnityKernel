@@ -15,9 +15,7 @@ struct ExitEntry {
     ExitEntry* prev;
 };
 
-ExitEntry* exitListEnd = nullptr;
-
-bool aborted = false;
+static ExitEntry* exitListEnd = nullptr;
 
 // C++ ABI
 extern "C" {
@@ -42,33 +40,28 @@ extern "C" {
 
     void __cxa_finalize(void* dso) {
         for (auto entry = exitListEnd; entry != nullptr; entry = entry->prev)
-            if (entry->dso == dso) entry->func(entry->param);
+                if (!dso || entry->dso == dso) entry->func(entry->param);
     }
 }
 
 // C API
 extern "C" {
     [[noreturn]] void abort() {
-        KernelRT::abort("C::abort()", "unrecoverable STL failure");
+        KernelRT::abort("C::abort()", "abnormal program termination");
     }
 }
 
 // C++ API
 namespace std {
     [[noreturn]] void terminate() {
-        KernelRT::abort("std::terminate()", "unrecoverable STL failure");
+        KernelRT::abort("std::terminate()", "unrecoverable C++ runtime failure");
     }
 }
 
 // Kernel Runtime API
 namespace KernelRT {
-    void finalizeAll() {
-        for (auto entry = exitListEnd; entry != nullptr; entry = entry->prev)
-            entry->func(entry->param);
-    }
-
     void finalize() {
-        finalizeAll();
+        __cxa_finalize(nullptr);
     }
 
     [[noreturn]] void abort(std::string_view what) {
@@ -76,6 +69,8 @@ namespace KernelRT {
     }
 
     [[noreturn]] void abort(std::string_view who, std::string_view what) {
+        static bool aborted = false;
+
         if (!aborted) {
             aborted = true;
             
