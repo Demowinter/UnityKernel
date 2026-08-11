@@ -43,15 +43,11 @@ extern "C" {
         for (auto entry = exitListEnd; entry != nullptr; entry = entry->prev)
             if (entry->dso == dso) entry->func(entry->param);
     }
-    
+}
+
+extern "C" {
     [[noreturn]] void abort() {
-        if (!aborted) {
-            aborted = true;
-
-            KernelRT::finalize();
-        }
-
-        Kernel::System::panic("STL builtin", "libkrt abort");
+        KernelRT::abort("STL abort", "unrecoverable STL failure");
     }
 }
 
@@ -66,12 +62,16 @@ namespace KernelRT {
     }
 
     [[noreturn]] void abort(std::string_view what) {
+        abort("KRT abort", what);
+    }
+
+    [[noreturn]] void abort(std::string_view who, std::string_view what) {
         if (!aborted) {
             aborted = true;
             
-            finalizeAll();
+            finalize();
         }
 
-        Kernel::System::panic("KernelRT::abort()", what);
+        Kernel::System::panic(who, what);
     }
 }
