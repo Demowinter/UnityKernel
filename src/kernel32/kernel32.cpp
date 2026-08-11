@@ -36,31 +36,16 @@ namespace Kernel {
         Console::println(CPU::manufacturer(info), 0x05);
         // Console::newline();
 
-        // Console::ok("Started kernel32");
-        // delete[] name;
+        Console::ok("Started kernel32");
 
-        // Console::newline();
+        Console::newline();
 
-        // Console::print("Welcome to ");
-        // Console::println("UnityKernel! v0.1.0-alpha", 5);
+        Console::print("Welcome to ");
+        Console::println("UnityKernel! v0.1.0-alpha", 5);
 
-        // KernelSTD::String str = "Hello from KernelSTD::String!";
-        // KernelSTD::ForwardStringHandler handler(str.data());
+        KernelSTD::String str = "Hello from KernelSTD::String!";
 
-        // KernelSTD::ForwardIterator<char, KernelSTD::ForwardStringHandler, KernelSTD::ForwardIterator> it{handler};
-        // std::string str2 = "Hello from std";
-
-        // Console::ok(str2);
-
-        // str2.begin();
-        // str2.end();
-        // Console::println({str.c_str(), str.size()});
-
-        // std::vector<int> v;
-        // std::map<int, int> m;
-        // v.push_back(1);
-        // v.begin();
-        // m.begin();
+        Console::ok(str);
 
         testStatic();
         testStatic();
@@ -97,6 +82,12 @@ namespace Kernel {
 
         for (auto str : list) Console::ok(str);
 
+        std::string_view view = "Hello from string in std::string_view";
+        KernelSTD::String str3 = view;
+
+        Console::info(str3);
+
+        str3.at(-1); // invalid index
 
         KernelRT::finalize();
 
