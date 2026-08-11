@@ -62,6 +62,8 @@ target_link_libraries(kernel32 PRIVATE ${KERNEL32_LINK_LIBS})
 set(LIBKERNEL_SOURCES
     src/libkernel/cpu.cpp
     src/libkernel/memory.cpp
+    src/libkernel/io.cpp
+    src/libkernel/system.cpp
     src/libkernel/console.cpp
 )
 
