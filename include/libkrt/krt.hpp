@@ -1,7 +1,9 @@
 #pragma once
+#include <string_view>
 
 namespace KernelRT {
     void initialize();
     void finalize();
-    void abort();
+    
+    [[noreturn]] void abort(std::string_view what);
 }

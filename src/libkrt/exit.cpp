@@ -1,4 +1,6 @@
+#include <string_view>
 #include <cstdint>
+#include <libkernel/system.hpp>
 #include <libkrt/krt.hpp>
 
 using ExitFunc = void(*)(void*);
@@ -14,6 +16,8 @@ struct ExitEntry {
 };
 
 ExitEntry* exitListEnd = nullptr;
+
+bool aborted = false;
 
 extern "C" {
     int __cxa_atexit(ExitFunc func, void* param, void* dso) {
@@ -40,8 +44,14 @@ extern "C" {
             if (entry->dso == dso) entry->func(entry->param);
     }
     
-    void abort() {
-        KernelRT::finalize();
+    [[noreturn]] void abort() {
+        if (!aborted) {
+            aborted = true;
+
+            KernelRT::finalize();
+        }
+
+        Kernel::System::panic("STL builtin", "libkrt abort");
     }
 }
 
@@ -55,7 +65,13 @@ namespace KernelRT {
         finalizeAll();
     }
 
-    void abort() {
-        ::abort();
+    [[noreturn]] void abort(std::string_view what) {
+        if (!aborted) {
+            aborted = true;
+            
+            finalizeAll();
+        }
+
+        Kernel::System::panic("KernelRT::abort()", what);
     }
 }
