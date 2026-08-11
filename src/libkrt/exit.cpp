@@ -19,6 +19,7 @@ ExitEntry* exitListEnd = nullptr;
 
 bool aborted = false;
 
+// C++ ABI
 extern "C" {
     int __cxa_atexit(ExitFunc func, void* param, void* dso) {
         ExitEntry* entry = new ExitEntry;
@@ -45,12 +46,21 @@ extern "C" {
     }
 }
 
+// C API
 extern "C" {
     [[noreturn]] void abort() {
-        KernelRT::abort("STL abort", "unrecoverable STL failure");
+        KernelRT::abort("C::abort()", "unrecoverable STL failure");
     }
 }
 
+// C++ API
+namespace std {
+    [[noreturn]] void terminate() {
+        KernelRT::abort("std::terminate()", "unrecoverable STL failure");
+    }
+}
+
+// Kernel Runtime API
 namespace KernelRT {
     void finalizeAll() {
         for (auto entry = exitListEnd; entry != nullptr; entry = entry->prev)
@@ -62,7 +72,7 @@ namespace KernelRT {
     }
 
     [[noreturn]] void abort(std::string_view what) {
-        abort("KRT abort", what);
+        abort("KernelRT::abort()", what);
     }
 
     [[noreturn]] void abort(std::string_view who, std::string_view what) {
