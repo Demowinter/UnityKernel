@@ -97,7 +97,7 @@ namespace KernelSTD {
     }
 
     char& String::at(size_t index) {
-        if (index >= length) KernelRT::abort("KernelSTD::String::at(): invalid index");
+        if (index >= length) KernelRT::abort("KernelSTD::String::at()", "invalid index");
 
         return buffer[index];
     }
