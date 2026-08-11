@@ -93,7 +93,7 @@ namespace KernelSTD {
 
     template<typename Type>
     Type& Vector<Type>::at(size_t index) {
-        if (index >= buffSize) KernelRT::abort();
+        if (index >= buffSize) KernelRT::abort("KernelSTD::Vector::at(): invalid index");
 
         return buffer[index];
     }
