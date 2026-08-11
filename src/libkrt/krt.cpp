@@ -1,8 +1,11 @@
 #include <string_view>
+#include <cstddef>
 #include <cstdint>
+#include <libkernel/memory.hpp>
 #include <libkernel/system.hpp>
 #include <libkrt/krt.hpp>
 
+using ConstructorFunc = void(*)();
 using ExitFunc = void(*)(void*);
 
 struct ExitEntry {
@@ -17,8 +20,32 @@ struct ExitEntry {
 
 static ExitEntry* exitListEnd = nullptr;
 
+// C++ symbols
+extern "C" {
+    extern ConstructorFunc __init_array_start[];
+    extern ConstructorFunc __init_array_end[];
+}
+
 // C++ ABI
 extern "C" {
+    int __cxa_guard_acquire(int64_t* guardObject) {
+        // lock(mutex)
+
+        if (*guardObject) return 0;
+
+        return 1;
+    }
+
+    void __cxa_guard_release(int64_t* guardObject) {
+        *guardObject = 1;
+        
+        // unlock(mutex)
+    }
+
+    void __cxa_guard_abort(int64_t* guardObject) {
+        KernelRT::abort("__cxa_guard_abort()", "error while constructing the object");
+    }
+
     int __cxa_atexit(ExitFunc func, void* param, void* dso) {
         ExitEntry* entry = new ExitEntry;
 
@@ -58,8 +85,37 @@ namespace std {
     }
 }
 
+// C++ memory API
+void* operator new(size_t size) {
+    return Kernel::Memory::allocate(size);
+}
+
+void* operator new[](size_t size) {
+    return Kernel::Memory::allocate(size);
+}
+
+void operator delete(void* ptr) {
+    Kernel::Memory::deallocate(ptr);
+}
+
+void operator delete(void* ptr, size_t) {
+    Kernel::Memory::deallocate(ptr);
+}
+
+void operator delete[](void* ptr) {
+    Kernel::Memory::deallocate(ptr);
+}
+
+void operator delete[](void* ptr, size_t) {
+    Kernel::Memory::deallocate(ptr);
+}
+
 // Kernel Runtime API
 namespace KernelRT {
+    void initialize() {
+        for (auto ctor = __init_array_start; ctor != __init_array_end; ctor++) (*ctor)();
+    }
+    
     void finalize() {
         __cxa_finalize(nullptr);
     }

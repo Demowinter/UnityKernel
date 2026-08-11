@@ -75,10 +75,7 @@ set(LIBKBASE_SOURCES
 )
 
 set(LIBKRT_SOURCES
-    src/libkrt/init.cpp
-    src/libkrt/exit.cpp
-    src/libkrt/new.cpp
-    src/libkrt/guard.cpp
+    src/libkrt/krt.cpp
 )
 
 set(LIBKSTD_SOURCES
