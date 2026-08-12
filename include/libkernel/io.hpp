@@ -1,11 +1,11 @@
 #pragma once
 
 namespace Kernel::IO {
-    namespace PM {
+    namespace PMIO {
 
     }
 
-    namespace MM {
+    namespace MMIO {
 
     }
 
