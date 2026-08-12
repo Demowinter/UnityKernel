@@ -1,0 +1,164 @@
+namespace KernelSTD {
+
+    template<typename Key, typename Value, typename Compare>
+    Map<Key, Value, Compare>::Map(std::initializer_list<std::pair<const Key, Value>> list) {
+        for (const auto& p : list) insert(p.first, p.second);
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    Map<Key, Value, Compare>::Map(const Map& obj) {
+        copy(obj);
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    Map<Key, Value, Compare>::Map(Map&& obj) : head{obj.head}, count{obj.count}, cmp{obj.cmp} {
+        obj.head = nullptr;
+        obj.count = 0;
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    Map<Key, Value, Compare>::~Map() {
+        clear();
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    Map<Key, Value, Compare>& Map<Key, Value, Compare>::operator=(std::initializer_list<std::pair<const Key, Value>> list) {
+        clear();
+        for (const auto& p : list) insert(p.first, p.second);
+
+        return *this;
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    Map<Key, Value, Compare>& Map<Key, Value, Compare>::operator=(const Map& obj) {
+        if (this != &obj) copy(obj);
+
+        return *this;
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    Map<Key, Value, Compare>& Map<Key, Value, Compare>::operator=(Map&& obj) {
+        if (this != &obj) {
+            clear();
+            swap(obj);
+        }
+
+        return *this;
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    void Map<Key, Value, Compare>::copy(const Map& obj) {
+        clear();
+        for (MapNode<Key, Value>* cur = obj.head; cur; cur = cur->next) insert(cur->key, cur->value);
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    void Map<Key, Value, Compare>::swap(Map& obj) {
+        MapNode<Key, Value>* tmpHead = head;
+        size_t tmpCount = count;
+        Compare tmpCmp = cmp;
+
+        head = obj.head;
+        count = obj.count;
+        cmp = obj.cmp;
+
+        obj.head = tmpHead;
+        obj.count = tmpCount;
+        obj.cmp = tmpCmp;
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    size_t Map<Key, Value, Compare>::size() const {
+        return count;
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    Value* Map<Key, Value, Compare>::find(const Key& key) {
+        MapNode<Key, Value>* cur = head;
+        while (cur) {
+            if (!cmp(cur->key, key) && !cmp(key, cur->key)) return &cur->value;
+            cur = cur->next;
+        }
+
+        return nullptr;
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    void Map<Key, Value, Compare>::insert(const Key& key, const Value& value) {
+        MapNode<Key, Value>* prev = nullptr;
+        MapNode<Key, Value>* cur = head;
+
+        while (cur && cmp(cur->key, key)) {
+            prev = cur;
+            cur = cur->next;
+        }
+
+        if (cur && !cmp(cur->key, key) && !cmp(key, cur->key)) {
+            cur->value = value;
+            return;
+        }
+
+        MapNode<Key, Value>* node = new MapNode<Key, Value>(key, value);
+
+        if (!prev) {
+            node->next = head;
+            head = node;
+        } else {
+            node->next = prev->next;
+            prev->next = node;
+        }
+
+        ++count;
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    void Map<Key, Value, Compare>::erase(const Key& key) {
+        MapNode<Key, Value>* prev = nullptr;
+        MapNode<Key, Value>* cur = head;
+
+        while (cur && (cmp(cur->key, key) || cmp(key, cur->key))) {
+            prev = cur;
+            cur = cur->next;
+        }
+
+        if (!cur) return;
+
+        if (prev) prev->next = cur->next;
+        else head = cur->next;
+
+        delete cur;
+        --count;
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    Value& Map<Key, Value, Compare>::operator[](const Key& key) {
+        Value* v = find(key);
+        if (v) return *v;
+
+        insert(key, Value());
+        return *find(key);
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    void Map<Key, Value, Compare>::clear() {
+        MapNode<Key, Value>* cur = head;
+        while (cur) {
+            MapNode<Key, Value>* next = cur->next;
+            delete cur;
+            cur = next;
+        }
+
+        head = nullptr;
+        count = 0;
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    typename Map<Key, Value, Compare>::Iterator Map<Key, Value, Compare>::begin() {
+        return Iterator(head);
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    typename Map<Key, Value, Compare>::Iterator Map<Key, Value, Compare>::end() {
+        return Iterator(nullptr);
+    }
+}

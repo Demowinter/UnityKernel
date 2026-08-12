@@ -2,79 +2,125 @@
 #include <cstddef>
 #include <utility>
 #include <functional>
+#include <initializer_list>
+#include <iterator>
 
 namespace KernelSTD {
-
-template<typename Key, typename Value, typename Compare>
-class MapBase {
-protected:
-    struct Entry {
+    template<typename Key, typename Value>
+    struct MapNode {
         Key key;
         Value value;
-        Entry* next{nullptr};
-        Entry(const Key& k, const Value& v): key(k), value(v) {}
-        Entry(Key&& k, Value&& v): key(std::move(k)), value(std::move(v)) {}
+
+        MapNode* next = nullptr;
+
+        MapNode(const Key& k, const Value& v) : key(k), value(v) {}
+        MapNode(Key&& k, Value&& v) : key(std::move(k)), value(std::move(v)) {}
     };
 
-    Entry* head{nullptr};
-    std::size_t count{0};
-    Compare cmp;
+    template<typename Key, typename Value>
+    class MapIterator {
+    public:
+        //-----------STL compatibility header-----------
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = Value;
+        using difference_type = std::ptrdiff_t;
+        using pointer = value_type*;
+        using reference = value_type&;
+        //-----------STL compatibility header-----------
 
-    void clear_impl() {
-        Entry* cur = head;
-        while (cur) { Entry* n = cur->next; delete cur; cur = n; }
-        head = nullptr; count = 0;
-    }
-};
+        MapIterator() : node{nullptr} {}
+        MapIterator(MapNode<Key, Value>* node) : node{node} {}
 
-template<typename Key, typename Value, typename Compare = std::less<Key>>
-class Map : protected MapBase<Key, Value, Compare> {
-public:
-    using Pair = std::pair<Key, Value>;
-    Map() = default;
-    ~Map() { clear(); }
+        MapIterator& operator++() {
+            node = node->next;
 
-    using typename MapBase<Key, Value, Compare>::Entry;
-
-    void clear() { this->clear_impl(); }
-
-    std::size_t size() const { return this->count; }
-
-    Value* find(const Key& key) {
-        auto cur = this->head;
-        while (cur) {
-            if (!this->cmp(cur->key, key) && !this->cmp(key, cur->key)) return &cur->value;
-            cur = cur->next;
+            return *this;
         }
-        return nullptr;
-    }
 
-    void insert(const Key& key, const Value& value) {
-        Entry* prev = nullptr;
-        Entry* cur = this->head;
-        while (cur && this->cmp(cur->key, key)) { prev = cur; cur = cur->next; }
-        if (cur && !this->cmp(cur->key, key) && !this->cmp(key, cur->key)) { cur->value = value; return; }
-        Entry* e = new Entry(key, value);
-        if (!prev) { e->next = this->head; this->head = e; }
-        else { e->next = prev->next; prev->next = e; }
-        ++this->count;
-    }
+        MapIterator operator++(int) {
+            MapNode<Key, Value>* copy = node;
+            node = node->next;
 
-    void erase(const Key& key) {
-        Entry* prev = nullptr;
-        Entry* cur = this->head;
-        while (cur && (this->cmp(cur->key, key) || this->cmp(key, cur->key))) { prev = cur; cur = cur->next; }
-        if (!cur) return;
-        if (prev) prev->next = cur->next; else this->head = cur->next;
-        delete cur; --this->count;
-    }
+            return copy;
+        }
 
-    Value& operator[](const Key& key) {
-        Value* v = find(key);
-        if (v) return *v;
-        insert(key, Value());
-        return *find(key);
-    }
-};
+        reference operator*() {
+            return node->value;
+        }
 
-} // namespace KernelSTD
+        pointer operator->() {
+            return &node->value;
+        }
+
+        const Key& key() const {
+            return node->key;
+        }
+
+        pointer base() {
+            return &node->value;
+        }
+
+        const pointer base() const {
+            return &node->value;
+        }
+
+        MapNode<Key, Value>* baseNode() {
+            return node;
+        }
+
+        const MapNode<Key, Value>* baseNode() const {
+            return node;
+        }
+
+        bool operator==(const MapIterator& obj) {
+            return node == obj.baseNode();
+        }
+
+        bool operator!=(const MapIterator& obj) {
+            return !(*this == obj);
+        }
+
+    private:
+        MapNode<Key, Value>* node;
+    };
+
+    template<typename Key, typename Value, typename Compare = std::less<Key>>
+    class Map {
+    public:
+        using Iterator = MapIterator<Key, Value>;
+
+        Map() = default;
+        Map(std::initializer_list<std::pair<const Key, Value>> list);
+        Map(const Map& obj);
+        Map(Map&& obj);
+        ~Map();
+
+        Map& operator=(std::initializer_list<std::pair<const Key, Value>> list);
+        Map& operator=(const Map& obj);
+        Map& operator=(Map&& obj);
+
+        void copy(const Map& obj);
+        void swap(Map& obj);
+
+        size_t size() const;
+
+        Value* find(const Key& key);
+
+        void insert(const Key& key, const Value& value);
+        void erase(const Key& key);
+
+        Value& operator[](const Key& key);
+
+        void clear();
+
+        Iterator begin();
+        Iterator end();
+
+    private:
+        MapNode<Key, Value>* head = nullptr;
+        size_t count = 0;
+        Compare cmp;
+    };
+}
+
+#include <libkstd/impl/map_impl.thi>
