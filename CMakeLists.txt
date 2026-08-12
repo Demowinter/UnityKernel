@@ -152,6 +152,7 @@ add_custom_target(iso
 add_custom_target(run-bios
     COMMAND qemu-system-x86_64
     -cdrom ${CMAKE_BINARY_DIR}/kernel.iso -enable-kvm -cpu host
+    -serial stdio
 
     DEPENDS iso
 )
@@ -160,6 +161,7 @@ add_custom_target(run-bios-gdb
     COMMAND qemu-system-x86_64
     -cdrom ${CMAKE_BINARY_DIR}/kernel.iso -enable-kvm -cpu host
     -S -s
+    -serial stdio
 
     DEPENDS iso
 )
