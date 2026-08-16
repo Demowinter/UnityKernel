@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <libkernel/io.hpp>
+#include <cstddef>
 
 namespace Kernel::IO {
     namespace PMIO {
@@ -88,6 +89,15 @@ namespace Kernel::IO {
     }
 
     namespace Interrupt {
-
+        /*
+        //interrupt descriptor table
+        void load_idt(void* idt_ptr, size_t size) {
+            asm volatile (
+                "lidt (%0)"
+                :
+                : "r"(idt_ptr)
+            );
+        }
+        */
     }
 }

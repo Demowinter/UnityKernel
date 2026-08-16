@@ -40,6 +40,9 @@ namespace Kernel::IO {
     }
 
     namespace Interrupt {
-
+        /*
+        //interrupt descriptor table
+        void load_idt(void* idt_ptr, size_t size);
+        */
     }
 }
