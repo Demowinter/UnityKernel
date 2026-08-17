@@ -17,7 +17,6 @@ namespace Arch {
         }
 
         [[noreturn]] void halt() {
-            X86::CPU::interrupts(false);
             X86::CPU::halt();
         }
     }
