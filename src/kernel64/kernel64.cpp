@@ -1,24 +1,24 @@
 #include <cstdint>
 #include <cstddef>
-#include <libkrt/krt.hpp>
-#include <libkernel/cpu.hpp>
-#include <libkernel/memory.hpp>
-#include <libkernel/console.hpp>
+// #include <libkrt/krt.hpp>
+// #include <libkernel/cpu.hpp>
+// #include <libkernel/memory.hpp>
+// #include <libkernel/console.hpp>
 
 namespace Kernel {
     extern "C" void kernel64(uint64_t mbMagic, void* mbi) {
-        Console::clear();
+        // Console::clear();
 
-        Memory::initialize();
-        KernelRT::initialize();
+        // Memory::initialize();
+        // KernelRT::initialize();
 
-        CPU::Info info = CPU::cpuid(0);
+        // CPU::Info info = CPU::cpuid(0);
 
-        Console::print("CPU manufacturer: ");
-        Console::write(&info.ebx, sizeof(info) - sizeof(info.eax));
-        Console::newline();
+        // Console::print("CPU manufacturer: ");
+        // Console::write(&info.ebx, sizeof(info) - sizeof(info.eax));
+        // Console::newline();
 
-        Console::println("Started kernel64");
+        // Console::println("Started kernel64");
 
         // while (true) {}
         
