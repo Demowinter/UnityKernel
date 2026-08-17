@@ -1,7 +1,9 @@
 set(LIBARCH_SOURCES
     asm/boot.s
     cxx/cpu.cpp
-    cxx/io.cpp
+    cxx/pmio.cpp
+    cxx/mmio.cpp
+    cxx/interrupt.cpp
     cxx/api.cpp
 )
 

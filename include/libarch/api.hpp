@@ -7,9 +7,11 @@ namespace Arch {
     namespace CPU {
         KernelSTD::String manufacturer();
 
-        void interrupts(bool on);
-        bool interrupts();
-
         [[noreturn]] void halt();
+    }
+
+    namespace Interrupt {
+        void enable();
+        void disable();
     }
 }

@@ -30,7 +30,7 @@ namespace Kernel {
 
         KernelRT::finalize();
 
-        Arch::CPU::interrupts(false);
+        Arch::Interrupt::disable();
         Arch::CPU::halt();
     }
 }

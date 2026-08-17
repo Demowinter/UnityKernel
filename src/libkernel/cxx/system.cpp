@@ -15,7 +15,7 @@ namespace Kernel::System {
         Console::print("Reason: ", 0x0C);
         Console::println(what);
         
-        Arch::CPU::interrupts(false);
+        Arch::Interrupt::disable();
         Arch::CPU::halt();
     }
 }
