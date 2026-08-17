@@ -13,3 +13,6 @@ target_include_directories(libarch PRIVATE ${CMAKE_SOURCE_DIR}/include/)
 
 target_compile_options(libarch PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
 
+# Disable 80387 instructions for interrupt.cpp
+set_source_files_properties(cxx/interrupt.cpp PROPERTIES COMPILE_FLAGS "-mno-80387")
+

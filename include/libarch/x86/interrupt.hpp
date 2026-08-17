@@ -1,9 +1,36 @@
-#include <cstddef>
 #pragma once
+#include <cstddef>
+#include <cstdint>
 
 namespace Arch::X86::Interrupt {
     //interrupt descriptor table
+    struct IDTEntry {
+        uint16_t offset_low;
+        uint16_t selector;
+        uint8_t ist;
+        uint8_t type_attr;
+        uint16_t offset_mid;
+        uint32_t offset_high;
+        uint32_t zero;
+    } __attribute__((packed));
+
+    struct IDTPointer {
+        uint16_t limit;
+        uint64_t base;
+    } __attribute__((packed));
+
+    struct InterruptFrame {
+        uint64_t rip;
+        uint64_t cs;
+        uint64_t rflags;
+        uint64_t rsp;
+        uint64_t ss;
+    } __attribute__((packed));
+
+    void setGate(uint8_t num, uint64_t handler, uint16_t sel, uint8_t flags);
     void loadIDT(void* idt_ptr, size_t size);
+    void init();
+    void picRemap();
 
     void enable();
     void disable();
