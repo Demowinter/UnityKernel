@@ -1,8 +1,8 @@
 set(LIBKBASE_SOURCES
-    algo.cpp
-    math.cpp
-    memory.cpp
-    string.cpp
+    cxx/algo.cpp
+    cxx/math.cpp
+    cxx/memory.cpp
+    cxx/string.cpp
 )
 
 add_library(libkbase32 STATIC ${LIBKBASE_SOURCES})

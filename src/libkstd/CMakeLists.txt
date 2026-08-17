@@ -1,6 +1,6 @@
 set(LIBKSTD_SOURCES
-    assert.cpp
-    string.cpp
+    cxx/assert.cpp
+    cxx/string.cpp
 )
 
 add_library(libkstd32 STATIC ${LIBKSTD_SOURCES})

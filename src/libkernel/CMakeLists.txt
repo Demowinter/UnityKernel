@@ -1,7 +1,7 @@
 set(LIBKERNEL_SOURCES
-    memory.cpp
-    system.cpp
-    console.cpp
+    cxx/memory.cpp
+    cxx/system.cpp
+    cxx/console.cpp
 )
 
 add_library(libkernel32 STATIC ${LIBKERNEL_SOURCES})

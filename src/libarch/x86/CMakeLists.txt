@@ -1,8 +1,8 @@
 set(LIBARCH_SOURCES
     asm/boot.s
-    cpu.cpp
-    io.cpp
-    api.cpp
+    cxx/cpu.cpp
+    cxx/io.cpp
+    cxx/api.cpp
 )
 
 add_library(libarch STATIC ${LIBARCH_SOURCES})

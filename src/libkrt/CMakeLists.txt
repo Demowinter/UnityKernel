@@ -1,5 +1,5 @@
 set(LIBKRT_SOURCES
-    krt.cpp
+    cxx/krt.cpp
 )
 
 add_library(libkrt32 STATIC ${LIBKRT_SOURCES})

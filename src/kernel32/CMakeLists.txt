@@ -1,6 +1,6 @@
 set(KERNEL32_SOURCES
-    grub.cpp
-    kernel32.cpp
+    cxx/grub.cpp
+    cxx/kernel32.cpp
 )
 
 set(KERNEL32_LINK_LIBS
