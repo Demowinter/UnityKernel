@@ -1,5 +1,5 @@
 #include <string_view>
-#include <libkernel/cpu.hpp>
+#include <libarch/api.hpp>
 #include <libkernel/console.hpp>
 #include <libkernel/system.hpp>
 
@@ -15,7 +15,6 @@ namespace Kernel::System {
         Console::print("Reason: ", 0x0C);
         Console::println(what);
         
-        CPU::interrupts(false);
-        CPU::halt();
+        Arch::CPU::halt();
     }
 }
