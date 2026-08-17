@@ -1,7 +1,7 @@
 #include <cstddef>
 #include <libarch/x86/interrupt.hpp>
 
-namespace Arch::X86::Intrrupt {
+namespace Arch::X86::Interrupt {
     //interrupt descriptor table
     void loadIDT(void* idt_ptr, size_t size) {
         asm volatile (
