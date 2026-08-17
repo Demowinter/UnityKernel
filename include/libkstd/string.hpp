@@ -102,8 +102,10 @@ namespace KernelSTD {
         ConstReverseIterator rend() const;
 
         std::string_view view();
+        const std::string_view view() const;
 
         operator std::string_view();
+        operator const std::string_view() const;
 
     private:
         std::unique_ptr<char[]> buffer = nullptr;

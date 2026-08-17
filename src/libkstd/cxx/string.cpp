@@ -278,7 +278,15 @@ namespace KernelSTD {
         return std::string_view{buffer.get(), length};
     }
 
+    const std::string_view String::view() const {
+        return std::string_view{buffer.get(), length};
+    }
+
     String::operator std::string_view() {
+        return view();
+    }
+
+    String::operator const std::string_view() const {
         return view();
     }
 
