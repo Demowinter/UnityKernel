@@ -23,11 +23,6 @@ namespace Arch::X86::CPU {
         return KernelSTD::String(reinterpret_cast<char*>(mf), 12);
     }
 
-    void interrupts(bool on) {
-        if (on) asm("sti");
-        else asm("cli");
-    }
-
     [[noreturn]] void halt() {
         while (true) asm("hlt");
     }

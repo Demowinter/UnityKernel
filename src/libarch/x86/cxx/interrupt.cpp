@@ -10,4 +10,12 @@ namespace Arch::X86::Intrrupt {
             : "r"(idt_ptr)
         );
     }
+
+    void enable() {
+        asm("sti");
+    }
+
+    void disable() {
+        asm("cli");
+    }
 }

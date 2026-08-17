@@ -14,6 +14,5 @@ namespace Arch::X86::CPU {
 
     KernelSTD::String manufacturer(const Info& info);
 
-    void interrupts(bool on);
     [[noreturn]] void halt();
 }
