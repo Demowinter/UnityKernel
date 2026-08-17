@@ -1,7 +1,8 @@
 #include <cstddef>
 #include <cstdint>
-#include <libarch/x86/mmio.hpp>
+#include <libarch/x86/cpu.hpp>
 #include <libarch/x86/pmio.hpp>
+#include <libarch/x86/mmio.hpp>
 #include <libarch/x86/interrupt.hpp>
 
 namespace Arch::X86::Interrupt {
@@ -41,25 +42,35 @@ namespace Arch::X86::Interrupt {
     // --Handlers--
     __attribute__((interrupt))
     static void isr_div0(InterruptFrame*) {
-        asm volatile("cli; hlt");
+        disable();
+        CPU::halt();
     }
 
     __attribute__((interrupt))
     static void isr_breakpoint(InterruptFrame*) {
-        asm volatile("cli; hlt");
+        disable();
+        CPU::halt();
     }
 
     __attribute__((interrupt))
     static void isr_gpf(InterruptFrame*, unsigned int error_code) {
-        asm volatile("cli; hlt");
+        disable();
+        CPU::halt();
     }
 
     __attribute__((interrupt))
     static void isr_page_fault(InterruptFrame*, unsigned int error_code) {
         uint32_t faultAddr;
-        asm volatile("movl %%cr2, %0" : "=r"(faultAddr));
+
+        asm volatile(
+            "movl %%cr2, %0"
+            : "=r"(faultAddr)
+        );
+
         (void)faultAddr; // Mark as intentionally used for fault handling
-        asm volatile("cli; hlt");
+
+        disable();
+        CPU::halt();
     }
 
     __attribute__((interrupt))
@@ -77,7 +88,8 @@ namespace Arch::X86::Interrupt {
         setGate(32, reinterpret_cast<uint64_t>(irq_timer), 0x08, 0x8E);
 
         loadIDT(entries, sizeof(entries));
-        asm volatile("sti");
+
+        enable();
     }
 
     void enable() {
