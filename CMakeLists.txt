@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.25)
 project(UnityKernel LANGUAGES CXX ASM)
 
+set(TARGET_ARCH x86)
+
 set(KERNEL_COMPILE_FLAGS
     -O2
     -g
@@ -23,101 +25,71 @@ set(KERNEL_LINK_FLAGS
     -g
 )
 
-set(KERNEL64_SOURCES 
-    src/kernel64/asm/boot.s
-    src/kernel64/kernel64.cpp
-)
+add_subdirectory(src/kernel32)
+add_subdirectory(src/libarch)
+add_subdirectory(src/libkernel)
+add_subdirectory(src/libkbase)
+add_subdirectory(src/libkrt)
+add_subdirectory(src/libkstd)
 
-set(KERNEL32_SOURCES 
-    src/kernel32/asm/boot.s
-    src/kernel32/grub.cpp
-    src/kernel32/kernel32.cpp
-)
+# set(KERNEL64_SOURCES 
+#     src/kernel64/asm/boot.s
+#     src/kernel64/kernel64.cpp
+# )
 
-set(KERNEL64_LINK_LIBS
-    "$<LINK_GROUP:RESCAN,libkstd64,libkbase64,libkrt64,libkernel64>"
-    gcc
-)
 
-set(KERNEL32_LINK_LIBS
-    "$<LINK_GROUP:RESCAN,libkstd32,libkbase32,libkrt32,libkernel32>"
-    gcc
-)
 
-add_executable(kernel64 ${KERNEL64_SOURCES})
-add_executable(kernel32 ${KERNEL32_SOURCES})
+# set(KERNEL64_LINK_LIBS
+#     "$<LINK_GROUP:RESCAN,libkstd64,libkbase64,libkrt64,libkernel64,libx86_64>"
+#     gcc
+# )
 
-target_include_directories(kernel64 PRIVATE "include/")
-target_include_directories(kernel32 PRIVATE "include/")
 
-target_compile_options(kernel64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
-target_compile_options(kernel32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
 
-target_link_options(kernel64 PRIVATE ${KERNEL_LINK_FLAGS} -m64 -T ${CMAKE_SOURCE_DIR}/linker/kernel64.ld)
-target_link_options(kernel32 PRIVATE ${KERNEL_LINK_FLAGS} -m32 -T ${CMAKE_SOURCE_DIR}/linker/kernel32.ld)
+# add_executable(kernel64 ${KERNEL64_SOURCES})
 
-target_link_libraries(kernel64 PRIVATE ${KERNEL64_LINK_LIBS})
-target_link_libraries(kernel32 PRIVATE ${KERNEL32_LINK_LIBS})
 
-set(LIBKERNEL_SOURCES
-    src/libkernel/cpu.cpp
-    src/libkernel/memory.cpp
-    src/libkernel/io.cpp
-    src/libkernel/system.cpp
-    src/libkernel/console.cpp
-)
+# target_include_directories(kernel64 PRIVATE "include/")
 
-set(LIBKBASE_SOURCES
-    src/libkbase/algo.cpp
-    src/libkbase/math.cpp
-    src/libkbase/memory.cpp
-    src/libkbase/string.cpp
-)
+# target_compile_options(kernel64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
 
-set(LIBKRT_SOURCES
-    src/libkrt/krt.cpp
-)
+# target_link_options(kernel64 PRIVATE ${KERNEL_LINK_FLAGS} -m64 -T ${CMAKE_SOURCE_DIR}/linker/kernel64.ld)
 
-set(LIBKSTD_SOURCES
-    src/libkstd/assert.cpp
-    src/libkstd/string.cpp
-)
+# target_link_libraries(kernel64 PRIVATE ${KERNEL64_LINK_LIBS})
 
-add_library(libkernel64 STATIC ${LIBKERNEL_SOURCES})
-add_library(libkernel32 STATIC ${LIBKERNEL_SOURCES})
-add_library(libkbase64 STATIC ${LIBKBASE_SOURCES})
-add_library(libkbase32 STATIC ${LIBKBASE_SOURCES})
-add_library(libkrt64 STATIC ${LIBKRT_SOURCES})
-add_library(libkrt32 STATIC ${LIBKRT_SOURCES})
-add_library(libkstd64 STATIC ${LIBKSTD_SOURCES})
-add_library(libkstd32 STATIC ${LIBKSTD_SOURCES})
 
-target_include_directories(libkernel64 PRIVATE "include/")
-target_include_directories(libkernel32 PRIVATE "include/")
-target_include_directories(libkbase64 PRIVATE "include/")
-target_include_directories(libkbase32 PRIVATE "include/")
-target_include_directories(libkrt64 PRIVATE "include/")
-target_include_directories(libkrt32 PRIVATE "include/")
-target_include_directories(libkstd64 PRIVATE "include/")
-target_include_directories(libkstd32 PRIVATE "include/")
 
-target_compile_options(libkernel64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
-target_compile_options(libkernel32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
-target_compile_options(libkbase64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
-target_compile_options(libkbase32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
-target_compile_options(libkrt64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
-target_compile_options(libkrt32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
-target_compile_options(libkstd64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
-target_compile_options(libkstd32 PRIVATE ${KERNEL_COMPILE_FLAGS} -m32)
 
-set_target_properties(libkernel64 PROPERTIES PREFIX "")
-set_target_properties(libkernel32 PROPERTIES PREFIX "")
-set_target_properties(libkbase64 PROPERTIES PREFIX "")
-set_target_properties(libkbase32 PROPERTIES PREFIX "")
-set_target_properties(libkrt64 PROPERTIES PREFIX "")
-set_target_properties(libkrt32 PROPERTIES PREFIX "")
-set_target_properties(libkstd64 PROPERTIES PREFIX "")
-set_target_properties(libkstd32 PROPERTIES PREFIX "")
+
+
+
+
+
+
+
+# add_library(libx86_64 STATIC ${LIBX86_SOURCES})
+# add_library(libkernel64 STATIC ${LIBKERNEL_SOURCES})
+# add_library(libkbase64 STATIC ${LIBKBASE_SOURCES})
+# add_library(libkrt64 STATIC ${LIBKRT_SOURCES})
+# add_library(libkstd64 STATIC ${LIBKSTD_SOURCES})
+
+# target_include_directories(libx86_64 PRIVATE "include/")
+# target_include_directories(libkernel64 PRIVATE "include/")
+# target_include_directories(libkbase64 PRIVATE "include/")
+# target_include_directories(libkrt64 PRIVATE "include/")
+# target_include_directories(libkstd64 PRIVATE "include/")
+
+# target_compile_options(libx86_64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
+# target_compile_options(libkernel64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
+# target_compile_options(libkbase64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
+# target_compile_options(libkrt64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
+# target_compile_options(libkstd64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
+
+# set_target_properties(libx86_64 PROPERTIES PREFIX "")
+# set_target_properties(libkernel64 PROPERTIES PREFIX "")
+# set_target_properties(libkbase64 PROPERTIES PREFIX "")
+# set_target_properties(libkrt64 PROPERTIES PREFIX "")
+# set_target_properties(libkstd64 PROPERTIES PREFIX "")
 
 
 add_custom_target(iso
@@ -132,9 +104,9 @@ add_custom_target(iso
         $<TARGET_FILE:kernel32>
         ${CMAKE_BINARY_DIR}/iso/boot/kernel32
 
-    COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:kernel64>
-        ${CMAKE_BINARY_DIR}/iso/boot/kernel64
+    # COMMAND ${CMAKE_COMMAND} -E copy
+    #     $<TARGET_FILE:kernel64>
+    #     ${CMAKE_BINARY_DIR}/iso/boot/kernel64
 
     COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_SOURCE_DIR}/grub.cfg
@@ -146,7 +118,7 @@ add_custom_target(iso
 
     DEPENDS
         kernel32
-        kernel64
+        # kernel64
 )
 
 add_custom_target(run-bios
