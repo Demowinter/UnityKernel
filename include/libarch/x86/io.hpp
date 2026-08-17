@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace Kernel::IO {
+namespace Arch::X86::IO {
     namespace PMIO {
         template<typename Type>
         Type read(uint16_t port);

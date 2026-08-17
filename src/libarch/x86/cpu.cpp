@@ -1,9 +1,9 @@
 #include <cstdint>
 #include <libkernel/memory.hpp>
-#include <libkernel/cpu.hpp>
 #include <libkstd/string.hpp>
+#include <libarch/x86/cpu.hpp>
 
-namespace Kernel::CPU {
+namespace Arch::X86::CPU {
     Info cpuid(uint32_t leaf) {
         Info info;
 
@@ -18,10 +18,7 @@ namespace Kernel::CPU {
     }
 
     KernelSTD::String manufacturer(const Info& info) {
-        uint32_t* mf = new uint32_t[3];
-        mf[0] = info.ebx;
-        mf[1] = info.edx;
-        mf[2] = info.ecx;
+        uint32_t mf[3] = {info.ebx, info.edx, info.ecx};
 
         return KernelSTD::String(reinterpret_cast<char*>(mf), 12);
     }

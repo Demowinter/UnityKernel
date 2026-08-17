@@ -1,8 +1,7 @@
 #include <cstdint>
-#include <libkernel/io.hpp>
-#include <cstddef>
+#include <libarch/x86/io.hpp>
 
-namespace Kernel::IO {
+namespace Arch::X86::IO {
     namespace PMIO {
         template<>
         uint8_t read<uint8_t>(uint16_t port) {

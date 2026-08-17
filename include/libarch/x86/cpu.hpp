@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <libkstd/string.hpp>
 
-namespace Kernel::CPU {
+namespace Arch::X86::CPU {
     struct Info {
         uint32_t eax;
         uint32_t ebx;
