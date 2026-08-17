@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <cstdint>
 #include <libarch/x86/io.hpp>
 
@@ -88,15 +89,13 @@ namespace Arch::X86::IO {
     }
 
     namespace Interrupt {
-        /*
         //interrupt descriptor table
-        void load_idt(void* idt_ptr, size_t size) {
+        void loadIDT(void* idt_ptr, size_t size) {
             asm volatile (
                 "lidt (%0)"
                 :
                 : "r"(idt_ptr)
             );
         }
-        */
     }
 }

@@ -40,9 +40,7 @@ namespace Arch::X86::IO {
     }
 
     namespace Interrupt {
-        /*
         //interrupt descriptor table
-        void load_idt(void* idt_ptr, size_t size);
-        */
+        void loadIDT(void* idt_ptr, size_t size);
     }
 }
