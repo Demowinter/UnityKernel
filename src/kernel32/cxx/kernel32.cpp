@@ -7,6 +7,8 @@
 #include <libkernel/memory.hpp>
 #include <libkernel/console.hpp>
 #include <kernel32/grub.hpp>
+#include <libkstd/function.hpp>
+#include <libkstd/string.hpp>
 
 namespace Kernel {
     extern "C" [[noreturn]] void kernel32(uint32_t mbMagic, GRUB::MultibootInfo* mbInfo) {
@@ -27,6 +29,11 @@ namespace Kernel {
 
         Console::print("Welcome to ");
         Console::println("UnityKernel! v0.1.0-alpha", 5);
+
+        KernelSTD::String str = "Hello, World!";
+        KernelSTD::Function<void()> func = [str](){ Console::ok(str); };
+
+        func();
 
         KernelRT::finalize();
 
