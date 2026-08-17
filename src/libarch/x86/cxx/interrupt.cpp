@@ -40,25 +40,25 @@ namespace Arch::X86::Interrupt {
     }
 
     // --Handlers--
-    __attribute__((interrupt))
+    [[gnu::interrupt]]
     static void isr_div0(InterruptFrame*) {
         disable();
         CPU::halt();
     }
 
-    __attribute__((interrupt))
+    [[gnu::interrupt]]
     static void isr_breakpoint(InterruptFrame*) {
         disable();
         CPU::halt();
     }
 
-    __attribute__((interrupt))
+    [[gnu::interrupt]]
     static void isr_gpf(InterruptFrame*, unsigned int error_code) {
         disable();
         CPU::halt();
     }
 
-    __attribute__((interrupt))
+    [[gnu::interrupt]]
     static void isr_page_fault(InterruptFrame*, unsigned int error_code) {
         uint32_t faultAddr;
 
@@ -73,7 +73,7 @@ namespace Arch::X86::Interrupt {
         CPU::halt();
     }
 
-    __attribute__((interrupt))
+    [[gnu::interrupt]]
     static void irq_timer(InterruptFrame*) {
         // Handle timer interrupt
         Arch::X86::PMIO::write<uint8_t>(0x20, 0x20); // send EOI to master PIC
