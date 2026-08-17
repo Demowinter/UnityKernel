@@ -3,5 +3,5 @@ build_dir/
 tests/
 include/libkstd/old/
 .cache/
-build.sh/
+build.sh
 .fd
