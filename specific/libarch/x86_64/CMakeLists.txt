@@ -7,7 +7,12 @@ set(LIBARCH_SOURCES
     cxx/api.cpp
 )
 
-set(KERNEL_COMPILE_FLAGS_EXTRA -m64 PARENT_SCOPE)
+set(KERNEL_ARCH_FLAGS
+    -mno-red-zone
+    -m64
+)
+
+set(KERNEL_ARCH_FLAGS ${KERNEL_ARCH_FLAGS} PARENT_SCOPE)
 
 add_library(libarch STATIC ${LIBARCH_SOURCES})
 

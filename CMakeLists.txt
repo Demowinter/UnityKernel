@@ -18,10 +18,7 @@ set(KERNEL_COMPILE_FLAGS
     -fno-builtin
     -fno-asynchronous-unwind-tables
     -fno-unwind-tables
-    -mno-red-zone
 )
-
-set(KERNEL_COMPILE_FLAGS_EXTRA)
 
 set(KERNEL_LINK_FLAGS
     -no-pie
@@ -112,3 +109,14 @@ add_custom_target(run-uefi-gdb
 
     DEPENDS iso
 )
+
+# add_custom_target(run-arm64
+#     COMMAND qemu-system-arm
+#     -machine virt
+#     -m 128M
+#     -device loader,file=${CMAKE_BINARY_DIR}/portable/kernel/kernel
+#     -S
+#     -gdb tcp::1234
+
+#     DEPENDS iso
+# )
