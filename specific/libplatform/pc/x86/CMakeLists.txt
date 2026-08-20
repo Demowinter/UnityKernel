@@ -2,6 +2,7 @@ add_subdirectory(boot/${TARGET_BOOTLOADER}/)
 
 set(LIBPLATFORM_SOURCES
     ${BOOTLOADER_SOURCES};
+    cxx/api.cpp
 )
 
 add_library(libplatform STATIC ${LIBPLATFORM_SOURCES})
