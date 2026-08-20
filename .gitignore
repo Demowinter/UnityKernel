@@ -3,5 +3,6 @@ build_dir/
 tests/
 include/libkstd/old/
 .cache/
+linker/
 build.sh
 .fd
