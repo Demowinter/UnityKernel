@@ -60,14 +60,12 @@ namespace Arch::X86::Interrupt {
 
     [[gnu::interrupt]]
     static void isr_page_fault(InterruptFrame*, unsigned int error_code) {
-        uint32_t faultAddr;
+        [[maybe_unused]] uint32_t faultAddr;
 
         asm volatile(
             "movl %%cr2, %0"
             : "=r"(faultAddr)
         );
-
-        (void)faultAddr; // Mark as intentionally used for fault handling
 
         disable();
         CPU::halt();
