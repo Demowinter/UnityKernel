@@ -38,65 +38,6 @@ add_subdirectory(portable/libkbase)
 add_subdirectory(portable/libkrt)
 add_subdirectory(portable/libkstd)
 
-# set(KERNEL64_SOURCES 
-#     src/kernel64/asm/boot.s
-#     src/kernel64/kernel64.cpp
-# )
-
-
-
-# set(KERNEL64_LINK_LIBS
-#     "$<LINK_GROUP:RESCAN,libkstd64,libkbase64,libkrt64,libkernel64,libx86_64>"
-#     gcc
-# )
-
-
-
-# add_executable(kernel64 ${KERNEL64_SOURCES})
-
-
-# target_include_directories(kernel64 PRIVATE "include/")
-
-# target_compile_options(kernel64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
-
-# target_link_options(kernel64 PRIVATE ${KERNEL_LINK_FLAGS} -m64 -T ${CMAKE_SOURCE_DIR}/linker/kernel64.ld)
-
-# target_link_libraries(kernel64 PRIVATE ${KERNEL64_LINK_LIBS})
-
-
-
-
-
-
-
-
-
-
-
-# add_library(libx86_64 STATIC ${LIBX86_SOURCES})
-# add_library(libkernel64 STATIC ${LIBKERNEL_SOURCES})
-# add_library(libkbase64 STATIC ${LIBKBASE_SOURCES})
-# add_library(libkrt64 STATIC ${LIBKRT_SOURCES})
-# add_library(libkstd64 STATIC ${LIBKSTD_SOURCES})
-
-# target_include_directories(libx86_64 PRIVATE "include/")
-# target_include_directories(libkernel64 PRIVATE "include/")
-# target_include_directories(libkbase64 PRIVATE "include/")
-# target_include_directories(libkrt64 PRIVATE "include/")
-# target_include_directories(libkstd64 PRIVATE "include/")
-
-# target_compile_options(libx86_64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
-# target_compile_options(libkernel64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
-# target_compile_options(libkbase64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
-# target_compile_options(libkrt64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
-# target_compile_options(libkstd64 PRIVATE ${KERNEL_COMPILE_FLAGS} -m64)
-
-# set_target_properties(libx86_64 PROPERTIES PREFIX "")
-# set_target_properties(libkernel64 PROPERTIES PREFIX "")
-# set_target_properties(libkbase64 PROPERTIES PREFIX "")
-# set_target_properties(libkrt64 PROPERTIES PREFIX "")
-# set_target_properties(libkstd64 PROPERTIES PREFIX "")
-
 
 add_custom_target(iso
     COMMAND ${CMAKE_COMMAND} -E make_directory

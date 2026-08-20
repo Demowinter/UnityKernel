@@ -12,11 +12,11 @@ add_executable(kernel ${KERNEL_SOURCES})
 
 target_include_directories(kernel PRIVATE ${CMAKE_SOURCE_DIR}/include/)
 
-target_compile_options(kernel PRIVATE ${KERNEL_COMPILE_FLAGS} ${KERNEL_COMPILE_FLAGS_EXTRA})
+target_compile_options(kernel PRIVATE ${KERNEL_COMPILE_FLAGS} ${KERNEL_ARCH_FLAGS})
 
 target_link_options(kernel PRIVATE
     ${KERNEL_LINK_FLAGS}
-    ${KERNEL_COMPILE_FLAGS_EXTRA}
+    ${KERNEL_ARCH_FLAGS}
     -T ${CMAKE_SOURCE_DIR}/specific/libplatform/${TARGET_PLATFORM}/${TARGET_ARCH}/linker/link.ld
 )
 

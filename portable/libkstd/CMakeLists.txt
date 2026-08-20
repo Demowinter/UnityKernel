@@ -7,6 +7,6 @@ add_library(libkstd STATIC ${LIBKSTD_SOURCES})
 
 target_include_directories(libkstd PRIVATE ${CMAKE_SOURCE_DIR}/include/)
 
-target_compile_options(libkstd PRIVATE ${KERNEL_COMPILE_FLAGS} ${KERNEL_COMPILE_FLAGS_EXTRA})
+target_compile_options(libkstd PRIVATE ${KERNEL_COMPILE_FLAGS} ${KERNEL_ARCH_FLAGS})
 
 set_target_properties(libkstd PROPERTIES PREFIX "")
