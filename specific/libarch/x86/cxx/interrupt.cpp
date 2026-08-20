@@ -1,3 +1,4 @@
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <libarch/x86/cpu.hpp>
@@ -6,7 +7,7 @@
 #include <libarch/x86/interrupt.hpp>
 
 namespace Arch::X86::Interrupt {
-    static IDTEntry entries[256];
+    static std::array<IDTEntry, 256> entries;
 
     void setGate(uint8_t num, uint64_t handler, uint16_t sel, uint8_t flags) {
         entries[num] = {
@@ -85,7 +86,7 @@ namespace Arch::X86::Interrupt {
         setGate(14, reinterpret_cast<uint64_t>(isr_page_fault), 0x08, 0x8E);
         setGate(32, reinterpret_cast<uint64_t>(irq_timer), 0x08, 0x8E);
 
-        loadIDT(entries, sizeof(entries));
+        loadIDT(entries.data(), sizeof(entries));
 
         enable();
     }
