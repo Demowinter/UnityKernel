@@ -41,14 +41,7 @@ namespace Kernel::Memory {
 
                 uintptr_t heapDataAddr = initMemory(heapStartAddr, heapEndAddr);
 
-                if (heapDataAddr) {
-                    Console::ok("Memory subsystem initialized");
-                    Console::info("Heap starts on: 0x", false);
-
-                    std::unique_ptr<char[]> buffer{new char[16]};
-                    Console::println(ltoa(heapDataAddr, buffer.get(), 16));
-                }
-
+                if (heapDataAddr) Console::ok("Memory subsystem initialized");
                 else Console::fail("Memory subsystem initialization failed");
             }
 
