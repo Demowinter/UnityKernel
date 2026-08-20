@@ -17,7 +17,7 @@ target_compile_options(kernel PRIVATE ${KERNEL_COMPILE_FLAGS} ${KERNEL_ARCH_FLAG
 target_link_options(kernel PRIVATE
     ${KERNEL_LINK_FLAGS}
     ${KERNEL_ARCH_FLAGS}
-    -T ${CMAKE_SOURCE_DIR}/specific/libplatform/${TARGET_PLATFORM}/${TARGET_ARCH}/linker/link.ld
+    -T ${CMAKE_SOURCE_DIR}/specific/libplatform/${TARGET_PLATFORM}/${TARGET_ARCH}/link.ld
 )
 
 target_link_libraries(kernel PRIVATE ${KERNEL_LINK_LIBS})
