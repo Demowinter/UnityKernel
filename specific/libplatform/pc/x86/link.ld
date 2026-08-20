@@ -6,18 +6,18 @@ ENTRY(_start)
 SECTIONS {
     . = 1M;
 
-    .text ALIGN(16) : {
+    .text : ALIGN(16) {
         *(.multiboot)
         *(.text)
     }
 
-    .rodata ALIGN(16) : {*(.rodata)}
+    .rodata : ALIGN(16) {*(.rodata)}
 
-    .data ALIGN(16) : {*(.data)}
+    .data : ALIGN(16) {*(.data)}
 
-    .dso ALIGN(16) : {__dso_handle = .;}
+    .dso : ALIGN(16) {__dso_handle = .;}
 
-    .init_array ALIGN(16) : {
+    .init_array : ALIGN(16) {
         __init_array_start = .;
 
         KEEP(*(SORT(.init_array.*)))
@@ -26,12 +26,12 @@ SECTIONS {
         __init_array_end = .;
     }
 
-    .bss ALIGN(16) : {
+    .bss : ALIGN(16) {
         *(COMMON)
-        *(.bss)
+        *(.bss*)
     }
 
-    .heap ALIGN(16) (NOLOAD) : {
+    .heap (NOLOAD) : ALIGN(16) {
         __heap_start = .;
 
         . += 1M;
@@ -40,7 +40,7 @@ SECTIONS {
         __heap_end = .;
     }
 
-    .stack ALIGN(16) (NOLOAD) : {
+    .stack (NOLOAD) : ALIGN(16) {
         __stack_bottom = .;
 
         . += 32K;
