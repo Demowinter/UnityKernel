@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.25)
 project(UnityKernel LANGUAGES CXX ASM)
 
 set(TARGET_ARCH x86)
+set(TARGET_PLATFORM pc)
+set(TARGET_BOOTLOADER grub)
 
 set(KERNEL_COMPILE_FLAGS
     -O2
@@ -19,18 +21,22 @@ set(KERNEL_COMPILE_FLAGS
     -mno-red-zone
 )
 
+set(KERNEL_COMPILE_FLAGS_EXTRA)
+
 set(KERNEL_LINK_FLAGS
     -no-pie
     -nostdlib
     -g
 )
 
-add_subdirectory(src/kernel32)
-add_subdirectory(src/libarch)
-add_subdirectory(src/libkernel)
-add_subdirectory(src/libkbase)
-add_subdirectory(src/libkrt)
-add_subdirectory(src/libkstd)
+add_subdirectory(specific/libarch/${TARGET_ARCH}/)
+add_subdirectory(specific/libplatform/${TARGET_PLATFORM}/${TARGET_ARCH}/)
+
+add_subdirectory(portable/kernel)
+add_subdirectory(portable/libkernel)
+add_subdirectory(portable/libkbase)
+add_subdirectory(portable/libkrt)
+add_subdirectory(portable/libkstd)
 
 # set(KERNEL64_SOURCES 
 #     src/kernel64/asm/boot.s
@@ -97,12 +103,12 @@ add_custom_target(iso
         ${CMAKE_BINARY_DIR}/iso/boot/grub
 
     COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:kernel32>
-        ${CMAKE_BINARY_DIR}/iso/boot/kernel32
+        $<TARGET_FILE:kernel>
+        ${CMAKE_BINARY_DIR}/iso/boot/kernel
 
     COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:kernel32>
-        ${CMAKE_BINARY_DIR}/iso/boot/kernel32
+        $<TARGET_FILE:kernel>
+        ${CMAKE_BINARY_DIR}/iso/boot/kernel
 
     # COMMAND ${CMAKE_COMMAND} -E copy
     #     $<TARGET_FILE:kernel64>
@@ -117,7 +123,7 @@ add_custom_target(iso
         ${CMAKE_BINARY_DIR}/iso
 
     DEPENDS
-        kernel32
+        kernel
         # kernel64
 )
 

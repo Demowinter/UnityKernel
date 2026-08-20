@@ -11,7 +11,7 @@
 #include <libkstd/string.hpp>
 
 namespace Kernel {
-    extern "C" [[noreturn]] void kernel32(uint32_t mbMagic, GRUB::MultibootInfo* mbInfo) {
+    extern "C" [[noreturn]] void kernelMain(uint32_t mbMagic, GRUB::MultibootInfo* mbInfo) {
         Console::info("Starting kernel32...");
 
         Memory::initialize();
