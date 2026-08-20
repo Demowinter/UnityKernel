@@ -5,7 +5,7 @@
 
 namespace Arch {
     void initialize() {
-        
+        X86::Interrupt::init();
     }
 
     namespace CPU {
