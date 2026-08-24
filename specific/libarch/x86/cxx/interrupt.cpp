@@ -9,20 +9,18 @@
 namespace Arch::X86::Interrupt {
     static std::array<IDTEntry, 256> entries;
 
-    void setGate(uint8_t num, uint64_t handler, uint16_t sel, uint8_t flags) {
+    void setGate(uint8_t num, uint32_t handler, uint16_t sel, uint8_t flags) {
         entries[num] = {
             .offset_low = static_cast<uint16_t>(handler & 0xFFFF),
             .selector = sel,
-            .ist = 0,
+            .zero = 0,
             .type_attr = flags,
-            .offset_mid = static_cast<uint16_t>((handler >> 16) & 0xFFFF),
-            .offset_high = static_cast<uint32_t>((handler >> 32) & 0xFFFFFFFF),
-            .zero = 0
+            .offset_high = static_cast<uint16_t>((handler >> 16) & 0xFFFF)
         };
     }
 
     void loadIDT(void* idt_ptr, size_t size) {
-        IDTPointer idt_pointer { static_cast<uint16_t>(size - 1), reinterpret_cast<uint64_t>(idt_ptr) };
+        IDTPointer idt_pointer { static_cast<uint16_t>(size - 1), reinterpret_cast<uint32_t>(idt_ptr) };
         asm volatile("lidt %0" : : "m"(idt_pointer));
     }
 
@@ -36,8 +34,10 @@ namespace Arch::X86::Interrupt {
         write<uint8_t>(0xA1, 0x02);
         write<uint8_t>(0x21, 0x01);
         write<uint8_t>(0xA1, 0x01);
-        write<uint8_t>(0x21, 0x0);
-        write<uint8_t>(0xA1, 0x0);
+        //Do not dispatch a hardware interrupt before its driver has registered
+        //a valid IDT entry and explicitly unmasks the corresponding IRQ.
+        write<uint8_t>(0x21, 0xFF);
+        write<uint8_t>(0xA1, 0xFF);
     }
 
     // --Handlers--
@@ -80,11 +80,11 @@ namespace Arch::X86::Interrupt {
 
     void init() {
         picRemap();
-        setGate(0, reinterpret_cast<uint64_t>(isr_div0), 0x08, 0x8E);
-        setGate(3, reinterpret_cast<uint64_t>(isr_breakpoint), 0x08, 0x8E);
-        setGate(13, reinterpret_cast<uint64_t>(isr_gpf), 0x08, 0x8E);
-        setGate(14, reinterpret_cast<uint64_t>(isr_page_fault), 0x08, 0x8E);
-        setGate(32, reinterpret_cast<uint64_t>(irq_timer), 0x08, 0x8E);
+        setGate(0, reinterpret_cast<uint32_t>(isr_div0), 0x08, 0x8E);
+        setGate(3, reinterpret_cast<uint32_t>(isr_breakpoint), 0x08, 0x8E);
+        setGate(13, reinterpret_cast<uint32_t>(isr_gpf), 0x08, 0x8E);
+        setGate(14, reinterpret_cast<uint32_t>(isr_page_fault), 0x08, 0x8E);
+        setGate(32, reinterpret_cast<uint32_t>(irq_timer), 0x08, 0x8E);
 
         loadIDT(entries.data(), sizeof(entries));
 
