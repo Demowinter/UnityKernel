@@ -18,7 +18,7 @@ header_end:
 
 .global _start
 
-.extern kernelMain
+.extern unibootMain
 
 .extern __stack_top
 
@@ -28,7 +28,7 @@ _start:
     push %ebx
     push %eax
 
-    call kernelMain
+    call unibootMain
 
     cli
 
