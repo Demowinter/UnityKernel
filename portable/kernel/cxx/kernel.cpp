@@ -6,9 +6,9 @@
 #include <libkrt/krt.hpp>
 #include <libkernel/memory.hpp>
 #include <libkernel/console.hpp>
-#include <kernel/grub.hpp>
 #include <libkstd/function.hpp>
 #include <libkstd/string.hpp>
+#include <libgrub/multiboot.hpp>
 
 namespace Kernel {
     extern "C" [[noreturn]] void kernelMain(uint32_t mbMagic, GRUB::MultibootInfo* mbInfo) {
