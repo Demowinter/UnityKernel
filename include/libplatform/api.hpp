@@ -2,21 +2,41 @@
 #include <string_view>
 
 namespace Platform {
-    // Hardware Description Provider
+    enum class FirmwareType {
+        ROMFW,
+        BIOS,
+        UEFI
+    };
+
+    enum class BootloaderType {
+        NONE,
+        GRUB,
+        UBOOT,
+        LIMINE,
+        SYSDBOOT
+    };
+
+    // Hardware Description Type
     enum class HDType {
         ACPI,
         DeviceTree,
-        Bootloader
+        Firmware
     };
 
-    void initialize();
+    struct BootInfo {
+        FirmwareType firmware;
+        BootloaderType bootloader;
+
+    };
+
+    bool initialize();
 
     HDType descriptionType();
 
     bool hasPCI();
     bool hasUSB();
 
-    void bootInfo();
+    BootInfo bootInfo();
 
     void shutdown();
     void reboot();
