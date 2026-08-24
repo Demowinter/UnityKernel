@@ -6,7 +6,7 @@
 #include <libkrt/krt.hpp>
 #include <libkernel/memory.hpp>
 #include <libkernel/console.hpp>
-#include <kernel32/grub.hpp>
+#include <kernel/grub.hpp>
 #include <libkstd/function.hpp>
 #include <libkstd/string.hpp>
 

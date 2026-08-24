@@ -1,5 +1,5 @@
 #include <cstdint>
-#include <kernel32/grub.hpp>
+#include <kernel/grub.hpp>
 
 namespace Kernel::GRUB {
     bool checkMultiboot(uint32_t magic)  {
