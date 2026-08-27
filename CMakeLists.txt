@@ -31,10 +31,9 @@ add_subdirectory(specific/libplatform/${TARGET_PLATFORM}/${TARGET_ARCH}/)
 add_subdirectory(specific/uniboot/${TARGET_ARCH}/${TARGET_BOOTLOADER})
 
 add_subdirectory(portable/kernel)
-add_subdirectory(portable/libkernel)
-add_subdirectory(portable/libkbase)
-add_subdirectory(portable/libkrt)
-add_subdirectory(portable/libkstd)
+add_subdirectory(portable/libbase)
+add_subdirectory(portable/librt)
+add_subdirectory(portable/libstd)
 add_subdirectory(portable/libgrub)
 # add_subdirectory(portable/libkstd)
 
@@ -64,6 +63,7 @@ add_custom_target(iso
         ${CMAKE_BINARY_DIR}/iso
 
     DEPENDS
+        uniboot
         kernel
         # kernel64
 )
