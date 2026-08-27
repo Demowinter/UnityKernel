@@ -5,9 +5,9 @@
 #include <utility>
 #include <iterator>
 #include <cstddef>
-#include <libkstd/iterator.hpp>
+#include <libstd/iterator.hpp>
 
-namespace KernelSTD {
+namespace STDLib {
     class String {
     public:
         using Iterator = NormalIterator<char*>;

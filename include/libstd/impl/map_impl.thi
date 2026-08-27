@@ -1,4 +1,4 @@
-namespace KernelSTD {
+namespace STDLib {
 
     template<typename Key, typename Value, typename Compare>
     Map<Key, Value, Compare>::Map(std::initializer_list<std::pair<const Key, Value>> list) {

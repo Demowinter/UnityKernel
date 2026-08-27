@@ -1,7 +1,7 @@
 #pragma once
-#include <libkrt/krt.hpp>
+#include <librt/runtime.hpp>
 
-namespace KernelSTD {
+namespace STDLib {
     template<typename Type>
     Vector<Type>::Vector(size_t size) {
         resize(size);
@@ -93,7 +93,7 @@ namespace KernelSTD {
 
     template<typename Type>
     Type& Vector<Type>::at(size_t index) {
-        if (index >= buffSize) KernelRT::abort("KernelSTD::Vector::at()", "invalid index");
+        if (index >= buffSize) CXXRuntime::abort("CXXRuntime::Vector::at()", "invalid index");
 
         return buffer[index];
     }

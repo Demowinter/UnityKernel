@@ -5,7 +5,7 @@
 #include <initializer_list>
 #include <iterator>
 
-namespace KernelSTD {
+namespace STDLib {
     template<typename Key, typename Value>
     struct MapNode {
         Key key;

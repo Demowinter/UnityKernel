@@ -2,7 +2,7 @@
 #include <memory>
 #include <type_traits>
 
-namespace KernelSTD {
+namespace STDLib {
     template<typename Ret, typename... Args>
     struct CallableBase {
         virtual Ret invoke(Args... args) = 0;

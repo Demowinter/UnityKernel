@@ -1,6 +1,6 @@
 #pragma once
 
-namespace KernelSTD {
+namespace STDLib {
     template<typename Type>
     LinkedList<Type>::LinkedList(const Type& data, size_t size) {
         insert(begin(), data, size);

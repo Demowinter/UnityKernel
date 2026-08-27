@@ -4,7 +4,7 @@
 #include <iterator>
 #include <cstddef>
 
-namespace KernelSTD {
+namespace STDLib {
     template<typename Type>
     struct LinkedNode {
         Type value;

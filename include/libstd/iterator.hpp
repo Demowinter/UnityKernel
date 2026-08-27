@@ -1,7 +1,7 @@
 #pragma once
 #include <iterator>
 
-namespace KernelSTD {
+namespace STDLib {
     template<typename It>
     class NormalIterator {
     public:

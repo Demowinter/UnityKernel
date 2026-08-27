@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <iterator>
 #include <cstddef>
-#include <libkstd/iterator.hpp>
+#include <libstd/iterator.hpp>
 
-namespace KernelSTD {
+namespace STDLib {
     template<typename Type>
     class Vector {
     public:
