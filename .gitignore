@@ -1,7 +1,7 @@
 build/
 build_dir/
 tests/
-include/libkstd/old/
+include/libstd/old/
 .cache/
 linker/
 build.sh
