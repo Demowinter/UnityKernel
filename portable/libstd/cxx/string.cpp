@@ -2,12 +2,12 @@
 #include <optional>
 #include <utility>
 #include <cstddef>
-#include <libkbase/string.hpp> // strlen()
-#include <libkbase/memory.hpp> // memset(), memcpy(), memmove(), memcmp()
-#include <libkrt/krt.hpp>
-#include <libkstd/string.hpp>
+#include <libbase/string.hpp> // strlen()
+#include <libbase/memory.hpp> // memset(), memcpy(), memmove(), memcmp()
+#include <librt/runtime.hpp>
+#include <libstd/string.hpp>
 
-namespace KernelSTD {
+namespace STDLib {
     String::String(const char* str) { insert(0, str); }
     String::String(const char* str, size_t size) { insert(0, str, size); }
     String::String(char ch, size_t size) { insert(0, ch, size); }
@@ -97,7 +97,7 @@ namespace KernelSTD {
     }
 
     char& String::at(size_t index) {
-        if (index >= length) KernelRT::abort("KernelSTD::String::at()", "invalid index");
+        if (index >= length) CXXRuntime::abort("STDLib::String::at()", "invalid index");
 
         return buffer[index];
     }

@@ -1,7 +1,7 @@
 #include <string_view>
-#include <libkernel/console.hpp>
+#include <kernel/console.hpp>
 
-namespace KernelSTD {
+namespace STDLib {
     void assert(bool condition, std::string_view name) {
         if (condition) Kernel::Console::ok(name);
         else Kernel::Console::fail(name);
