@@ -1,9 +1,9 @@
 #include <string_view>
 #include <cstddef>
 #include <cstdint>
-#include <libkernel/memory.hpp>
-#include <libkernel/system.hpp>
-#include <libkrt/krt.hpp>
+#include <libenv/memory.hpp>
+#include <libenv/system.hpp>
+#include <librt/runtime.hpp>
 
 using ConstructorFunc = void(*)();
 using ExitFunc = void(*)(void*);
@@ -43,7 +43,7 @@ extern "C" {
     }
 
     void __cxa_guard_abort(int64_t* guardObject) {
-        KernelRT::abort("__cxa_guard_abort()", "error while constructing the object");
+        CXXRuntime::abort("__cxa_guard_abort()", "error while constructing the object");
     }
 
     int __cxa_atexit(ExitFunc func, void* param, void* dso) {
@@ -74,44 +74,44 @@ extern "C" {
 // C API
 extern "C" {
     [[noreturn]] void abort() {
-        KernelRT::abort("C::abort()", "abnormal program termination");
+        CXXRuntime::abort("C::abort()", "abnormal program termination");
     }
 }
 
 // C++ API
 namespace std {
     [[noreturn]] void terminate() {
-        KernelRT::abort("std::terminate()", "unrecoverable C++ runtime failure");
+        CXXRuntime::abort("std::terminate()", "unrecoverable C++ runtime failure");
     }
 }
 
 // C++ memory API
 void* operator new(size_t size) {
-    return Kernel::Memory::allocate(size);
+    return ENV::Memory::allocate(size);
 }
 
 void* operator new[](size_t size) {
-    return Kernel::Memory::allocate(size);
+    return ENV::Memory::allocate(size);
 }
 
 void operator delete(void* ptr) {
-    Kernel::Memory::deallocate(ptr);
+    ENV::Memory::deallocate(ptr);
 }
 
 void operator delete(void* ptr, size_t) {
-    Kernel::Memory::deallocate(ptr);
+    ENV::Memory::deallocate(ptr);
 }
 
 void operator delete[](void* ptr) {
-    Kernel::Memory::deallocate(ptr);
+    ENV::Memory::deallocate(ptr);
 }
 
 void operator delete[](void* ptr, size_t) {
-    Kernel::Memory::deallocate(ptr);
+    ENV::Memory::deallocate(ptr);
 }
 
 // Kernel Runtime API
-namespace KernelRT {
+namespace CXXRuntime {
     void initialize() {
         for (auto ctor = __init_array_start; ctor != __init_array_end; ctor++) (*ctor)();
     }
@@ -121,7 +121,7 @@ namespace KernelRT {
     }
 
     [[noreturn]] void abort(std::string_view what) {
-        abort("KernelRT::abort()", what);
+        abort("CXXRuntime::abort()", what);
     }
 
     [[noreturn]] void abort(std::string_view who, std::string_view what) {
@@ -133,6 +133,6 @@ namespace KernelRT {
             finalize();
         }
 
-        Kernel::System::panic(who, what);
+        ENV::System::panic(who, what);
     }
 }
