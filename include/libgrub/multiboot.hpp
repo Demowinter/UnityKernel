@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace Kernel::GRUB {
+namespace GRUB {
     constexpr uint32_t multibootMagic = 0x36D76289;
 
     struct MultibootInfo {
