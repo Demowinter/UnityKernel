@@ -1,4 +1,4 @@
-#include <libkstd/string.hpp>
+#include <libstd/string.hpp>
 #include <libarch/x86/cpu.hpp>
 #include <libarch/x86/interrupt.hpp>
 #include <libarch/api.hpp>
@@ -9,7 +9,7 @@ namespace Arch {
     }
 
     namespace CPU {
-        KernelSTD::String manufacturer() {
+        STDLib::String manufacturer() {
             return X86::CPU::manufacturer(X86::CPU::cpuid(0));
         }
 

@@ -7,7 +7,7 @@ namespace Arch {
     }
 
     namespace CPU {
-        KernelSTD::String manufacturer() {
+        STDLib::String manufacturer() {
             return {};
         }
 

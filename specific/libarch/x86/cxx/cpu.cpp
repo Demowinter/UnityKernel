@@ -1,6 +1,6 @@
 #include <cstdint>
-#include <libkernel/memory.hpp>
-#include <libkstd/string.hpp>
+#include <kernel/memory.hpp>
+#include <libstd/string.hpp>
 #include <libarch/x86/cpu.hpp>
 
 namespace Arch::X86::CPU {
@@ -17,10 +17,10 @@ namespace Arch::X86::CPU {
         return info;
     }
 
-    KernelSTD::String manufacturer(const Info& info) {
+    STDLib::String manufacturer(const Info& info) {
         uint32_t mf[3] = {info.ebx, info.edx, info.ecx};
 
-        return KernelSTD::String(reinterpret_cast<char*>(mf), 12);
+        return STDLib::String(reinterpret_cast<char*>(mf), 12);
     }
 
     [[noreturn]] void halt() {
