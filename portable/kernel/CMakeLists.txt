@@ -1,9 +1,13 @@
 set(KERNEL_SOURCES
+    cxx/memory.cpp
+    cxx/system.cpp
+    cxx/console.cpp
+    cxx/envapi.cpp
     cxx/kernel.cpp
 )
 
 set(KERNEL_LINK_LIBS
-    "$<LINK_GROUP:RESCAN,libkstd,libkbase,libkrt,libkernel,libgrub,libplatform,libarch>"
+    "$<LINK_GROUP:RESCAN,libstd,libbase,librt,libgrub,libplatform,libarch>"
     gcc
 )
 
@@ -16,7 +20,7 @@ target_compile_options(kernel PRIVATE ${TARGET_COMPILE_FLAGS} ${TARGET_ARCH_FLAG
 target_link_options(kernel PRIVATE
     ${TARGET_LINK_FLAGS}
     ${TARGET_ARCH_FLAGS}
-    -T ${TARGET_LINK_SCRIPT}
+    -T ${TARGET_KERNEL_LINK_SCRIPT}
 )
 
 target_link_libraries(kernel PRIVATE ${KERNEL_LINK_LIBS})
