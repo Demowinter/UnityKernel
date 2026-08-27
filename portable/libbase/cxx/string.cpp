@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <libkbase/string.hpp>
+#include <libbase/string.hpp>
 
 extern "C" {
     size_t strlen(const char* str) {

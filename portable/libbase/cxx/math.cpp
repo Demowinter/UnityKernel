@@ -1,5 +1,5 @@
 #include <cstdint>
-#include <libkbase/math.hpp>
+#include <libbase/math.hpp>
 
 extern "C" {
     bool isPowerOfTwo(uint64_t value) {

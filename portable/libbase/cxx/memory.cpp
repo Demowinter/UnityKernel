@@ -1,7 +1,7 @@
 #include <cstddef>
 #include <cstdint>
-#include <libkernel/memory.hpp>
-#include <libkbase/memory.hpp>
+#include <libenv/memory.hpp>
+#include <libbase/memory.hpp>
 
 extern "C" {
     void* memset(void* dest, uint8_t byte, size_t size) {
@@ -27,11 +27,11 @@ extern "C" {
     }
 
     void* malloc(size_t size) {
-        return Kernel::Memory::allocate(size);
+        return ENV::Memory::allocate(size);
     }
 
     void free(void* ptr) {
-        Kernel::Memory::deallocate(ptr);
+        ENV::Memory::deallocate(ptr);
     }
 
     int memcmp(const void* ptr1, const void* ptr2, size_t size) {
