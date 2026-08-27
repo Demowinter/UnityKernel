@@ -2,9 +2,9 @@
 #include <type_traits>
 #include <cstddef>
 #include <cstdint>
-#include <libkbase/algo.hpp>
-#include <libkernel/console.hpp>
-#include <libkernel/memory.hpp>
+#include <libbase/algo.hpp>
+#include <kernel/console.hpp>
+#include <kernel/memory.hpp>
 
 namespace Kernel::Memory {
     namespace {

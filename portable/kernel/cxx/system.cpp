@@ -1,7 +1,7 @@
 #include <string_view>
 #include <libarch/api.hpp>
-#include <libkernel/console.hpp>
-#include <libkernel/system.hpp>
+#include <kernel/console.hpp>
+#include <kernel/system.hpp>
 
 namespace Kernel::System {
     [[noreturn]] void panic(std::string_view who, std::string_view what) {
