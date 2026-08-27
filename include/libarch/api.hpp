@@ -1,11 +1,11 @@
 #pragma once
-#include <libkstd/string.hpp>
+#include <libstd/string.hpp>
 
 namespace Arch {
     void initialize();
 
     namespace CPU {
-        KernelSTD::String manufacturer();
+        STDLib::String manufacturer();
 
         [[noreturn]] void halt();
     }

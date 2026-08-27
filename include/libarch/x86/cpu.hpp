@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include <libkstd/string.hpp>
+#include <libstd/string.hpp>
 
 namespace Arch::X86::CPU {
     struct Info {
@@ -12,7 +12,7 @@ namespace Arch::X86::CPU {
 
     Info cpuid(uint32_t leaf);
 
-    KernelSTD::String manufacturer(const Info& info);
+    STDLib::String manufacturer(const Info& info);
 
     [[noreturn]] void halt();
 }
