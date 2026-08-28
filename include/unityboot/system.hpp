@@ -1,6 +1,6 @@
 #pragma once
 #include <string_view>
 
-namespace UniBoot::System {
+namespace UnityBoot::System {
     [[noreturn]] void panic(std::string_view who, std::string_view what);
 }

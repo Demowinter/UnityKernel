@@ -1,9 +1,9 @@
 #include <string_view>
 #include <cstddef>
 #include <cstdint>
-#include <uniboot/console.hpp>
+#include <unityboot/console.hpp>
 
-namespace UniBoot::Console {
+namespace UnityBoot::Console {
     static uint16_t* video = reinterpret_cast<uint16_t*>(0xB8000);
     static uint16_t cursor = 0;
 

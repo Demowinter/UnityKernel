@@ -1,11 +1,11 @@
 #include <libgrub/multiboot.hpp>
 #include <libarch/api.hpp>
-#include <uniboot/protocol.hpp>
-#include <uniboot/console.hpp>
+#include <unityboot/protocol.hpp>
+#include <unityboot/console.hpp>
 
-namespace UniBoot {
-    extern "C" [[noreturn]] void unibootMain(uint32_t mbMagic, GRUB::MultibootInfo* mbInfo) {
-        Console::info("Hello from UniBoot!");
+namespace UnityBoot {
+    extern "C" [[noreturn]] void unityBootMain(uint32_t mbMagic, GRUB::MultibootInfo* mbInfo) {
+        Console::info("Hello from UnityBoot!");
 
         if (!GRUB::checkMultiboot(mbMagic)) {
             Console::fail("Multiboot structure is corrupted");

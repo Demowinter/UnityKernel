@@ -28,7 +28,7 @@ set(TARGET_LINK_FLAGS
 
 add_subdirectory(specific/libarch/${TARGET_ARCH}/)
 add_subdirectory(specific/libplatform/${TARGET_PLATFORM}/${TARGET_ARCH}/)
-add_subdirectory(specific/uniboot/${TARGET_ARCH}/${TARGET_BOOTLOADER})
+add_subdirectory(specific/unityboot/${TARGET_ARCH}/${TARGET_BOOTLOADER})
 
 add_subdirectory(portable/kernel)
 add_subdirectory(portable/libbase)
@@ -47,8 +47,8 @@ add_custom_target(iso
         ${CMAKE_BINARY_DIR}/iso/boot/kernel
 
     COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:uniboot>
-        ${CMAKE_BINARY_DIR}/iso/boot/uniboot
+        $<TARGET_FILE:unityboot>
+        ${CMAKE_BINARY_DIR}/iso/boot/unityboot
 
     # COMMAND ${CMAKE_COMMAND} -E copy
     #     $<TARGET_FILE:kernel64>
@@ -63,7 +63,7 @@ add_custom_target(iso
         ${CMAKE_BINARY_DIR}/iso
 
     DEPENDS
-        uniboot
+        unityboot
         kernel
         # kernel64
 )

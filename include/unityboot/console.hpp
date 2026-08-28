@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace UniBoot::Console {
+namespace UnityBoot::Console {
     constexpr uint32_t rows = 25;
     constexpr uint32_t columns = 80;
     constexpr uint32_t screenSize = rows * columns;
