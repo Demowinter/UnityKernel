@@ -31,6 +31,8 @@ namespace STDLib {
 
     public:
         Function() = default;
+        Function(const Function& obj) = delete;
+        Function(Function&& obj) { swap(obj); }
 
         template<typename Functor>
         Function(Functor obj) {
@@ -39,11 +41,23 @@ namespace STDLib {
             functor = std::unique_ptr<CallableObject>{new CallableObject{obj}};
         }
 
+        void swap(Function& obj) {
+            std::swap(functor, obj.functor);
+        }
+
         Ret operator()(Args... args) {
             return functor->invoke(args...);
         }
 
+        explicit operator bool() const {
+            return static_cast<bool>(functor);
+        }
+
+        void clear() {
+            functor = nullptr;
+        }
+
     private:
-        std::unique_ptr<CB> functor;
+        std::unique_ptr<CB> functor = nullptr;
     };
 }
