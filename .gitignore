@@ -4,5 +4,7 @@ tests/
 include/libstd/old/
 .cache/
 linker/
+out /
 build.sh
 .fd
+kernel.iso

@@ -1,0 +1,7 @@
+.git
+.gitignore
+build
+build_dir
+.cache
+*.fd
+qemu.log
