@@ -23,9 +23,9 @@ struct ExitEntry {
 
 constexpr size_t maxGuards = 128;
 
-static std::atomic_flag guardListLock;
-static std::array<uint64_t*, maxGuards> guardKeys;
-static std::array<std::atomic_int8_t, maxGuards> guardLocks;
+[[maybe_unused]] static std::atomic_flag guardListLock;
+[[maybe_unused]] static std::array<uint64_t*, maxGuards> guardKeys;
+[[maybe_unused]] static std::array<std::atomic_int8_t, maxGuards> guardLocks;
 
 static ExitEntry* exitListEnd = nullptr;
 
