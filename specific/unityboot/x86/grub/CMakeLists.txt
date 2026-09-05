@@ -2,8 +2,12 @@ set(UNITYBOOT_SOURCES
     asm/boot.s
     cxx/console.cpp
     cxx/system.cpp
-    cxx/envapi.cpp
     cxx/unityboot.cpp
+    ${CMAKE_SOURCE_DIR}/portable/kernel/cxx/console.cpp
+    ${CMAKE_SOURCE_DIR}/portable/kernel/cxx/memory.cpp
+    ${CMAKE_SOURCE_DIR}/portable/kernel/cxx/system.cpp
+    ${CMAKE_SOURCE_DIR}/portable/kernel/cxx/envapi.cpp
+    ${CMAKE_SOURCE_DIR}/portable/kernel/cxx/kernel.cpp
 )
 
 set(UNITYBOOT_LINK_LIBS
