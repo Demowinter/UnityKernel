@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     libc6-dev-i386 \
     linux-libc-dev \
     nasm \
+    mtools\
     xorriso \
     grub-pc-bin \
     grub-common \
