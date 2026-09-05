@@ -3,8 +3,6 @@
 #include <unityboot/protocol.hpp>
 #include <unityboot/console.hpp>
 
-extern "C" [[noreturn]] void kernelMain(uint32_t mbMagic, GRUB::MultibootInfo* mbInfo);
-
 namespace UnityBoot {
     extern "C" [[noreturn]] void unityBootMain(uint32_t mbMagic, GRUB::MultibootInfo* mbInfo) {
         Console::info("Hello from UnityBoot!");
@@ -18,6 +16,7 @@ namespace UnityBoot {
 
         Console::ok("Multiboot structure is OK");
 
-        kernelMain(mbMagic, mbInfo);
+        Arch::Interrupt::disable();
+        Arch::CPU::halt();
     }
 }
