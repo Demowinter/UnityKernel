@@ -1,6 +1,9 @@
+#include <array>
+#include <atomic>
 #include <string_view>
 #include <cstddef>
 #include <cstdint>
+#include <libarch/api.hpp>
 #include <libenv/memory.hpp>
 #include <libenv/system.hpp>
 #include <librt/runtime.hpp>
@@ -18,6 +21,12 @@ struct ExitEntry {
     ExitEntry* prev;
 };
 
+constexpr size_t maxGuards = 128;
+
+static std::atomic_flag guardListLock;
+static std::array<uint64_t*, maxGuards> guardKeys;
+static std::array<std::atomic_int8_t, maxGuards> guardLocks;
+
 static ExitEntry* exitListEnd = nullptr;
 
 // C++ symbols
@@ -29,6 +38,8 @@ extern "C" {
 // C++ ABI
 extern "C" {
     int __cxa_guard_acquire(int64_t* guardObject) {
+        // while (guardListLock.test_and_set(std::memory_order_acquire));
+
         // lock(mutex)
 
         if (*guardObject) return 0;
@@ -74,7 +85,7 @@ extern "C" {
 // C API
 extern "C" {
     [[noreturn]] void abort() {
-        CXXRuntime::abort("C::abort()", "abnormal program termination");
+        CXXRuntime::abort("::abort()", "abnormal program termination");
     }
 }
 
