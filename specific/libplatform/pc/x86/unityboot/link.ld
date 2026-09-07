@@ -48,4 +48,6 @@ SECTIONS {
 
         __stack_top = .;
     }
+
+    .endsect : {__sections_end = .;}
 }
