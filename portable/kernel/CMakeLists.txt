@@ -7,7 +7,7 @@ set(KERNEL_SOURCES
 )
 
 set(KERNEL_LINK_LIBS
-    "$<LINK_GROUP:RESCAN,libstd,libbase,librt,libgrub,libplatform,libarch>"
+    "$<LINK_GROUP:RESCAN,libstd,libbase,librt,libgrub,liblltools,libplatform,libarch>"
     gcc
 )
 
