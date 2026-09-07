@@ -1,12 +1,12 @@
 #pragma once
-// #include <cstddef>
+#include <cstddef>
 
-// namespace Kernel::Memory {
-//     constexpr size_t heapAlignment = 16;
-//     constexpr size_t minBlockSize = 32;
+namespace UnityBoot::Memory {
+    constexpr size_t heapAlignment = 16;
+    constexpr size_t minBlockSize = 32;
 
-//     void initialize();
+    void initialize();
 
-//     void* allocate(size_t size);
-//     void deallocate(void* ptr);
-// }
+    void* allocate(size_t size);
+    void deallocate(void* ptr);
+}

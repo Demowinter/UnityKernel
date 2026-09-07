@@ -1,13 +1,14 @@
 set(UNITYBOOT_SOURCES
     asm/boot.s
     cxx/console.cpp
+    cxx/memory.cpp
     cxx/system.cpp
     cxx/envapi.cpp
     cxx/unityboot.cpp
 )
 
 set(UNITYBOOT_LINK_LIBS
-    "$<LINK_GROUP:RESCAN,libstd,libbase,librt,libgrub,libplatform,libarch>"
+    "$<LINK_GROUP:RESCAN,libstd,libbase,librt,libgrub,liblltools,libplatform,libarch>"
     gcc
 )
 

@@ -50,12 +50,11 @@ namespace ENV {
 
     namespace Memory {
         void* allocate(size_t size) {
-            // return UnityBoot::Memory::allocate(size);
-            return nullptr;
+            return UnityBoot::Memory::allocate(size);
         }
 
         void deallocate(void* ptr) {
-            // UnityBoot::Memory::deallocate(ptr);
+            UnityBoot::Memory::deallocate(ptr);
         }
     }
 
