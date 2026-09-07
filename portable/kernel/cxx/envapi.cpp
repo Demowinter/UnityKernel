@@ -50,11 +50,11 @@ namespace ENV {
 
     namespace Memory {
         void* allocate(size_t size) {
-            return Kernel::Memory::allocate(size);
+            return Kernel::Memory::allocateBasic(size);
         }
 
         void deallocate(void* ptr) {
-            Kernel::Memory::deallocate(ptr);
+            Kernel::Memory::deallocateBasic(ptr);
         }
     }
 
