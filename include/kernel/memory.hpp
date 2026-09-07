@@ -7,6 +7,6 @@ namespace Kernel::Memory {
 
     void initialize();
 
-    void* allocate(size_t size);
-    void deallocate(void* ptr);
+    void* allocateBasic(size_t size);
+    void deallocateBasic(void* ptr);
 }
