@@ -31,21 +31,5 @@ SECTIONS {
         *(.bss*)
     }
 
-    .heap (NOLOAD) : ALIGN(16) {
-        __heap_start = .;
-
-        . += 1M;
-        .  = ALIGN(16);
-
-        __heap_end = .;
-    }
-
-    .stack (NOLOAD) : ALIGN(16) {
-        __stack_bottom = .;
-
-        . += 32K;
-        .  = ALIGN(16); /* stack top ALWAYS must be aligned of 16 bytes! */
-
-        __stack_top = .;
-    }
+    .endsect : {__sections_end = .;}
 }
