@@ -10,7 +10,7 @@ namespace UnityBoot {
         Memory::initialize();
         Console::info("Hello from UnityBoot!");
 
-        if (!GRUB::checkMultiboot(mbMagic)) {
+        if (!GRUB::checkMultiboot(mbMagic, mbInfo)) {
             Console::fail("Multiboot structure is corrupted");
 
             Arch::Interrupt::disable();

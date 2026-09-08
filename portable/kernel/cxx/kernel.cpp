@@ -17,7 +17,7 @@ namespace Kernel {
         // Memory::initialize();
         CXXRuntime::initialize();
 
-        if (!GRUB::checkMultiboot(mbMagic)) Console::info("Multiboot structure is corrupted");
+        if (!GRUB::checkMultiboot(mbMagic, mbInfo)) Console::info("Multiboot structure is corrupted");
         else Console::info("Multiboot structure is OK");
 
         Console::info("CPU manufacturer: ", false);
