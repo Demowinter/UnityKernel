@@ -1,7 +1,10 @@
 .git
-.gitignore
+.github
 build
+out
+*.iso
+qemu.log
+.gitignore
 build_dir
 .cache
 *.fd
-qemu.log

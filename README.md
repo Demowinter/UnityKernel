@@ -47,6 +47,11 @@ docker run --rm -v "$PWD/out:/out" unitykernel \
 	sh -c 'cp build/kernel.iso /out/kernel.iso'
 ```
 
+The image is multi-architecture: the same commands work on Intel/AMD x86
+hosts and Apple Silicon Macs. Docker runs the Debian build environment for the
+host architecture, while the kernel is always cross-compiled for 32-bit x86.
+On Apple Silicon, Docker Desktop must have its Linux virtualization enabled.
+
 ### Run on Any System
 
 Run this command from the project directory. QEMU opens its normal graphical
@@ -97,6 +102,7 @@ continuations with the PowerShell backtick.
 Build the kernel and create `kernel.iso` in a reproducible container:
 
 ```sh
+mkdir -p out
 docker build -t unitykernel .
 docker run --rm -v "$PWD/out:/out" unitykernel \
 	sh -c 'cp build/kernel.iso /out/kernel.iso'
