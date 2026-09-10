@@ -127,17 +127,17 @@ namespace STDLib {
     bool operator!=(const String& lhs, char rhs);
     bool operator!=(char lhs, const String& rhs);
 
-    String to_string(int8_t value);
-    String to_string(uint8_t value);
+    String toString(int8_t value, int base = 10);
+    String toString(uint8_t value, int base = 10);
 
-    String to_string(int16_t value);
-    String to_string(uint16_t value);
+    String toString(int16_t value, int base = 10);
+    String toString(uint16_t value, int base = 10);
 
-    String to_string(int32_t value);
-    String to_string(uint32_t value);
+    String toString(int32_t value, int base = 10);
+    String toString(uint32_t value, int base = 10);
 
-    String to_string(int64_t value);
-    String to_string(uint64_t value);
+    String toString(int64_t value, int base = 10);
+    String toString(uint64_t value, int base = 10);
     
-    String to_string(float value);
+    String toString(float value);
 }

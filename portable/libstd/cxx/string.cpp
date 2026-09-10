@@ -344,45 +344,45 @@ namespace STDLib {
         return !(lhs == rhs);
     }
 
-    String to_string(int8_t value) {
-        return to_string(int64_t{value});
+    String toString(int8_t value, int base) {
+        return toString(int64_t{value}, base);
     }
     
-    String to_string(uint8_t value) {
-        return to_string(uint64_t{value});
+    String toString(uint8_t value, int base) {
+        return toString(uint64_t{value}, base);
     }
 
-    String to_string(int16_t value) {
-        return to_string(int64_t{value});
+    String toString(int16_t value, int base) {
+        return toString(int64_t{value}, base);
     }
     
-    String to_string(uint16_t value) {
-        return to_string(uint64_t{value});
+    String toString(uint16_t value, int base) {
+        return toString(uint64_t{value}, base);
     }
 
-    String to_string(int32_t value) {
-        return to_string(int64_t{value});
+    String toString(int32_t value, int base) {
+        return toString(int64_t{value}, base);
     }
     
-    String to_string(uint32_t value) {
-        return to_string(uint64_t{value});
+    String toString(uint32_t value, int base) {
+        return toString(uint64_t{value}, base);
     }
     
-    String to_string(int64_t value) {
+    String toString(int64_t value, int base) {
         char buf[256] = {0};
-        itoa(value, buf, 10);
+        itoa(value, buf, base);
 
         return String{buf};
     }
     
-    String to_string(uint64_t value) {
+    String toString(uint64_t value, int base) {
         char buf[256] = {0};
-        utoa(value, buf, 10);
+        utoa(value, buf, base);
 
         return String{buf};
     }
     
-    String to_string(float value) {
+    String toString(float value) {
         char buf[256] = {0};
         ftoa(value, buf, 10);
 
