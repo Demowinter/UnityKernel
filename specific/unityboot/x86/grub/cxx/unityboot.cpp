@@ -19,9 +19,16 @@ namespace UnityBoot {
 
         Console::ok("Multiboot structure is OK");
 
-        {
-            STDLib::String string = "Hello, World!";
-            Console::info(string);
+        GRUB::MultibootParser parser{mbInfo};
+        
+        for (auto& tag : parser) {
+            Console::info("MBTag: ", false);
+            Console::println(STDLib::to_string(static_cast<int32_t>(tag.type)));
+
+            if (tag.type == GRUB::MultibootTagType::CommandLine) {
+                Console::info("[CommandLine] ", false);
+                Console::println(STDLib::String{reinterpret_cast<const char*>(&tag + 1)});
+            }
         }
 
         Arch::Interrupt::disable();
