@@ -1,10 +1,11 @@
 #pragma once
+#include <optional>
 #include <cstddef>
 #include <cstdint>
 #include <elf.h>
 
 namespace ELF {
-    enum class ELFArch : uint8_t {
+    enum class ELFClass : uint8_t {
         NONE,
         ELF32,
         ELF64
@@ -64,9 +65,14 @@ namespace ELF {
         RISCV       = 243U
     };
 
-    enum class ELFVersion : uint32_t {
+    enum class ELFVersion : uint8_t {
         NONE,
         CURRENT
+    };
+
+    enum class ELFProgramType : uint32_t {
+        NONE,
+
     };
 
     enum class ELFSectionType : uint32_t {
@@ -105,12 +111,12 @@ namespace ELF {
 
     struct ELFIdent {
         uint8_t magic[4];
-        ELFArch arch;
+        ELFClass elfclass;
         ELFEndian endian;
         ELFVersion version;
         ELFABI abi;
         uint8_t abiversion;
-        uint8_t padding;
+        uint8_t padding[7];
     };
 
     struct ELFHeader {
@@ -118,9 +124,9 @@ namespace ELF {
         ELFType type;
         ELFMachine machine;
         ELFVersion version;
-        uintptr_t entry;    // Entry point function virtual address
-        size_t phoff;       // Program header table offset
-        size_t shoff;       // Section header table offset
+        uint64_t entry;    // Entry point function virtual address
+        uint64_t phoff;       // Program header table offset
+        uint64_t shoff;       // Section header table offset
         uint32_t flags;     // Processor-specific flags
         uint16_t ehsize;    // ELF header size in bytes
         uint16_t phentsize; // Program header table entry size
@@ -131,20 +137,27 @@ namespace ELF {
     };
 
     struct ELFProgramHeader {
-
+        ELFProgramType type;
+        uint32_t flags;
+        uint64_t offset;
+        uint64_t vaddr;
+        uint64_t paddr;
+        uint64_t fsize;
+        uint64_t msize;
+        uint64_t align;
     };
 
     struct ELFSectionHeader {
         uint32_t name;
         ELFSectionType type;
-        size_t flags;
-        uintptr_t addr;
-        size_t offset;
-        size_t size;
+        uint64_t flags;
+        uint64_t addr;
+        uint64_t offset;
+        uint64_t size;
         uint32_t link;
         uint32_t info;
-        size_t addralign;
-        size_t entsize;
+        uint64_t addralign;
+        uint64_t entsize;
     };
 
     // class ELFProgramIterator {
@@ -159,33 +172,37 @@ namespace ELF {
     // private:
     // };
 
-    class ELFProgramParser {
-    public:
+    // class ELFProgramParser {
+    // public:
 
-    private:
-        size_t phoff;     // Program header table offset
+    // private:
+    //     size_t phoff;     // Program header table offset
 
-        uint16_t phentsize; // Program header table entry size
-        uint16_t phnum;     // Program header table entry count
-    };
+    //     uint16_t phentsize; // Program header table entry size
+    //     uint16_t phnum;     // Program header table entry count
+    // };
 
-    class ELFSectionParser {
-    public:
+    // class ELFSectionParser {
+    // public:
 
-    private:
-        size_t shoff;     // Section header table offset
+    // private:
+    //     size_t shoff;     // Section header table offset
 
-        uint16_t shentsize; // Section header table entry size
-        uint16_t shnum;     // Section header table entry count
-    };
+    //     uint16_t shentsize; // Section header table entry size
+    //     uint16_t shnum;     // Section header table entry count
+    // };
 
-    class ELFHeaderParser {
-    public:
+    // class ELFHeaderParser {
+    // public:
 
-    private:
-        ELFIdent ident;
-        ELFHeader header;
-    };
+    // private:
+    //     ELFIdent ident;
+    //     ELFHeader header;
+    // };
+
+    std::optional<ELFHeader> parseHeader(void* addr);
+    ELFProgramHeader parseProgramHeader(void* addr, ELFClass elfclass);
+    ELFSectionHeader parseSectionHeader(void* addr, ELFClass elfclass);
 
     class ELFLoader {
 
