@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cstdint>
 #include <libbase/memory.hpp>
 #include <liblltools/cursor.hpp>
 

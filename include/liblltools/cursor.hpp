@@ -1,6 +1,7 @@
 #pragma once
 #include <type_traits>
 #include <cstddef>
+#include <cstdint>
 
 namespace LLTools {
     class Cursor {
