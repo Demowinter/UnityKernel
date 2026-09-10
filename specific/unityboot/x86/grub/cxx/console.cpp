@@ -92,4 +92,13 @@ namespace UnityBoot::Console {
 
         if (newline) Console::newline();
     }
+
+    //Not used in unityboot, but defined for linking
+    void onKeyPress(uint8_t scancode, bool shift, bool ctrl, bool alt) {
+        (void)scancode;  // Unused
+        (void)shift;
+        (void)ctrl;
+        (void)alt;
+        //Bootloader doesn't handle keyboard input
+    }
 }

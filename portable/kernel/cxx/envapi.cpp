@@ -46,6 +46,10 @@ namespace ENV {
         void fail(std::string_view str, bool newline) {
             Kernel::Console::fail(str, newline);
         }
+
+        void onKeyPress(uint8_t scancode, bool shift, bool ctrl, bool alt) {
+            Kernel::Console::onKeyPress(scancode, shift, ctrl, alt);
+        }
     }
 
     namespace Memory {

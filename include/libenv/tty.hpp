@@ -17,4 +17,7 @@ namespace ENV::TTY {
     void info(std::string_view str, bool newline = true);
     void warn(std::string_view str, bool newline = true);
     void fail(std::string_view str, bool newline = true);
+
+    //Called by keyboard interrupt handler
+    void onKeyPress(uint8_t scancode, bool shift, bool ctrl, bool alt);
 }

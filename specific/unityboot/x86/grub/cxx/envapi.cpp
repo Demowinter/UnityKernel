@@ -46,6 +46,10 @@ namespace ENV {
         void fail(std::string_view str, bool newline) {
             UnityBoot::Console::fail(str, newline);
         }
+
+        void onKeyPress(uint8_t scancode, bool shift, bool ctrl, bool alt) {
+            UnityBoot::Console::onKeyPress(scancode, shift, ctrl, alt);
+        }
     }
 
     namespace Memory {
