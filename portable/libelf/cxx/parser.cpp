@@ -1,6 +1,7 @@
 #include <optional>
 #include <cstddef>
 #include <cstdint>
+#include <libbase/memory.hpp>
 #include <liblltools/cursor.hpp>
 #include <libelf/elf.hpp>
 
@@ -11,6 +12,7 @@ namespace ELF {
         ELFHeader header{};
         header.ident = cursor.read<ELFIdent>();
 
+        if (memcmp(header.ident.magic, ELF::elfmagic, 4)) return std::nullopt;
         if (header.ident.endian != ELFEndian::LITTLE) return std::nullopt;
 
         header.type = cursor.read<ELFType>();
