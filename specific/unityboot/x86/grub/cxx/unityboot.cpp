@@ -1,4 +1,5 @@
 #include <libgrub/multiboot.hpp>
+#include <libelf/elf.hpp>
 #include <libarch/api.hpp>
 #include <libstd/string.hpp>
 #include <unityboot/protocol.hpp>
@@ -20,16 +21,58 @@ namespace UnityBoot {
         Console::ok("Multiboot structure is OK");
 
         GRUB::MultibootParser parser{mbInfo};
+
+        STDLib::String cmdline;
+
+        size_t moduleStart = 0;
+        size_t moduleEnd = 0;
         
         for (auto& tag : parser) {
-            Console::info("MBTag: ", false);
-            Console::println(STDLib::to_string(static_cast<int32_t>(tag.type)));
+            switch (tag.type) {
+                case GRUB::MultibootTagType::CommandLine: {
+                    cmdline = reinterpret_cast<const GRUB::MBTags::CommandLineTag*>(&tag)->string;
 
-            if (tag.type == GRUB::MultibootTagType::CommandLine) {
-                Console::info("[CommandLine] ", false);
-                Console::println(STDLib::String{reinterpret_cast<const char*>(&tag + 1)});
+                    break;
+                }
+
+                case GRUB::MultibootTagType::Module: {
+                    auto moduleTag = reinterpret_cast<const GRUB::MBTags::ModuleTag*>(&tag);
+
+                    moduleStart = moduleTag->start;
+                    moduleEnd = moduleTag->end;
+
+                    break;
+                }
             }
+
+            // if (tag.type == GRUB::MultibootTagType::CommandLine) {
+            //     Console::info(STDLib::toString(reinterpret_cast<uintptr_t>(reinterpret_cast<const char*>(&tag + 1))));
+            //     Console::info(STDLib::toString(reinterpret_cast<uintptr_t>(&reinterpret_cast<const GRUB::MBTags::CommandLineTag*>(&tag)->string)));
+
+            //     Console::ok(reinterpret_cast<const char*>(&tag + 1));
+            //     Console::ok(reinterpret_cast<const GRUB::MBTags::CommandLineTag*>(&tag)->string);
+            // }
         }
+
+        Console::ok(cmdline);
+
+        Console::info("Module start: ", false);
+        Console::println(STDLib::toString(moduleStart));
+
+        Console::info("Module end: ", false);
+        Console::println(STDLib::toString(moduleEnd));
+
+        auto header_ok = ELF::parseHeader(reinterpret_cast<void*>(moduleStart));
+
+        if (header_ok) {
+            Console::ok("ELF header is OK");
+
+            auto header = header_ok.value();
+
+            ELF::dump(header);
+        }
+
+        else Console::fail("ELF header is corrupted");
 
         Arch::Interrupt::disable();
         Arch::CPU::halt();
