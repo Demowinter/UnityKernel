@@ -44,14 +44,6 @@ namespace UnityBoot {
                     break;
                 }
             }
-
-            // if (tag.type == GRUB::MultibootTagType::CommandLine) {
-            //     Console::info(STDLib::toString(reinterpret_cast<uintptr_t>(reinterpret_cast<const char*>(&tag + 1))));
-            //     Console::info(STDLib::toString(reinterpret_cast<uintptr_t>(&reinterpret_cast<const GRUB::MBTags::CommandLineTag*>(&tag)->string)));
-
-            //     Console::ok(reinterpret_cast<const char*>(&tag + 1));
-            //     Console::ok(reinterpret_cast<const GRUB::MBTags::CommandLineTag*>(&tag)->string);
-            // }
         }
 
         Console::ok(cmdline);
@@ -65,7 +57,7 @@ namespace UnityBoot {
         auto header_ok = ELF::parseHeader(reinterpret_cast<void*>(moduleStart));
 
         if (header_ok) {
-            Console::ok("ELF header is OK");
+            Console::ok("ELF Header is OK");
 
             auto header = header_ok.value();
 
