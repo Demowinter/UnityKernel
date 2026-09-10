@@ -6,6 +6,7 @@
 #include <librt/runtime.hpp>
 #include <kernel/memory.hpp>
 #include <kernel/console.hpp>
+#include <kernel/shell.hpp>
 #include <libstd/function.hpp>
 #include <libstd/string.hpp>
 #include <libgrub/multiboot.hpp>
@@ -34,6 +35,13 @@ namespace Kernel {
         STDLib::Function<void()> func = [str](){ Console::ok(str); };
 
         func();
+
+        Console::newline();
+        Console::println("Starting shell...");
+        Console::newline();
+
+        // Start the interactive shell
+        Shell::run();
 
         CXXRuntime::finalize();
 

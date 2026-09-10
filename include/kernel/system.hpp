@@ -3,4 +3,5 @@
 
 namespace Kernel::System {
     [[noreturn]] void panic(std::string_view who, std::string_view what);
+    [[noreturn]] void reboot();
 }

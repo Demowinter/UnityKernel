@@ -2,6 +2,7 @@ set(KERNEL_SOURCES
     cxx/memory.cpp
     cxx/system.cpp
     cxx/console.cpp
+    cxx/shell.cpp
     cxx/envapi.cpp
     cxx/kernel.cpp
 )
