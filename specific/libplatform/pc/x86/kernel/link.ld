@@ -4,7 +4,7 @@ OUTPUT_ARCH(i386)
 ENTRY(kernelMain)
 
 SECTIONS {
-    . = 1M;
+    . = 8M;
 
     .text : ALIGN(16) {
         *(.multiboot)
