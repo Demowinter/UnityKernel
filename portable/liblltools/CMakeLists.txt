@@ -1,5 +1,6 @@
 set(LIBLLTOOLS_SOURCES
     cxx/allocator.cpp
+    cxx/cursor.cpp
 )
 
 add_library(liblltools STATIC ${LIBLLTOOLS_SOURCES})
