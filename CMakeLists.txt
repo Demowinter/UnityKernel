@@ -23,6 +23,7 @@ set(TARGET_COMPILE_FLAGS
 set(TARGET_LINK_FLAGS
     -no-pie
     -nostdlib
+    -static
     -g
 )
 
@@ -30,6 +31,7 @@ add_subdirectory(specific/libarch/${TARGET_ARCH}/)
 add_subdirectory(specific/libplatform/${TARGET_PLATFORM}/${TARGET_ARCH}/)
 add_subdirectory(specific/unityboot/${TARGET_ARCH}/${TARGET_BOOTLOADER})
 
+add_subdirectory(portable/libelf)
 add_subdirectory(portable/liblltools)
 add_subdirectory(portable/libbase)
 add_subdirectory(portable/librt)

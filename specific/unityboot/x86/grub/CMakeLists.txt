@@ -8,7 +8,7 @@ set(UNITYBOOT_SOURCES
 )
 
 set(UNITYBOOT_LINK_LIBS
-    "$<LINK_GROUP:RESCAN,libstd,libbase,librt,libgrub,liblltools,libplatform,libarch>"
+    "$<LINK_GROUP:RESCAN,libstd,libbase,librt,libelf,libgrub,liblltools,libplatform,libarch>"
     gcc
 )
 
