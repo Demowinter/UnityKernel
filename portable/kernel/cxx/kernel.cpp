@@ -16,7 +16,7 @@ namespace Kernel {
         Console::info("Starting kernel32...");
 
         // Memory::initialize();
-        CXXRuntime::initialize();
+        // CXXRuntime::initialize();
 
         if (!GRUB::checkMultiboot(mbMagic, mbInfo)) Console::info("Multiboot structure is corrupted");
         else Console::info("Multiboot structure is OK");
@@ -24,17 +24,10 @@ namespace Kernel {
         Console::info("CPU manufacturer: ", false);
         Console::println(Arch::CPU::manufacturer(), 0x05);
 
-        Console::ok("Started kernel32");
-
         Console::newline();
 
         Console::print("Welcome to ");
         Console::println("UnityKernel! v0.1.0-alpha", 5);
-
-        STDLib::String str = "Hello, World!";
-        STDLib::Function<void()> func = [str](){ Console::ok(str); };
-
-        func();
 
         Console::newline();
         Console::println("Starting shell...");
@@ -43,7 +36,7 @@ namespace Kernel {
         // Start the interactive shell
         Shell::run();
 
-        CXXRuntime::finalize();
+        // CXXRuntime::finalize();
 
         Arch::Interrupt::disable();
         Arch::CPU::halt();
