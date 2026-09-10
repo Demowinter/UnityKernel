@@ -4,6 +4,10 @@
 #include <liblltools/allocator.hpp>
 
 namespace LLTools {
+    FirstFitAllocator::FirstFitAllocator(uintptr_t heapStartAddr, uintptr_t heapEndAddr, size_t minBlockSize, size_t heapAlignment) : firstMemoryBlock{nullptr}, lastMemoryBlock{nullptr} {
+        initialize(heapStartAddr, heapEndAddr, minBlockSize, heapAlignment);
+    }
+
     bool FirstFitAllocator::initialize(uintptr_t heapStartAddr, uintptr_t heapEndAddr, size_t minBlockSize, size_t heapAlignment) {
         if (firstMemoryBlock || lastMemoryBlock) return false;
 

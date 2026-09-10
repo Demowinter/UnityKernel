@@ -22,6 +22,9 @@ namespace LLTools {
 
     class FirstFitAllocator {
     public:
+        FirstFitAllocator() = default;
+        FirstFitAllocator(uintptr_t heapStartAddr, uintptr_t heapEndAddr, size_t minBlockSize = 32, size_t heapAlignment = 16);
+
         bool initialize(uintptr_t heapStartAddr, uintptr_t heapEndAddr, size_t minBlockSize = 32, size_t heapAlignment = 16);
 
         uint8_t* allocate(size_t size);

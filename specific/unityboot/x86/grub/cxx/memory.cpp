@@ -8,7 +8,7 @@ namespace UnityBoot::Memory {
         extern uint8_t __heap_end[];
     }
 
-    static LLTools::FirstFitAllocator heapAlloc;
+    static LLTools::FirstFitAllocator heapAlloc{};
 
     void initialize() {
         uintptr_t heapStartAddr = reinterpret_cast<uintptr_t>(__heap_start);
