@@ -343,4 +343,49 @@ namespace STDLib {
     bool operator!=(char lhs, const String& rhs) {
         return !(lhs == rhs);
     }
+
+    String to_string(int8_t value) {
+        return to_string(int64_t{value});
+    }
+    
+    String to_string(uint8_t value) {
+        return to_string(uint64_t{value});
+    }
+
+    String to_string(int16_t value) {
+        return to_string(int64_t{value});
+    }
+    
+    String to_string(uint16_t value) {
+        return to_string(uint64_t{value});
+    }
+
+    String to_string(int32_t value) {
+        return to_string(int64_t{value});
+    }
+    
+    String to_string(uint32_t value) {
+        return to_string(uint64_t{value});
+    }
+    
+    String to_string(int64_t value) {
+        char buf[256] = {0};
+        itoa(value, buf, 10);
+
+        return String{buf};
+    }
+    
+    String to_string(uint64_t value) {
+        char buf[256] = {0};
+        utoa(value, buf, 10);
+
+        return String{buf};
+    }
+    
+    String to_string(float value) {
+        char buf[256] = {0};
+        ftoa(value, buf, 10);
+
+        return String{buf};
+    }
 }

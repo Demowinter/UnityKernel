@@ -5,6 +5,7 @@
 #include <utility>
 #include <iterator>
 #include <cstddef>
+#include <cstdint>
 #include <libstd/iterator.hpp>
 
 namespace STDLib {
@@ -125,4 +126,18 @@ namespace STDLib {
     bool operator!=(const String& lhs, const String& rhs);
     bool operator!=(const String& lhs, char rhs);
     bool operator!=(char lhs, const String& rhs);
+
+    String to_string(int8_t value);
+    String to_string(uint8_t value);
+
+    String to_string(int16_t value);
+    String to_string(uint16_t value);
+
+    String to_string(int32_t value);
+    String to_string(uint32_t value);
+
+    String to_string(int64_t value);
+    String to_string(uint64_t value);
+    
+    String to_string(float value);
 }
