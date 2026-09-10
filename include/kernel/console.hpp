@@ -21,4 +21,13 @@ namespace Kernel::Console {
     void info(std::string_view str, bool newline = true);
     void warn(std::string_view str, bool newline = true);
     void fail(std::string_view str, bool newline = true);
+
+    //Input functions
+    void putchar(char ch, uint8_t color = 0x07);
+    char read();
+    bool tryRead(char& ch);
+    size_t readline(char* buffer, size_t size);
+    
+    //Called by keyboard interrupt handler
+    void onKeyPress(uint8_t scancode, bool shift, bool ctrl, bool alt);
 }
