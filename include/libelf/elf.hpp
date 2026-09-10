@@ -125,9 +125,9 @@ namespace ELF {
         ELFType type;
         ELFMachine machine;
         ELFVersion version;
-        uint64_t entry;    // Entry point function virtual address
-        uint64_t phoff;       // Program header table offset
-        uint64_t shoff;       // Section header table offset
+        uint64_t entry;     // Entry point function virtual address
+        uint64_t phoff;     // Program header table offset
+        uint64_t shoff;     // Section header table offset
         uint32_t flags;     // Processor-specific flags
         uint16_t ehsize;    // ELF header size in bytes
         uint16_t phentsize; // Program header table entry size
