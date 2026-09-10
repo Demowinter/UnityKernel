@@ -40,6 +40,24 @@ namespace GRUB {
         uint32_t size;
     };
 
+    namespace MBTags {
+        struct StringTag {
+            MultibootTag tag;
+
+            char string[];
+        };
+
+        using BootLoaderNameTag = StringTag;
+        using CommandLineTag = StringTag;
+
+        struct ModuleTag {
+            MultibootTag tag;
+
+            uint32_t start;
+            uint32_t end;
+        };
+    }
+
     class MultibootTagIterator {
     public:
         MultibootTagIterator() = default;
