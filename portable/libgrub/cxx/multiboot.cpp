@@ -58,7 +58,7 @@ namespace GRUB {
             if (size < tag->size || cursor + size > tagsEnd) return;
 
             cursor += size;
-            if (tag->type == static_cast<uint32_t>(MultibootTagType::End)) {
+            if (tag->type == MultibootTagType::End) {
                 valid = tag->size == sizeof(MultibootTag) && cursor == tagsEnd;
                 return;
             }
@@ -81,9 +81,8 @@ namespace GRUB {
     }
 
     const MultibootTag* MultibootParser::findTag(MultibootTagType type) const {
-        const uint32_t wantedType = static_cast<uint32_t>(type);
         for (auto iterator = begin(); iterator != end(); ++iterator) {
-            if (iterator->type == wantedType) return &*iterator;
+            if (iterator->type == type) return &*iterator;
         }
         return nullptr;
     }

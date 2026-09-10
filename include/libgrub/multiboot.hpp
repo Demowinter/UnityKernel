@@ -36,7 +36,7 @@ namespace GRUB {
     };
 
     struct MultibootTag {
-        uint32_t type;
+        MultibootTagType type;
         uint32_t size;
     };
 
