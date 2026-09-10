@@ -41,20 +41,20 @@ namespace GRUB {
     };
 
     namespace MBTags {
-        struct StringTag {
-            MultibootTag tag;
-
+        struct StringTag : MultibootTag {
             char string[];
         };
 
         using BootLoaderNameTag = StringTag;
         using CommandLineTag = StringTag;
 
-        struct ModuleTag {
-            MultibootTag tag;
+        struct ModuleTag : MultibootTag {
+            uintptr_t start;
+            uintptr_t end;
+        };
 
-            uint32_t start;
-            uint32_t end;
+        struct LoadBaseAddrTag : MultibootTag {
+            uintptr_t addr;
         };
     }
 
