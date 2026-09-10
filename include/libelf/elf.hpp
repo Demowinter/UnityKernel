@@ -65,9 +65,10 @@ namespace ELF {
         RISCV       = 243U
     };
 
-    enum class ELFVersion : uint8_t {
+    enum class ELFVersion : uint32_t {
         NONE,
-        CURRENT
+        CURRENT,
+        NUM
     };
 
     enum class ELFProgramType : uint32_t {
@@ -113,7 +114,7 @@ namespace ELF {
         uint8_t magic[4];
         ELFClass elfclass;
         ELFEndian endian;
-        ELFVersion version;
+        uint8_t version;
         ELFABI abi;
         uint8_t abiversion;
         uint8_t padding[7];
