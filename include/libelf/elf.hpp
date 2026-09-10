@@ -161,6 +161,8 @@ namespace ELF {
         uint64_t entsize;
     };
 
+    static_assert(sizeof(ELFHeader) == 64);
+
     // class ELFProgramIterator {
     // public:
 
