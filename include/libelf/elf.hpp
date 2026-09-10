@@ -2,11 +2,6 @@
 #include <cstdint>
 #include <elf.h>
 
-using uint8_t = uint8_t;
-using uint16_t = uint16_t;
-using uint32_t = uint32_t;
-using uint64_t = uint64_t;
-
 enum class ELFArch : uint8_t {
     NONE,
     ELF32,
