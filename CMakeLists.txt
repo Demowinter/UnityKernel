@@ -46,7 +46,7 @@ add_custom_target(iso
 
     COMMAND ${CMAKE_COMMAND} -E copy
         $<TARGET_FILE:kernel>
-        ${CMAKE_BINARY_DIR}/iso/boot/kernel
+        ${CMAKE_BINARY_DIR}/iso/boot/unitykernel
 
     COMMAND ${CMAKE_COMMAND} -E copy
         $<TARGET_FILE:unityboot>
