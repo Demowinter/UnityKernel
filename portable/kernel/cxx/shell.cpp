@@ -3,7 +3,6 @@
 #include <kernel/system.hpp>
 #include <libstd/string.hpp>
 #include <libbase/string.hpp>
-#include <cstring>
 
 namespace Kernel::Shell {
     //Compare strings

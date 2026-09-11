@@ -114,4 +114,58 @@ extern "C" {
     char* ultoa(uint64_t value, char* buffer, int base) {
         return utoa(value, buffer, base);
     }
+
+    char* strchr(const char* s, int c) {
+    char ch = static_cast<char>(c);
+    for (;; ++s) {
+        if (*s == ch) return const_cast<char*>(s);
+        if (!*s)      return nullptr;
+    }
+}
+
+    size_t strspn(const char* str, const char* accept) {
+        size_t count = 0;
+
+        while (*str && strchr(accept, *str)) {
+            count++;
+            str++;
+        }
+
+        return count;
+    }
+
+    size_t strcspn(const char* str, const char* reject) {
+        size_t count = 0;
+
+        while (*str && !strchr(reject, *str)) {
+            count++;
+            str++;
+        }
+
+        return count;
+    }
+
+    char* strtok_r(char* str, const char* delim, char** saveptr) {
+        if (str == nullptr) {
+            str = *saveptr;
+        }
+
+        // Skip leading delimiters
+        str += strspn(str, delim);
+        if (*str == '\0') {
+            *saveptr = str;
+            return nullptr;
+        }
+
+        // Find the end of the token
+        char* end = str + strcspn(str, delim);
+        if (*end != '\0') {
+            *end = '\0';
+            *saveptr = end + 1;
+        } else {
+            *saveptr = end;
+        }
+
+        return str;
+    }
 }
