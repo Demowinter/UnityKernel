@@ -4,7 +4,7 @@
 #include <liblltools/cursor.hpp>
 
 namespace LLTools {
-    void Cursor::set(void* base, size_t rindex, size_t windex) {
+    void Cursor::reset(void* base, size_t rindex, size_t windex) {
         this->base = static_cast<uint8_t*>(base);
         this->rindex = rindex;
         this->windex = windex;
@@ -26,11 +26,27 @@ namespace LLTools {
         windex += size;
     }
 
+    void Cursor::rseek(size_t rindex) {
+        this->rindex = rindex;
+    }
+
+    void Cursor::wseek(size_t windex) {
+        this->windex = windex;
+    }
+
     void Cursor::rskip(size_t size) {
         rindex += size;
     }
 
     void Cursor::wskip(size_t size) {
         windex += size;
+    }
+
+    size_t Cursor::rpos() {
+        return rindex;
+    }
+
+    size_t Cursor::wpos() {
+        return windex;
     }
 }
