@@ -8,4 +8,12 @@ extern "C" {
     uint64_t minUint64(uint64_t a, uint64_t b);
     uint64_t maxUint64(uint64_t a, uint64_t b);
     uint64_t clampUint64(uint64_t value, uint64_t min, uint64_t max);
+
+    double fabs(double x);
+    double floor(double x);
+    double ceil(double x);
+    double round(double x);
+    double sqrt(double x);
+    double pow(double x, double y);
+    double fmod(double x, double y);
 }
