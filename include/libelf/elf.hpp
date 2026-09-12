@@ -163,7 +163,36 @@ namespace ELF {
         uint64_t entsize;
     };
 
+    // struct ELF
+
     static_assert(sizeof(ELFHeader) == 64);
+
+    std::optional<ELFHeader> parseHeader(void* addr);
+    // ELFProgramHeader parseProgramHeader(void* addr, ELFHeader& elfheader);
+    // ELFSectionHeader parseSectionHeader(void* addr, ELFHeader& elfheader);
+
+    class ELFParser {
+    public:
+        ELFParser(void* addr);
+
+        bool isValid();
+
+        ELFClass elfclass();
+        ELFEndian endian();
+        ELFABI abi();
+
+        uintptr_t entryAddress();
+
+        uintptr_t programHeaderOffset();
+        uintptr_t sectionHeaderOffset();
+
+    private:
+        void* baseAddr;
+        
+        ELFHeader header;
+
+        bool errorFlag;
+    };
 
     // class ELFProgramIterator {
     // public:
@@ -177,37 +206,33 @@ namespace ELF {
     // private:
     // };
 
-    // class ELFProgramParser {
-    // public:
+    class ELFProgramParser {
+    public:
 
-    // private:
-    //     size_t phoff;     // Program header table offset
+    private:
+        size_t phoff;     // Program header table offset
 
-    //     uint16_t phentsize; // Program header table entry size
-    //     uint16_t phnum;     // Program header table entry count
-    // };
+        uint16_t phentsize; // Program header table entry size
+        uint16_t phnum;     // Program header table entry count
+    };
 
-    // class ELFSectionParser {
-    // public:
+    class ELFSectionParser {
+    public:
 
-    // private:
-    //     size_t shoff;     // Section header table offset
+    private:
+        size_t shoff;     // Section header table offset
 
-    //     uint16_t shentsize; // Section header table entry size
-    //     uint16_t shnum;     // Section header table entry count
-    // };
+        uint16_t shentsize; // Section header table entry size
+        uint16_t shnum;     // Section header table entry count
+    };
 
-    // class ELFHeaderParser {
-    // public:
+    class ELFHeaderParser {
+    public:
 
-    // private:
-    //     ELFIdent ident;
-    //     ELFHeader header;
-    // };
-
-    std::optional<ELFHeader> parseHeader(void* addr);
-    ELFProgramHeader parseProgramHeader(void* addr, ELFClass elfclass);
-    ELFSectionHeader parseSectionHeader(void* addr, ELFClass elfclass);
+    private:
+        ELFIdent ident;
+        ELFHeader header;
+    };
 
     class ELFLoader {
 
