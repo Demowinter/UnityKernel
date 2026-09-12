@@ -24,8 +24,8 @@ namespace UnityBoot {
 
         STDLib::String cmdline;
 
-        size_t moduleStart = 0;
-        size_t moduleEnd = 0;
+        uintptr_t moduleStart = 0;
+        uintptr_t moduleEnd = 0;
         
         for (auto& tag : parser) {
             switch (tag.type) {
@@ -60,6 +60,7 @@ namespace UnityBoot {
             Console::ok("ELF Header is OK");
 
             auto header = header_ok.value();
+            // auto pheader = ELF::parseProgramHeader()
 
             ELF::dump(header);
         }
