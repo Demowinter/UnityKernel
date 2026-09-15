@@ -6,38 +6,48 @@
 #include <libelf/elf.hpp>
 
 namespace ELF {
+
+    namespace {
+        template <typename T>
+        T read(LLTools::Cursor& cursor) {
+            T value{};
+            cursor.read(&value, sizeof(T));
+            return value;
+        }
+    }
+
     std::optional<ELFHeader> parseHeader(void* addr) {
         LLTools::Cursor cursor{addr};
 
         ELFHeader header{};
-        header.ident = cursor.read<ELFIdent>();
+        header.ident = read<ELFIdent>(cursor);
 
         if (memcmp(header.ident.magic, ELF::elfmagic, 4)) return std::nullopt;
         if (header.ident.endian != ELFEndian::LITTLE) return std::nullopt;
 
-        header.type = cursor.read<ELFType>();
-        header.machine = cursor.read<ELFMachine>();
-        header.version = cursor.read<ELFVersion>();
+        header.type = read<ELFType>(cursor);
+        header.machine = read<ELFMachine>(cursor);
+        header.version = read<ELFVersion>(cursor);
 
         if (header.ident.elfclass == ELFClass::ELF64) {
-            header.entry = cursor.read<uint64_t>();
-            header.phoff = cursor.read<uint64_t>();
-            header.shoff = cursor.read<uint64_t>();
+            header.entry = read<uint64_t>(cursor);
+            header.phoff = read<uint64_t>(cursor);
+            header.shoff = read<uint64_t>(cursor);
         }
 
         else {
-            header.entry = cursor.read<uint32_t>();
-            header.phoff = cursor.read<uint32_t>();
-            header.shoff = cursor.read<uint32_t>();
+            header.entry = read<uint32_t>(cursor);
+            header.phoff = read<uint32_t>(cursor);
+            header.shoff = read<uint32_t>(cursor);
         }
 
-        header.flags = cursor.read<uint32_t>();
-        header.ehsize = cursor.read<uint16_t>();
-        header.phentsize = cursor.read<uint16_t>();
-        header.phnum = cursor.read<uint16_t>();
-        header.shentsize = cursor.read<uint16_t>();
-        header.shnum = cursor.read<uint16_t>();
-        header.shstrtndx = cursor.read<uint16_t>();
+        header.flags = read<uint32_t>(cursor);
+        header.ehsize = read<uint16_t>(cursor);
+        header.phentsize = read<uint16_t>(cursor);
+        header.phnum = read<uint16_t>(cursor);
+        header.shentsize = read<uint16_t>(cursor);
+        header.shnum = read<uint16_t>(cursor);
+        header.shstrtndx = read<uint16_t>(cursor);
 
         return header;
     }
@@ -46,26 +56,26 @@ namespace ELF {
         LLTools::Cursor cursor{addr};
 
         ELFProgramHeader header{};
-        header.type = cursor.read<ELFProgramType>();
+        header.type = read<ELFProgramType>(cursor);
 
         if (elfheader.ident.elfclass == ELFClass::ELF64) {
-            header.flags = cursor.read<uint32_t>();
-            header.offset = cursor.read<uint64_t>();
-            header.vaddr = cursor.read<uint64_t>();
-            header.paddr = cursor.read<uint64_t>();
-            header.fsize = cursor.read<uint64_t>();
-            header.msize = cursor.read<uint64_t>();
-            header.align = cursor.read<uint64_t>();
+            header.flags = read<uint32_t>(cursor);
+            header.offset = read<uint64_t>(cursor);
+            header.vaddr = read<uint64_t>(cursor);
+            header.paddr = read<uint64_t>(cursor);
+            header.fsize = read<uint64_t>(cursor);
+            header.msize = read<uint64_t>(cursor);
+            header.align = read<uint64_t>(cursor);
         }
 
         else {
-            header.offset = cursor.read<uint32_t>();
-            header.vaddr = cursor.read<uint32_t>();
-            header.paddr = cursor.read<uint32_t>();
-            header.fsize = cursor.read<uint32_t>();
-            header.msize = cursor.read<uint32_t>();
-            header.flags = cursor.read<uint32_t>();
-            header.align = cursor.read<uint32_t>();
+            header.offset = read<uint32_t>(cursor);
+            header.vaddr = read<uint32_t>(cursor);
+            header.paddr = read<uint32_t>(cursor);
+            header.fsize = read<uint32_t>(cursor);
+            header.msize = read<uint32_t>(cursor);
+            header.flags = read<uint32_t>(cursor);
+            header.align = read<uint32_t>(cursor);
         }
 
         return header;
@@ -75,34 +85,34 @@ namespace ELF {
         LLTools::Cursor cursor{addr};
 
         ELFSectionHeader header{};
-        header.name = cursor.read<uint32_t>();
-        header.type = cursor.read<ELFSectionType>();
-        
+        header.name = read<uint32_t>(cursor);
+        header.type = read<ELFSectionType>(cursor);
+
         if (elfheader.ident.elfclass == ELFClass::ELF64) {
-            header.flags = cursor.read<uint64_t>();
-            header.addr = cursor.read<uint64_t>();
-            header.offset = cursor.read<uint64_t>();
-            header.size = cursor.read<uint64_t>();
+            header.flags = read<uint64_t>(cursor);
+            header.addr = read<uint64_t>(cursor);
+            header.offset = read<uint64_t>(cursor);
+            header.size = read<uint64_t>(cursor);
         }
 
         else {
-            header.flags = cursor.read<uint32_t>();
-            header.addr = cursor.read<uint32_t>();
-            header.offset = cursor.read<uint32_t>();
-            header.size = cursor.read<uint32_t>();
+            header.flags = read<uint32_t>(cursor);
+            header.addr = read<uint32_t>(cursor);
+            header.offset = read<uint32_t>(cursor);
+            header.size = read<uint32_t>(cursor);
         }
 
-        header.link = cursor.read<uint32_t>();
-        header.info = cursor.read<uint32_t>();
+        header.link = read<uint32_t>(cursor);
+        header.info = read<uint32_t>(cursor);
 
         if (elfheader.ident.elfclass == ELFClass::ELF64) {
-            header.addralign = cursor.read<uint64_t>();
-            header.entsize = cursor.read<uint64_t>();
+            header.addralign = read<uint64_t>(cursor);
+            header.entsize = read<uint64_t>(cursor);
         }
 
         else {
-            header.addralign = cursor.read<uint32_t>();
-            header.entsize = cursor.read<uint32_t>();
+            header.addralign = read<uint32_t>(cursor);
+            header.entsize = read<uint32_t>(cursor);
         }
 
         return header;
@@ -111,7 +121,7 @@ namespace ELF {
     ELFParser::ELFParser(void* addr) : baseAddr{addr} {
         LLTools::Cursor cursor{addr};
 
-        header.ident = cursor.read<ELFIdent>();
+        header.ident = read<ELFIdent>(cursor);
 
         errorFlag = memcmp(header.ident.magic, ELF::elfmagic, 4)
                     || header.ident.endian != ELFEndian::LITTLE
@@ -119,29 +129,29 @@ namespace ELF {
                     && header.ident.elfclass != ELFClass::ELF32;
 
         if (!errorFlag) {
-            header.type = cursor.read<ELFType>();
-            header.machine = cursor.read<ELFMachine>();
-            header.version = cursor.read<ELFVersion>();
+            header.type = read<ELFType>(cursor);
+            header.machine = read<ELFMachine>(cursor);
+            header.version = read<ELFVersion>(cursor);
 
             if (header.ident.elfclass == ELFClass::ELF64) {
-                header.entry = cursor.read<uint64_t>();
-                header.phoff = cursor.read<uint64_t>();
-                header.shoff = cursor.read<uint64_t>();
+                header.entry = read<uint64_t>(cursor);
+                header.phoff = read<uint64_t>(cursor);
+                header.shoff = read<uint64_t>(cursor);
             }
 
             else if (header.ident.elfclass == ELFClass::ELF32) {
-                header.entry = cursor.read<uint32_t>();
-                header.phoff = cursor.read<uint32_t>();
-                header.shoff = cursor.read<uint32_t>();
+                header.entry = read<uint32_t>(cursor);
+                header.phoff = read<uint32_t>(cursor);
+                header.shoff = read<uint32_t>(cursor);
             }
 
-            header.flags = cursor.read<uint32_t>();
-            header.ehsize = cursor.read<uint16_t>();
-            header.phentsize = cursor.read<uint16_t>();
-            header.phnum = cursor.read<uint16_t>();
-            header.shentsize = cursor.read<uint16_t>();
-            header.shnum = cursor.read<uint16_t>();
-            header.shstrtndx = cursor.read<uint16_t>();
+            header.flags = read<uint32_t>(cursor);
+            header.ehsize = read<uint16_t>(cursor);
+            header.phentsize = read<uint16_t>(cursor);
+            header.phnum = read<uint16_t>(cursor);
+            header.shentsize = read<uint16_t>(cursor);
+            header.shnum = read<uint16_t>(cursor);
+            header.shstrtndx = read<uint16_t>(cursor);
         }
     }
 
@@ -172,77 +182,4 @@ namespace ELF {
     uintptr_t ELFParser::sectionHeaderOffset() {
         return header.shoff;
     }
-
-    // bool ELFParser::parseHeader() {
-    //     cursor.rseek(0);
-
-    //     header.ident = cursor.read<ELFIdent>();
-
-    //     if (memcmp(header.ident.magic, ELF::elfmagic, 4)) return true;
-    //     if (header.ident.endian != ELFEndian::LITTLE) return true;
-
-    //     header.type = cursor.read<ELFType>();
-    //     header.machine = cursor.read<ELFMachine>();
-    //     header.version = cursor.read<ELFVersion>();
-
-    //     if (header.ident.elfclass == ELFClass::ELF64) {
-    //         header.entry = cursor.read<uint64_t>();
-    //         header.phoff = cursor.read<uint64_t>();
-    //         header.shoff = cursor.read<uint64_t>();
-    //     }
-
-    //     else {
-    //         header.entry = cursor.read<uint32_t>();
-    //         header.phoff = cursor.read<uint32_t>();
-    //         header.shoff = cursor.read<uint32_t>();
-    //     }
-
-    //     header.flags = cursor.read<uint32_t>();
-    //     header.ehsize = cursor.read<uint16_t>();
-    //     header.phentsize = cursor.read<uint16_t>();
-    //     header.phnum = cursor.read<uint16_t>();
-    //     header.shentsize = cursor.read<uint16_t>();
-    //     header.shnum = cursor.read<uint16_t>();
-    //     header.shstrtndx = cursor.read<uint16_t>();
-
-    //     return false;
-    // }
-
-    // bool ELFParser::parseProgramHeader() {
-    //     if (errorFlag) return true;
-    //     if (header.ident.elfclass != ELFClass::ELF32 && header.ident.elfclass != ELFClass::ELF64) return true;
-
-    //     cursor.rseek(header.phoff);
-
-    //     pheader.type = cursor.read<ELFProgramType>();
-
-    //     if (header.ident.elfclass == ELFClass::ELF64) {
-    //         pheader.flags = cursor.read<uint32_t>();
-    //         pheader.offset = cursor.read<uint64_t>();
-    //         pheader.vaddr = cursor.read<uint64_t>();
-    //         pheader.paddr = cursor.read<uint64_t>();
-    //         pheader.fsize = cursor.read<uint64_t>();
-    //         pheader.msize = cursor.read<uint64_t>();
-    //         pheader.align = cursor.read<uint64_t>();
-    //     }
-
-    //     else if (header.ident.elfclass == ELFClass::ELF32) {
-    //         pheader.offset = cursor.read<uint32_t>();
-    //         pheader.vaddr = cursor.read<uint32_t>();
-    //         pheader.paddr = cursor.read<uint32_t>();
-    //         pheader.fsize = cursor.read<uint32_t>();
-    //         pheader.msize = cursor.read<uint32_t>();
-    //         pheader.flags = cursor.read<uint32_t>();
-    //         pheader.align = cursor.read<uint32_t>();
-    //     }
-
-    //     return false;
-    // }
-    
-    // bool ELFParser::parseSectionHeader() {
-    //     if (errorFlag) return true;
-    //     if (header.ident.elfclass != ELFClass::ELF32 && header.ident.elfclass != ELFClass::ELF64) return true;
-
-    //     cursor.rseek(header.phoff);
-    // }
 }
