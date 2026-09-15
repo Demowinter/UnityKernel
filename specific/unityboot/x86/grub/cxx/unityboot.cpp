@@ -2,6 +2,8 @@
 #include <libelf/elf.hpp>
 #include <libarch/api.hpp>
 #include <libstd/string.hpp>
+#include <libstd/assert.hpp>
+#include <libbase/math.hpp>
 #include <unityboot/protocol.hpp>
 #include <unityboot/console.hpp>
 #include <unityboot/memory.hpp>
@@ -46,6 +48,8 @@ namespace UnityBoot {
             }
         }
 
+        STDLib::assert(sqrt(100) == 10, "sqrt(100) == 10");
+
         Console::ok(cmdline);
 
         Console::info("Module start: ", false);
@@ -54,13 +58,15 @@ namespace UnityBoot {
         Console::info("Module end: ", false);
         Console::println(STDLib::toString(moduleEnd));
 
-        auto header_ok = ELF::parseHeader(reinterpret_cast<void*>(moduleStart));
+        ELF::ELFHeaderParser elfparser{reinterpret_cast<void*>(moduleStart)};
 
-        if (header_ok) {
+        // auto header_ok = ELF::parseHeader(reinterpret_cast<void*>(moduleStart));
+
+        if (elfparser.isValid()) {
             Console::ok("ELF Header is OK");
 
-            auto header = header_ok.value();
-            // auto pheader = ELF::parseProgramHeader()
+            auto header = elfparser.__header();
+        //     // auto pheader = ELF::parseProgramHeader()
 
             ELF::dump(header);
         }
