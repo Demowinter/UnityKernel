@@ -118,7 +118,7 @@ namespace ELF {
         return header;
     }
 
-    ELFParser::ELFParser(void* addr) : baseAddr{addr} {
+    ELFHeaderParser::ELFHeaderParser(void* addr) : baseAddr{addr} {
         LLTools::Cursor cursor{addr};
 
         header.ident = read<ELFIdent>(cursor);
@@ -155,31 +155,31 @@ namespace ELF {
         }
     }
 
-    bool ELFParser::isValid() {
+    bool ELFHeaderParser::isValid() {
         return !errorFlag;
     }
 
-    ELFClass ELFParser::elfclass() {
+    ELFClass ELFHeaderParser::elfclass() {
         return header.ident.elfclass;
     }
 
-    ELFEndian ELFParser::endian() {
+    ELFEndian ELFHeaderParser::endian() {
         return header.ident.endian;
     }
 
-    ELFABI ELFParser::abi() {
+    ELFABI ELFHeaderParser::abi() {
         return header.ident.abi;
     }
 
-    uintptr_t ELFParser::entryAddress() {
+    uintptr_t ELFHeaderParser::entryAddress() {
         return header.entry;
     }
 
-    uintptr_t ELFParser::programHeaderOffset() {
+    uintptr_t ELFHeaderParser::programHeaderOffset() {
         return header.phoff;
     }
 
-    uintptr_t ELFParser::sectionHeaderOffset() {
+    uintptr_t ELFHeaderParser::sectionHeaderOffset() {
         return header.shoff;
     }
 }

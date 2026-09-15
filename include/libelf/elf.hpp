@@ -167,13 +167,13 @@ namespace ELF {
 
     static_assert(sizeof(ELFHeader) == 64);
 
-    std::optional<ELFHeader> parseHeader(void* addr);
+    // std::optional<ELFHeader> parseHeader(void* addr);
     // ELFProgramHeader parseProgramHeader(void* addr, ELFHeader& elfheader);
     // ELFSectionHeader parseSectionHeader(void* addr, ELFHeader& elfheader);
 
-    class ELFParser {
+    class ELFHeaderParser {
     public:
-        ELFParser(void* addr);
+        ELFHeaderParser(void* addr);
 
         bool isValid();
 
@@ -186,11 +186,18 @@ namespace ELF {
         uintptr_t programHeaderOffset();
         uintptr_t sectionHeaderOffset();
 
+        ELFHeader __header() {
+            return header;
+        }
+
     private:
-        void* baseAddr;
-        
+        friend class ELFProgramParser;
+        friend class ELFSectionParser;
+        friend class ELFLoader;
+
         ELFHeader header;
 
+        void* baseAddr;
         bool errorFlag;
     };
 
@@ -208,30 +215,24 @@ namespace ELF {
 
     class ELFProgramParser {
     public:
+        ELFProgramParser(ELFHeaderParser& parser);
 
     private:
-        size_t phoff;     // Program header table offset
+        ELFHeaderParser& elfparser;
 
-        uint16_t phentsize; // Program header table entry size
-        uint16_t phnum;     // Program header table entry count
+        void* endAddr;
+        bool errorFlag;
     };
 
     class ELFSectionParser {
     public:
+        ELFSectionParser(ELFHeaderParser& parser);
 
     private:
-        size_t shoff;     // Section header table offset
+        ELFHeaderParser& elfparser;
 
-        uint16_t shentsize; // Section header table entry size
-        uint16_t shnum;     // Section header table entry count
-    };
-
-    class ELFHeaderParser {
-    public:
-
-    private:
-        ELFIdent ident;
-        ELFHeader header;
+        void* endAddr;
+        bool errorFlag;
     };
 
     class ELFLoader {
@@ -384,5 +385,17 @@ namespace ELF {
 
         ENV::TTY::info("  Flags:        ", false);
         ENV::TTY::println(hex(header.flags));
+
+        ENV::TTY::info("  PH entry size: ", false);
+        ENV::TTY::println(hex(header.phentsize));
+
+        ENV::TTY::info("  PH num:        ", false);
+        ENV::TTY::println(STDLib::toString(header.phnum));
+
+        ENV::TTY::info("  SH entry size: ", false);
+        ENV::TTY::println(hex(header.shentsize));
+
+        ENV::TTY::info("  SH num:        ", false);
+        ENV::TTY::println(STDLib::toString(header.shnum));
     }
 }
