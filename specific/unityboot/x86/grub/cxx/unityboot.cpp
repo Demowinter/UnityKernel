@@ -113,7 +113,15 @@ namespace UnityBoot {
             Console::info("Entry address: ", false);
             Console::println(STDLib::hex(elf.entryAddress()));
 
-            reinterpret_cast<void(*)()>(elf.entryAddress())(); // Call kernelMain
+            Memory::freeze();
+
+            Memory::MemoryRegion region = Memory::getFreeMemoryRegion();
+
+            UnityBootProtocol::Info info;
+            info.memoryRegion.start = region.start;
+            info.memoryRegion.end = region.end;
+
+            reinterpret_cast<void(*)(const UnityBootProtocol::Info&)>(elf.entryAddress())(info); // Call kernelMain
         }
 
         else Console::fail("ELF header is corrupted");
