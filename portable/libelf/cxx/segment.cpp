@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <liblltools/cursor.hpp>
+#include <libenv/system.hpp>
 #include <libelf/header.hpp>
 #include <libelf/parser.hpp>
 #include <libelf/segment.hpp>
@@ -36,7 +37,11 @@ namespace ELF {
     }
 
     ELFSegmentEntry ELFSegmentTable::at(size_t index) {
-        return parseSegmentEntry(static_cast<uint8_t*>(startAddr) + header.phentsize * index, header);
+        void* entryAddr = static_cast<uint8_t*>(startAddr) + header.phentsize * index;
+
+        if (entryAddr >= endAddr) ENV::System::panic("ELFSegmentTable::at(size_t)", "Invalid index");
+
+        return parseSegmentEntry(entryAddr, header);
     }
 
     ELFSegmentIterator ELFSegmentTable::begin() {
