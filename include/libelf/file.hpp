@@ -30,6 +30,8 @@ namespace ELF {
         ELFSegmentTable& segments();
         ELFSectionTable& sections();
 
+        void load();
+
         void dumpHeader();
 
     private:
@@ -38,7 +40,6 @@ namespace ELF {
         void* baseAddr;
 
         ELFSegmentTable segmentTable{header, baseAddr};
-        // ELFSectionTable sectionTable{header, baseAddr};
-
+        ELFSectionTable sectionTable{header, baseAddr};
     };
 }

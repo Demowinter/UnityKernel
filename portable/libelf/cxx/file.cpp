@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <libbase/memory.hpp>
 #include <libelf/header.hpp>
 #include <libelf/parser.hpp>
 #include <libelf/utils.hpp>
@@ -55,9 +56,18 @@ namespace ELF {
         return segmentTable;
     }
 
-    // ELFSectionTable ELFFile::sections() {
-    //     return sectionTable;
-    // }
+    ELFSectionTable& ELFFile::sections() {
+        return sectionTable;
+    }
+
+    void ELFFile::load() {
+        for (auto segment : segmentTable) {
+            if (segment.type != ELFSegmentType::LOAD) continue;
+
+            memmove(reinterpret_cast<void*>(segment.paddr), static_cast<uint8_t*>(baseAddr) + segment.offset, segment.fsize);
+            memset(reinterpret_cast<void*>(segment.paddr + segment.fsize), 0, segment.msize - segment.fsize);
+        }
+    }
 
     void ELFFile::dumpHeader() {
         Utils::dump(header);
