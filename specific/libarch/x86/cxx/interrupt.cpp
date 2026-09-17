@@ -140,12 +140,12 @@ namespace Arch::X86::Interrupt {
 
     void init() {
         picRemap();
-        setGate(0, reinterpret_cast<uint32_t>(isr_div0), 0x08, 0x8E);
-        setGate(3, reinterpret_cast<uint32_t>(isr_breakpoint), 0x08, 0x8E);
-        setGate(13, reinterpret_cast<uint32_t>(isr_gpf), 0x08, 0x8E);
-        setGate(14, reinterpret_cast<uint32_t>(isr_page_fault), 0x08, 0x8E);
-        setGate(32, reinterpret_cast<uint32_t>(irq_timer), 0x08, 0x8E);
-        setGate(33, reinterpret_cast<uint32_t>(irq_keyboard), 0x08, 0x8E);
+        setGate(0, reinterpret_cast<uint32_t>(isr_div0), 0x10, 0x8E);
+        setGate(3, reinterpret_cast<uint32_t>(isr_breakpoint), 0x10, 0x8E);
+        setGate(13, reinterpret_cast<uint32_t>(isr_gpf), 0x10, 0x8E);
+        setGate(14, reinterpret_cast<uint32_t>(isr_page_fault), 0x10, 0x8E);
+        setGate(32, reinterpret_cast<uint32_t>(irq_timer), 0x10, 0x8E);
+        setGate(33, reinterpret_cast<uint32_t>(irq_keyboard), 0x10, 0x8E);
 
         loadIDT(entries.data(), sizeof(entries));
 
