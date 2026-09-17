@@ -107,14 +107,13 @@ namespace Kernel::Shell {
         Console::clear();
         Console::println("=== UnityKernel Shell ===");
         Console::println("Type 'help' for available commands");
-        Console::println("");
+        Console::newline();
 
         static constexpr size_t bufferSize = 256;
         char inputBuffer[bufferSize];
 
         while (true) {
             Console::print("> ");
-            Console::newline();
             
             size_t len = Console::readline(inputBuffer, bufferSize);
             
