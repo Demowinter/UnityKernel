@@ -9,17 +9,26 @@
 #include <kernel/shell.hpp>
 #include <libstd/function.hpp>
 #include <libstd/string.hpp>
-#include <libgrub/multiboot.hpp>
+#include <unityboot/protocol.hpp>
 
 namespace Kernel {
-    extern "C" [[noreturn]] void kernelMain(uint32_t mbMagic, GRUB::MultibootInfo* mbInfo) {
+    extern "C" [[noreturn]] void kernelMain(const UnityBootProtocol::Info& info) {
+        Console::clear();
+
         Console::info("Starting kernel32...");
 
-        // Memory::initialize();
-        // CXXRuntime::initialize();
+        Memory::initialize(info.memoryRegion.start, info.memoryRegion.end);
+        CXXRuntime::initialize();
 
-        if (!GRUB::checkMultiboot(mbMagic, mbInfo)) Console::info("Multiboot structure is corrupted");
-        else Console::info("Multiboot structure is OK");
+        Arch::initialize();
+
+        Console::info("Memory region:");
+        Console::info("        start: ", false);
+        Console::println(STDLib::hex(info.memoryRegion.start));
+        Console::info("          end: ", false);
+        Console::println(STDLib::hex(info.memoryRegion.end));
+
+        Console::newline();
 
         Console::info("CPU manufacturer: ", false);
         Console::println(Arch::CPU::manufacturer(), 0x05);
@@ -36,7 +45,7 @@ namespace Kernel {
         // Start the interactive shell
         Shell::run();
 
-        // CXXRuntime::finalize();
+        CXXRuntime::finalize();
 
         Arch::Interrupt::disable();
         Arch::CPU::halt();
