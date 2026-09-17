@@ -1,5 +1,5 @@
 #include <libgrub/multiboot.hpp>
-#include <libelf/elf.hpp>
+#include <libelf/file.hpp>
 #include <libarch/api.hpp>
 #include <libstd/string.hpp>
 #include <libstd/assert.hpp>
@@ -48,8 +48,6 @@ namespace UnityBoot {
             }
         }
 
-        STDLib::assert(sqrt(100) == 10, "sqrt(100) == 10");
-
         Console::ok(cmdline);
 
         Console::info("Module start: ", false);
@@ -58,17 +56,64 @@ namespace UnityBoot {
         Console::info("Module end: ", false);
         Console::println(STDLib::toString(moduleEnd));
 
-        ELF::ELFHeaderParser elfparser{reinterpret_cast<void*>(moduleStart)};
+        ELF::ELFFile elf{reinterpret_cast<void*>(moduleStart)};
 
-        // auto header_ok = ELF::parseHeader(reinterpret_cast<void*>(moduleStart));
-
-        if (elfparser.isValid()) {
+        if (elf.isValid()) {
             Console::ok("ELF Header is OK");
 
-            auto header = elfparser.__header();
-        //     // auto pheader = ELF::parseProgramHeader()
+            elf.dumpHeader();
 
-            ELF::dump(header);
+            Console::newline();
+
+            Console::info("ELF segments dump:");
+
+            for (auto segment : elf.segments()) {
+                Console::info("Segment type: ", false);
+                Console::println(STDLib::hex(static_cast<int>(segment.type)));
+
+                Console::info("Segment file offset: ", false);
+                Console::println(STDLib::hex(segment.offset));
+
+                Console::info("Segment physical address: ", false);
+                Console::println(STDLib::hex(segment.paddr));
+                
+                Console::info("Segment virtual address: ", false);
+                Console::println(STDLib::hex(segment.vaddr));
+
+                Console::info("Segment file size: ", false);
+                Console::println(STDLib::toString(segment.fsize));
+
+                Console::info("Segment memory size: ", false);
+                Console::println(STDLib::toString(segment.msize));
+
+                Console::newline();
+            }
+
+            Console::info("ELF sections dump:");
+
+            for (auto section : elf.sections()) {
+                Console::info("Section type: ", false);
+                Console::println(STDLib::hex(static_cast<int>(section.type)));
+
+                Console::info("Section file offset: ", false);
+                Console::println(STDLib::hex(section.offset));
+
+                Console::info("Section szie in bytes: ", false);
+                Console::println(STDLib::toString(section.size));
+
+                Console::newline();
+            }
+
+            Console::info("Loading ELF to memory...");
+
+            elf.load();
+
+            Console::ok("ELF loaded successfully");
+
+            Console::info("Entry address: ", false);
+            Console::println(STDLib::hex(elf.entryAddress()));
+
+            reinterpret_cast<void(*)()>(elf.entryAddress())(); // Call kernelMain
         }
 
         else Console::fail("ELF header is corrupted");
