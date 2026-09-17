@@ -13,7 +13,7 @@ namespace Arch {
             return X86::CPU::manufacturer(X86::CPU::cpuid(0));
         }
 
-        [[noreturn]] void halt() {
+        void halt() {
             X86::CPU::halt();
         }
     }

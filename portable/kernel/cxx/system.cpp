@@ -5,7 +5,7 @@
 #include <kernel/system.hpp>
 
 namespace Kernel::System {
-    [[noreturn]] void panic(std::string_view who, std::string_view what) {
+    void panic(std::string_view who, std::string_view what) {
         Console::newline();
         Console::println("==== KERNEL PANIC ====", 0x0C);
         Console::newline();
@@ -20,7 +20,7 @@ namespace Kernel::System {
         Arch::CPU::halt();
     }
 
-    [[noreturn]] void reboot() {
+    void reboot() {
         //Try to reboot using 8042 keyboard controller
         Arch::X86::PMIO::write<uint8_t>(0x64, 0xFE);
         

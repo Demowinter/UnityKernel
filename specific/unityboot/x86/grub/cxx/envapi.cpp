@@ -63,7 +63,7 @@ namespace ENV {
     }
 
     namespace System {
-        [[noreturn]] void panic(std::string_view who, std::string_view what) {
+        void panic(std::string_view who, std::string_view what) {
             UnityBoot::System::panic(who, what);
         }
     }

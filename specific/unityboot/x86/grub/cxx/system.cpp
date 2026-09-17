@@ -4,7 +4,7 @@
 #include <unityboot/system.hpp>
 
 namespace UnityBoot::System {
-    [[noreturn]] void panic(std::string_view who, std::string_view what) {
+    void panic(std::string_view who, std::string_view what) {
         Console::newline();
         Console::println("==== UNITYBOOT PANIC ====", 0x0C);
         Console::newline();

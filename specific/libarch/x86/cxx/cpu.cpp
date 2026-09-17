@@ -23,7 +23,7 @@ namespace Arch::X86::CPU {
         return STDLib::String(reinterpret_cast<char*>(mf), 12);
     }
 
-    [[noreturn]] void halt() {
+    void halt() {
         while (true) asm("hlt");
     }
 }
