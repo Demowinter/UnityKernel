@@ -57,6 +57,7 @@ namespace Kernel::Shell {
         Console::println("clear             Clear the screen");
         Console::println("echo <text>       Print text to console");
         Console::println("reboot            Reboot the system");
+        Console::println("shutdown          Halt the system");
         Console::println("");
     }
 
@@ -79,6 +80,12 @@ namespace Kernel::Shell {
         System::reboot();
     }
 
+   static void cmdShutdown(std::string_view args) {
+        (void)args;  // Unused
+        Console::println("Shutting down...");
+        System::shutdown();
+    }
+
     void executeCommand(std::string_view cmd) {
         cmd = trim(cmd);
         
@@ -97,6 +104,8 @@ namespace Kernel::Shell {
             cmdEcho(args);
         } else if (strcmp(command, "reboot")) {
             cmdReboot(args);
+        } else if (strcmp(command, "shutdown")) {
+            cmdShutdown(args);
         } else {
             Console::print("Unknown command: ");
             Console::println(command);

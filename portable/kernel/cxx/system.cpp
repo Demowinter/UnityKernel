@@ -28,4 +28,18 @@ namespace Kernel::System {
         Arch::Interrupt::disable();
         Arch::CPU::halt();
     }
+
+    void shutdown() {
+        //Try to shutdown using ACPI
+        Arch::X86::PMIO::write<uint16_t>(0x604, 0x2000);
+        
+        //Fallback: just halt if shutdown fails
+        Arch::Interrupt::disable();
+        Arch::CPU::halt();
+    }
+
+    void halt() {
+        Arch::Interrupt::disable();
+        Arch::CPU::halt();
+    }
 }
