@@ -14,7 +14,9 @@ namespace ELF {
         bool errorFlag = memcmp(header.ident.magic, ELF::elfmagic, 4)
                             || header.ident.endian != ELFEndian::LITTLE
                             || header.ident.elfclass != ELFClass::ELF64
-                            && header.ident.elfclass != ELFClass::ELF32;
+                            && header.ident.elfclass != ELFClass::ELF32
+                            || header.ident.elfclass == ELFClass::ELF64
+                            && !supportsELF64;
 
         header.ident.valid = !errorFlag;
 
