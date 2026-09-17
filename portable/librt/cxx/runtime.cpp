@@ -1,6 +1,7 @@
 #include <array>
 #include <atomic>
 #include <string_view>
+#include <exception>
 #include <cstddef>
 #include <cstdint>
 #include <libarch/api.hpp>
@@ -84,14 +85,14 @@ extern "C" {
 
 // C API
 extern "C" {
-    [[noreturn]] void abort() {
+    void abort() {
         CXXRuntime::abort("::abort()", "abnormal program termination");
     }
 }
 
 // C++ API
 namespace std {
-    [[noreturn]] void terminate() {
+    void terminate() noexcept {
         CXXRuntime::abort("std::terminate()", "unrecoverable C++ runtime failure");
     }
 }
@@ -131,11 +132,11 @@ namespace CXXRuntime {
         __cxa_finalize(nullptr);
     }
 
-    [[noreturn]] void abort(std::string_view what) {
+    void abort(std::string_view what) noexcept {
         abort("CXXRuntime::abort()", what);
     }
 
-    [[noreturn]] void abort(std::string_view who, std::string_view what) {
+    void abort(std::string_view who, std::string_view what) noexcept {
         static bool aborted = false;
 
         if (!aborted) {
