@@ -46,6 +46,14 @@ namespace LLTools {
         return nullptr;
     }
 
+    MemoryBlockHeader* FirstFitAllocator::getFirstBlock() {
+        return firstMemoryBlock;
+    }
+
+    MemoryBlockHeader* FirstFitAllocator::getLastBlock() {
+        return lastMemoryBlock;
+    }
+
     void FirstFitAllocator::deallocate(uint8_t* ptr) {
         if (!ptr || !firstMemoryBlock || !lastMemoryBlock) return;
 

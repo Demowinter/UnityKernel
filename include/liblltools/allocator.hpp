@@ -30,6 +30,9 @@ namespace LLTools {
         uint8_t* allocate(size_t size);
         void deallocate(uint8_t* ptr);
 
+        MemoryBlockHeader* getFirstBlock();
+        MemoryBlockHeader* getLastBlock();
+
     private:
         MemoryBlockHeader* split(MemoryBlockHeader* mbh, size_t size);
         void merge(MemoryBlockHeader* mbh1, MemoryBlockHeader* mbh2);
