@@ -5,7 +5,7 @@
 namespace ELF {
     class ELFSegmentIterator {
     public:
-        ELFSegmentIterator(void* addr, ELFHeader header);
+        ELFSegmentIterator(const ELFHeader& header, void* addr);
 
         ELFSegmentEntry operator*() const;
         ELFSegmentEntry operator->() const;
@@ -16,14 +16,14 @@ namespace ELF {
         bool operator!=(const ELFSegmentIterator& other) const;
 
     private:
-        ELFHeader header;
+        const ELFHeader& header;
 
         void* addr;
     };
 
     class ELFSegmentTable {
     public:
-        ELFSegmentTable(ELFHeader header, void* baseAddr);
+        ELFSegmentTable(const ELFHeader& header, void* baseAddr);
 
         ELFSegmentEntry at(size_t index);
 
@@ -31,7 +31,7 @@ namespace ELF {
         ELFSegmentIterator end();
 
     private:
-        ELFHeader header;
+        const ELFHeader& header;
 
         void* startAddr;
         void* endAddr;

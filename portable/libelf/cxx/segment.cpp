@@ -6,7 +6,7 @@
 #include <libelf/segment.hpp>
 
 namespace ELF {
-    ELFSegmentIterator::ELFSegmentIterator(void* addr, ELFHeader header) : header{header}, addr{addr} {}
+    ELFSegmentIterator::ELFSegmentIterator(const ELFHeader& header, void* addr) : header{header}, addr{addr} {}
 
     ELFSegmentEntry ELFSegmentIterator::operator*() const {
         return parseSegmentEntry(addr, header);
@@ -30,7 +30,7 @@ namespace ELF {
         return addr != other.addr;
     }
 
-    ELFSegmentTable::ELFSegmentTable(ELFHeader header, void* baseAddr) : header{header} {
+    ELFSegmentTable::ELFSegmentTable(const ELFHeader& header, void* baseAddr) : header{header} {
         startAddr = static_cast<uint8_t*>(baseAddr) + header.phoff;
         endAddr = static_cast<uint8_t*>(startAddr) + header.phnum * header.phentsize;
     }
@@ -40,10 +40,10 @@ namespace ELF {
     }
 
     ELFSegmentIterator ELFSegmentTable::begin() {
-        return ELFSegmentIterator{startAddr, header};
+        return ELFSegmentIterator{header, startAddr};
     }
 
     ELFSegmentIterator ELFSegmentTable::end() {
-        return ELFSegmentIterator{endAddr, header};
+        return ELFSegmentIterator{header, endAddr};
     }
 }

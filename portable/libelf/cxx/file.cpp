@@ -5,15 +5,10 @@
 #include <libelf/file.hpp>
 
 namespace ELF {
-    ELFFile::ELFFile(void* addr) : baseAddr{addr} {
-        auto result = parseHeader(addr);
-
-        errorFlag = !result.has_value();
-        header = result.value_or(ELFHeader{});
-    }
+    ELFFile::ELFFile(void* addr) : header{parseHeader(addr)}, baseAddr{addr} {}
 
     bool ELFFile::isValid() {
-        return !errorFlag;
+        return header.ident.valid;
     }
 
     ELFClass ELFFile::elfclass() {
@@ -56,13 +51,13 @@ namespace ELF {
         return header.shnum;
     }
 
-    ELFSegmentTable ELFFile::segments() {
-        return ELFSegmentTable{header, baseAddr};
+    ELFSegmentTable& ELFFile::segments() {
+        return segmentTable;
     }
 
-    ELFSectionTable ELFFile::sections() {
-        return ELFSectionTable{header, baseAddr};
-    }
+    // ELFSectionTable ELFFile::sections() {
+    //     return sectionTable;
+    // }
 
     void ELFFile::dumpHeader() {
         Utils::dump(header);

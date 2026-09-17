@@ -1,4 +1,3 @@
-#include <optional>
 #include <cstdint>
 #include <libbase/memory.hpp>
 #include <liblltools/cursor.hpp>
@@ -6,7 +5,7 @@
 #include <libelf/parser.hpp>
 
 namespace ELF {
-    std::optional<ELFHeader> parseHeader(void* addr) {
+    ELFHeader parseHeader(void* addr) {
         LLTools::Cursor cursor{addr};
 
         ELFHeader header{};
@@ -17,7 +16,9 @@ namespace ELF {
                             || header.ident.elfclass != ELFClass::ELF64
                             && header.ident.elfclass != ELFClass::ELF32;
 
-        if (errorFlag) return std::nullopt;
+        header.ident.valid = !errorFlag;
+
+        if (errorFlag) return header;
 
         header.type = cursor.read<ELFType>();
         header.machine = cursor.read<ELFMachine>();

@@ -137,14 +137,15 @@ namespace ELF {
         uint8_t version;
         ELFABI abi;
         uint8_t abiversion;
-        uint8_t padding[7];
+        uint8_t valid;
+        uint8_t padding[6];
     };
 
     struct ELFHeader {
-        ELFIdent ident;
-        ELFType type;
-        ELFMachine machine;
-        ELFVersion version;
+        ELFIdent ident;     // Magic number and other info
+        ELFType type;       // Object file type
+        ELFMachine machine; // Architecture
+        ELFVersion version; // Object file version
         uint64_t entry;     // Entry point function virtual address
         uint64_t phoff;     // Program header table offset
         uint64_t shoff;     // Section header table offset
@@ -158,26 +159,26 @@ namespace ELF {
     };
 
     struct ELFSegmentEntry {
-        ELFSegmentType type;
-        ELFSegmentFlag flags;
-        uint64_t offset;
-        uint64_t vaddr;
-        uint64_t paddr;
-        uint64_t fsize;
-        uint64_t msize;
-        uint64_t align;
+        ELFSegmentType type;    // Segment type
+        ELFSegmentFlag flags;   // Segment flags
+        uint64_t offset;        // Segment file offset
+        uint64_t vaddr;         // Segment virtual address
+        uint64_t paddr;         // Segment physical address
+        uint64_t fsize;         // Segment size in file
+        uint64_t msize;         // Segment size in memory
+        uint64_t align;         // Segment alignment
     };
 
     struct ELFSectionEntry {
-        uint32_t name;
-        ELFSectionType type;
-        ELFSectionFlag flags;
-        uint64_t addr;
-        uint64_t offset;
-        uint64_t size;
-        uint32_t link;
-        uint32_t info;
-        uint64_t addralign;
-        uint64_t entsize;
+        uint32_t name;          // Section name (string tbl index)
+        ELFSectionType type;    // Section type
+        ELFSectionFlag flags;   // Section flags
+        uint64_t addr;          // Section virtual addr at execution
+        uint64_t offset;        // Section file offset
+        uint64_t size;          // Section size in bytes
+        uint32_t link;          // Link to another section
+        uint32_t info;          // Additional section information
+        uint64_t addralign;     // Section alignment
+        uint64_t entsize;       // Entry size if section holds table
     };
 }

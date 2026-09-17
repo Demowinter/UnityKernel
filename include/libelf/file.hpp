@@ -27,8 +27,8 @@ namespace ELF {
         size_t segmentEntryCount();
         size_t sectionEntryCount();
 
-        ELFSegmentTable segments();
-        ELFSectionTable sections();
+        ELFSegmentTable& segments();
+        ELFSectionTable& sections();
 
         void dumpHeader();
 
@@ -37,6 +37,8 @@ namespace ELF {
 
         void* baseAddr;
 
-        bool errorFlag;
+        ELFSegmentTable segmentTable{header, baseAddr};
+        // ELFSectionTable sectionTable{header, baseAddr};
+
     };
 }
