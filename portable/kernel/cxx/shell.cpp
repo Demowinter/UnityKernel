@@ -82,8 +82,17 @@ namespace Kernel::Shell {
 
    static void cmdShutdown(std::string_view args) {
         (void)args;  // Unused
-        Console::println("Shutting down...");
-        System::shutdown();
+        Console::println("Are you sure you want to shutdown? (y/n)");
+        static constexpr size_t bufferSize = 16;
+        //read input from user
+        char inputBuffer[bufferSize];
+        size_t len = Console::readline(inputBuffer, bufferSize);
+        if (len > 0 && (inputBuffer[0] == 'y' || inputBuffer[0] == 'Y')) {
+            Console::println("Shutting down...");
+            System::shutdown();
+        } else {
+            Console::println("Shutdown cancelled.");
+        }
     }
 
     void executeCommand(std::string_view cmd) {
