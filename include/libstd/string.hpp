@@ -140,4 +140,6 @@ namespace STDLib {
     String toString(uint64_t value, int base = 10);
     
     String toString(float value);
+
+    String hex(uint64_t value);
 }

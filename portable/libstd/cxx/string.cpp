@@ -388,4 +388,8 @@ namespace STDLib {
 
         return String{buf};
     }
+
+    String hex(uint64_t value) {
+        return "0x" + STDLib::toString(value, 16);
+    }
 }
