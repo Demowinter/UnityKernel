@@ -1,6 +1,9 @@
 set(LIBELF_SOURCES
+    cxx/file.cpp
+    cxx/segment.cpp
     cxx/loader.cpp
     cxx/parser.cpp
+    cxx/dump.cpp
 )
 
 add_library(libelf STATIC ${LIBELF_SOURCES})
