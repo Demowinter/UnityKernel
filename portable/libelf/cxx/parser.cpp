@@ -1,9 +1,9 @@
 #include <optional>
-#include <cstddef>
 #include <cstdint>
 #include <libbase/memory.hpp>
 #include <liblltools/cursor.hpp>
-#include <libelf/elf.hpp>
+#include <libelf/header.hpp>
+#include <libelf/parser.hpp>
 
 namespace ELF {
     std::optional<ELFHeader> parseHeader(void* addr) {
@@ -12,8 +12,12 @@ namespace ELF {
         ELFHeader header{};
         header.ident = cursor.read<ELFIdent>();
 
-        if (memcmp(header.ident.magic, ELF::elfmagic, 4)) return std::nullopt;
-        if (header.ident.endian != ELFEndian::LITTLE) return std::nullopt;
+        bool errorFlag = memcmp(header.ident.magic, ELF::elfmagic, 4)
+                            || header.ident.endian != ELFEndian::LITTLE
+                            || header.ident.elfclass != ELFClass::ELF64
+                            && header.ident.elfclass != ELFClass::ELF32;
+
+        if (errorFlag) return std::nullopt;
 
         header.type = cursor.read<ELFType>();
         header.machine = cursor.read<ELFMachine>();
@@ -25,7 +29,7 @@ namespace ELF {
             header.shoff = cursor.read<uint64_t>();
         }
 
-        else {
+        else if (header.ident.elfclass == ELFClass::ELF32) {
             header.entry = cursor.read<uint32_t>();
             header.phoff = cursor.read<uint32_t>();
             header.shoff = cursor.read<uint32_t>();
@@ -42,134 +46,69 @@ namespace ELF {
         return header;
     }
 
-    ELFProgramHeader parseProgramHeader(void* addr, ELFHeader& elfheader) {
-        LLTools::Cursor cursor{addr};
+    ELFSegmentEntry parseSegmentEntry(void* entryAddr, const ELFHeader& header) {
+        LLTools::Cursor cursor{entryAddr};
 
-        ELFProgramHeader header{};
-        header.type = cursor.read<ELFProgramType>();
+        ELFSegmentEntry entry{};
+        entry.type = cursor.read<ELFSegmentType>();
 
-        if (elfheader.ident.elfclass == ELFClass::ELF64) {
-            header.flags = cursor.read<uint32_t>();
-            header.offset = cursor.read<uint64_t>();
-            header.vaddr = cursor.read<uint64_t>();
-            header.paddr = cursor.read<uint64_t>();
-            header.fsize = cursor.read<uint64_t>();
-            header.msize = cursor.read<uint64_t>();
-            header.align = cursor.read<uint64_t>();
+        if (header.ident.elfclass == ELFClass::ELF64) {
+            entry.flags = cursor.read<ELFSegmentFlag>();
+            entry.offset = cursor.read<uint64_t>();
+            entry.vaddr = cursor.read<uint64_t>();
+            entry.paddr = cursor.read<uint64_t>();
+            entry.fsize = cursor.read<uint64_t>();
+            entry.msize = cursor.read<uint64_t>();
+            entry.align = cursor.read<uint64_t>();
         }
 
         else {
-            header.offset = cursor.read<uint32_t>();
-            header.vaddr = cursor.read<uint32_t>();
-            header.paddr = cursor.read<uint32_t>();
-            header.fsize = cursor.read<uint32_t>();
-            header.msize = cursor.read<uint32_t>();
-            header.flags = cursor.read<uint32_t>();
-            header.align = cursor.read<uint32_t>();
+            entry.offset = cursor.read<uint32_t>();
+            entry.vaddr = cursor.read<uint32_t>();
+            entry.paddr = cursor.read<uint32_t>();
+            entry.fsize = cursor.read<uint32_t>();
+            entry.msize = cursor.read<uint32_t>();
+            entry.flags = cursor.read<ELFSegmentFlag>();
+            entry.align = cursor.read<uint32_t>();
         }
 
-        return header;
+        return entry;
     }
 
-    ELFSectionHeader parseSectionHeader(void* addr, ELFHeader& elfheader) {
-        LLTools::Cursor cursor{addr};
+    ELFSectionEntry parseSectionEntry(void* entryAddr, const ELFHeader& header) {
+        LLTools::Cursor cursor{entryAddr};
 
-        ELFSectionHeader header{};
-        header.name = cursor.read<uint32_t>();
-        header.type = cursor.read<ELFSectionType>();
+        ELFSectionEntry entry{};
+        entry.name = cursor.read<uint32_t>();
+        entry.type = cursor.read<ELFSectionType>();
         
-        if (elfheader.ident.elfclass == ELFClass::ELF64) {
-            header.flags = cursor.read<uint64_t>();
-            header.addr = cursor.read<uint64_t>();
-            header.offset = cursor.read<uint64_t>();
-            header.size = cursor.read<uint64_t>();
+        if (header.ident.elfclass == ELFClass::ELF64) {
+            entry.flags = cursor.read<ELFSectionFlag>();
+            entry.addr = cursor.read<uint64_t>();
+            entry.offset = cursor.read<uint64_t>();
+            entry.size = cursor.read<uint64_t>();
         }
 
         else {
-            header.flags = cursor.read<uint32_t>();
-            header.addr = cursor.read<uint32_t>();
-            header.offset = cursor.read<uint32_t>();
-            header.size = cursor.read<uint32_t>();
+            entry.flags = cursor.read<ELFSectionFlag>();
+            entry.addr = cursor.read<uint32_t>();
+            entry.offset = cursor.read<uint32_t>();
+            entry.size = cursor.read<uint32_t>();
         }
 
-        header.link = cursor.read<uint32_t>();
-        header.info = cursor.read<uint32_t>();
+        entry.link = cursor.read<uint32_t>();
+        entry.info = cursor.read<uint32_t>();
 
-        if (elfheader.ident.elfclass == ELFClass::ELF64) {
-            header.addralign = cursor.read<uint64_t>();
-            header.entsize = cursor.read<uint64_t>();
+        if (header.ident.elfclass == ELFClass::ELF64) {
+            entry.addralign = cursor.read<uint64_t>();
+            entry.entsize = cursor.read<uint64_t>();
         }
 
         else {
-            header.addralign = cursor.read<uint32_t>();
-            header.entsize = cursor.read<uint32_t>();
+            entry.addralign = cursor.read<uint32_t>();
+            entry.entsize = cursor.read<uint32_t>();
         }
 
-        return header;
-    }
-
-    ELFHeaderParser::ELFHeaderParser(void* addr) : baseAddr{addr} {
-        LLTools::Cursor cursor{addr};
-
-        header.ident = cursor.read<ELFIdent>();
-
-        errorFlag = memcmp(header.ident.magic, ELF::elfmagic, 4)
-                    || header.ident.endian != ELFEndian::LITTLE
-                    || header.ident.elfclass != ELFClass::ELF64
-                    && header.ident.elfclass != ELFClass::ELF32;
-
-        if (!errorFlag) {
-            header.type = cursor.read<ELFType>();
-            header.machine = cursor.read<ELFMachine>();
-            header.version = cursor.read<ELFVersion>();
-
-            if (header.ident.elfclass == ELFClass::ELF64) {
-                header.entry = cursor.read<uint64_t>();
-                header.phoff = cursor.read<uint64_t>();
-                header.shoff = cursor.read<uint64_t>();
-            }
-
-            else if (header.ident.elfclass == ELFClass::ELF32) {
-                header.entry = cursor.read<uint32_t>();
-                header.phoff = cursor.read<uint32_t>();
-                header.shoff = cursor.read<uint32_t>();
-            }
-
-            header.flags = cursor.read<uint32_t>();
-            header.ehsize = cursor.read<uint16_t>();
-            header.phentsize = cursor.read<uint16_t>();
-            header.phnum = cursor.read<uint16_t>();
-            header.shentsize = cursor.read<uint16_t>();
-            header.shnum = cursor.read<uint16_t>();
-            header.shstrtndx = cursor.read<uint16_t>();
-        }
-    }
-
-    bool ELFHeaderParser::isValid() {
-        return !errorFlag;
-    }
-
-    ELFClass ELFHeaderParser::elfclass() {
-        return header.ident.elfclass;
-    }
-
-    ELFEndian ELFHeaderParser::endian() {
-        return header.ident.endian;
-    }
-
-    ELFABI ELFHeaderParser::abi() {
-        return header.ident.abi;
-    }
-
-    uintptr_t ELFHeaderParser::entryAddress() {
-        return header.entry;
-    }
-
-    uintptr_t ELFHeaderParser::programHeaderOffset() {
-        return header.phoff;
-    }
-
-    uintptr_t ELFHeaderParser::sectionHeaderOffset() {
-        return header.shoff;
+        return entry;
     }
 }
