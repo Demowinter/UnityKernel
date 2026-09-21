@@ -1,6 +1,7 @@
 #include <kernel/shell.hpp>
 #include <kernel/console.hpp>
 #include <kernel/system.hpp>
+#include <libarch/api.hpp>
 #include <libstd/string.hpp>
 #include <libbase/string.hpp>
 
@@ -56,6 +57,8 @@ namespace Kernel::Shell {
         Console::println("help              Show this help message");
         Console::println("clear             Clear the screen");
         Console::println("echo <text>       Print text to console");
+        Console::println("uname             Print kernel info");
+        Console::println("cpuid             Print cpu manufacturer");
         Console::println("reboot            Reboot the system");
         Console::println("shutdown          Halt the system");
         Console::println("");
@@ -72,6 +75,14 @@ namespace Kernel::Shell {
             return;
         }
         Console::println(args);
+    }
+
+    static void cmdUname(std::string_view args) {
+        Console::println("UnityKernel v0.1.0-alpha");
+    }
+
+    static void cmdCPUID(std::string_view args) {
+        Console::println(Arch::CPU::manufacturer());
     }
 
     static void cmdReboot(std::string_view args) {
@@ -113,6 +124,10 @@ namespace Kernel::Shell {
             cmdClear(args);
         } else if (strcmp(command, "echo")) {
             cmdEcho(args);
+        } else if (strcmp(command, "uname")) {
+            cmdUname(args);
+        } else if (strcmp(command, "cpuid")) {
+            cmdCPUID(args);
         } else if (strcmp(command, "reboot")) {
             cmdReboot(args);
         } else if (strcmp(command, "shutdown")) {
