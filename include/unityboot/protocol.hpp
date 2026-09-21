@@ -4,7 +4,7 @@
 #include <libplatform/api.hpp>
 
 namespace UnityBootProtocol {
-    struct Info {
+    struct BootInfo {
         Arch::Type arch;
         
         Platform::FirmwareType firmware;
