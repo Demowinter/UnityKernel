@@ -2,6 +2,13 @@
 #include <libstd/string.hpp>
 
 namespace Arch {
+    enum class Type {
+        x86,
+        x86_64,
+        ARM32,
+        ARM64
+    };
+
     void initialize();
 
     namespace CPU {
