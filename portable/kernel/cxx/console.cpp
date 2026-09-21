@@ -1,6 +1,7 @@
 #include <string_view>
 #include <cstddef>
 #include <cstdint>
+#include <libarch/api.hpp>
 #include <kernel/console.hpp>
 
 namespace Kernel::Console {
@@ -166,9 +167,7 @@ namespace Kernel::Console {
 
     char read() {
         //Blocking read
-        while (inputCount == 0) {
-            asm volatile("hlt");  //Wait for interrupt
-        }
+        while (inputCount == 0) Arch::CPU::halt();
 
         char ch = inputBuffer[inputTail];
         inputTail = (inputTail + 1) % inputBufferSize;
