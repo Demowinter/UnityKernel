@@ -1,6 +1,6 @@
 #pragma once
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 
 namespace GRUB {
     constexpr uint32_t multibootMagic = 0x36D76289;
@@ -49,13 +49,33 @@ namespace GRUB {
         using CommandLineTag = StringTag;
 
         struct ModuleTag : MultibootTag {
-            uintptr_t start;
-            uintptr_t end;
+            uint32_t start;
+            uint32_t end;
+
+            char string[];
         };
 
         struct LoadBaseAddrTag : MultibootTag {
-            uintptr_t addr;
+            uint32_t addr;
         };
+
+        struct FramebufferTag : MultibootTag {
+            uint64_t addr;
+            uint32_t pitch;
+            uint32_t width;
+            uint32_t height;
+            uint8_t bpp;
+            uint8_t fbtype;
+            uint8_t reserved;
+
+            // Now implemented only array of color descriptors
+            uint32_t paletteNumColors;
+            uint8_t red;
+            uint8_t green;
+            uint8_t blue;
+        };
+
+        
     }
 
     class MultibootTagIterator {
