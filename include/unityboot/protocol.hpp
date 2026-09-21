@@ -9,5 +9,6 @@ namespace UnityBootProtocol{
 
     struct Info {
         MemoryRegion memoryRegion;
+        char* cmdline;
     };
 }

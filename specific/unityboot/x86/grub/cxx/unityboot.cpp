@@ -120,6 +120,7 @@ namespace UnityBoot {
             UnityBootProtocol::Info info;
             info.memoryRegion.start = region.start;
             info.memoryRegion.end = region.end;
+            info.cmdline = cmdline.data();
 
             reinterpret_cast<void(*)(const UnityBootProtocol::Info&)>(elf.entryAddress())(info); // Call kernelMain
         }
