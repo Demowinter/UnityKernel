@@ -23,11 +23,11 @@ namespace Platform {
         Firmware
     };
 
-    struct BootInfo {
-        FirmwareType firmware;
-        BootloaderType bootloader;
+    // struct BootInfo {
+    //     FirmwareType firmware;
+    //     BootloaderType bootloader;
 
-    };
+    // };
 
     bool initialize();
 
@@ -36,7 +36,7 @@ namespace Platform {
     bool hasPCI();
     bool hasUSB();
 
-    BootInfo bootInfo();
+    // BootInfo bootInfo();
 
     void shutdown();
     void reboot();
