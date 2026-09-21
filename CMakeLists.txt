@@ -93,9 +93,6 @@ add_custom_target(run-uefi
     -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd
     -drive if=pflash,format=raw,file=${CMAKE_SOURCE_DIR}/utils/OVMF_VARS.fd
     -accel tcg
-    -no-reboot
-    -d in_asm,int,mmu,guest_errors,unimp,cpu_reset
-    -D qemu.log
 
     DEPENDS iso
 )
