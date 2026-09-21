@@ -3,6 +3,7 @@
 
 namespace Platform {
     enum class FirmwareType {
+        NONE,
         ROMFW,
         BIOS,
         UEFI
@@ -18,6 +19,7 @@ namespace Platform {
 
     // Hardware Description Type
     enum class HDType {
+        NONE,
         ACPI,
         DeviceTree,
         Firmware
