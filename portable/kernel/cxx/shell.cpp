@@ -123,7 +123,7 @@ namespace Kernel::Shell {
         }
     }
 
-    void run(char* kcmdline) {
+    void run(const char* kcmdline) {
         Console::clear();
         Console::println("=== UnityKernel Shell ===");
         Console::print("Kernel command line: ");
