@@ -58,7 +58,7 @@ namespace UnityBoot {
                 case GRUB::MultibootTagType::Efi64: bootInfo.firmware = Platform::FirmwareType::UEFI; break;
 
                 case GRUB::MultibootTagType::AcpiOld:
-                case GRUB::MultibootTagType::AcpiNew: bootInfo.hardwareDescriptoinType = Platform::HDType::ACPI; break;
+                case GRUB::MultibootTagType::AcpiNew: bootInfo.hardwareDescriptionType = Platform::HDType::ACPI; break;
             }
         }
 

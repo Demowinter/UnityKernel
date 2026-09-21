@@ -9,7 +9,7 @@ namespace UnityBootProtocol {
         
         Platform::FirmwareType firmware;
         Platform::BootloaderType bootloader;
-        Platform::HDType hardwareDescriptoinType;
+        Platform::HDType hardwareDescriptionType;
 
         uintptr_t kernelELFStart;
         uintptr_t kernelELFEnd;
