@@ -7,7 +7,7 @@ namespace Arch {
     namespace CPU {
         STDLib::String manufacturer();
 
-        [[noreturn]] void halt();
+        void halt();
     }
 
     namespace Interrupt {

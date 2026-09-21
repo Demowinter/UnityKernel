@@ -14,5 +14,5 @@ namespace Arch::X86::CPU {
 
     STDLib::String manufacturer(const Info& info);
 
-    [[noreturn]] void halt();
+    void halt();
 }

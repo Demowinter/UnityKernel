@@ -24,6 +24,6 @@ namespace Arch::X86::CPU {
     }
 
     void halt() {
-        while (true) asm("hlt");
+        asm volatile("hlt");
     }
 }
