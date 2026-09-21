@@ -80,7 +80,7 @@ namespace STDLib {
         void pop_back();
 
         char* data();
-        const char* data() const; 
+        const char* data() const;
 
         void clear();
 
@@ -109,6 +109,8 @@ namespace STDLib {
         operator const std::string_view() const;
 
     private:
+        void updateNullTermination();
+
         std::unique_ptr<char[]> buffer = nullptr;
 
         size_t capacity = 0;

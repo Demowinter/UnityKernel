@@ -84,7 +84,7 @@ namespace STDLib {
     }
 
     void String::resize(size_t size){
-        std::unique_ptr<char[]> newbuffer{new char[size]};
+        std::unique_ptr<char[]> newbuffer{new char[size + 1]}; // one extra byte for null terminator
 
         memcpy(newbuffer.get(), buffer.get(), std::min(size, length));
 
@@ -106,12 +106,16 @@ namespace STDLib {
         if (length >= capacity) resize(length + 1);
 
         buffer[length++] = ch;
+
+        updateNullTermination();
     }
 
     void String::append(char ch, size_t size) {
         if (length + size > capacity) resize(length + size);
 
         while (size--) buffer[length++] = ch;
+
+        updateNullTermination();
     }
 
     void String::append(const char* str) {
@@ -122,6 +126,8 @@ namespace STDLib {
         if (length + size > capacity) resize(length + size);
 
         while (size--) buffer[length++] = *(str++);
+
+        updateNullTermination();
     }
 
     void String::append(const String& obj) {
@@ -135,11 +141,12 @@ namespace STDLib {
     void String::insert(size_t pos, char ch, size_t size) {
         if (length + size > capacity) resize(length + size);
 
-        // for (size_t index = length - 1; index >= pos; index--) buffer[index + size] = buffer[index];
         memmove(buffer.get() + pos + size, buffer.get() + pos, length - pos);
         memset(buffer.get() + pos, ch, size);
 
         length += size;
+
+        updateNullTermination();
     }
 
     void String::insert(size_t pos, const char* str) {
@@ -149,11 +156,12 @@ namespace STDLib {
     void String::insert(size_t pos, const char* str, size_t size) {
         if (length + size > capacity) resize(length + size);
 
-        // for (size_t index = length - 1; index >= pos; index--) buffer[index + size] = buffer[index];
         memmove(buffer.get() + pos + size, buffer.get() + pos, length - pos);
         memcpy(buffer.get() + pos, str, size);
 
         length += size;
+
+        updateNullTermination();
     }
 
     void String::insert(size_t pos, const String& obj) {
@@ -188,6 +196,8 @@ namespace STDLib {
         memmove(buffer.get() + pos, buffer.get() + pos + size, length - (pos + size));
 
         length -= size;
+
+        updateNullTermination();
     }
 
     void String::erase(Iterator pos) {
@@ -204,6 +214,8 @@ namespace STDLib {
 
     void String::pop_back() {
         length--;
+
+        updateNullTermination();
     }
 
     char* String::data() {
@@ -216,6 +228,8 @@ namespace STDLib {
 
     void String::clear() {
         length = 0;
+
+        updateNullTermination();
     }
 
     String String::substr(size_t pos, size_t size) {
@@ -288,6 +302,10 @@ namespace STDLib {
 
     String::operator const std::string_view() const {
         return view();
+    }
+
+    void String::updateNullTermination() {
+        *end() = 0;
     }
 
     String operator+(const String& lhs, const String& rhs) {
