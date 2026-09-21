@@ -25,15 +25,22 @@ namespace UnityBoot {
 
         GRUB::MultibootParser parser{mbInfo};
 
-        UnityBootProtocol::Info bootInfo;
+        UnityBootProtocol::BootInfo bootInfo{};
         bootInfo.arch = Arch::Type::x86;
+        bootInfo.firmware = Platform::FirmwareType::BIOS;
         bootInfo.bootloader = Platform::BootloaderType::GRUB;
-
         
         for (auto& tag : parser) {
             switch (tag.type) {
                 case GRUB::MultibootTagType::CommandLine: {
                     bootInfo.cmdline = reinterpret_cast<const GRUB::MBTags::CommandLineTag*>(&tag)->string;
+
+                    break;
+                }
+
+                case GRUB::MultibootTagType::BootLoaderName: {
+                    Console::info("Bootloader name: ", false);
+                    Console::println(reinterpret_cast<const GRUB::MBTags::BootLoaderNameTag*>(&tag)->string);
 
                     break;
                 }
@@ -47,10 +54,11 @@ namespace UnityBoot {
                     break;
                 }
 
-                case GRUB::MultibootTagType::BootLoaderName: {
-                    Console::info("Bootloader name: ", false);
-                    Console::println(reinterpret_cast<const GRUB::MBTags::BootLoaderNameTag*>(&tag)->string);
-                }
+                case GRUB::MultibootTagType::Efi32:
+                case GRUB::MultibootTagType::Efi64: bootInfo.firmware = Platform::FirmwareType::UEFI; break;
+
+                case GRUB::MultibootTagType::AcpiOld:
+                case GRUB::MultibootTagType::AcpiNew: bootInfo.hardwareDescriptoinType = Platform::HDType::ACPI; break;
             }
         }
 
@@ -68,12 +76,10 @@ namespace UnityBoot {
             Memory::freeze();
             Memory::MemoryRegion region = Memory::getFreeMemoryRegion();
 
-            bootInfo.firmware = Platform::FirmwareType::BIOS;
-            bootInfo.hardwareDescriptoinType = Platform::HDType::ACPI;
             bootInfo.heapStart = region.start;
             bootInfo.heapEnd = region.end;
 
-            // reinterpret_cast<void(*)(const UnityBootProtocol::Info&)>(elf.entryAddress())(bootInfo); // Call kernelMain
+            reinterpret_cast<void(*)(const UnityBootProtocol::BootInfo&)>(elf.entryAddress())(bootInfo); // Call kernelMain
         }
 
         else Console::fail("ELF header is corrupted");
