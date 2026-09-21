@@ -43,7 +43,7 @@ namespace Kernel {
         Console::newline();
 
         // Start the interactive shell
-        Shell::run();
+        Shell::run(info.cmdline);
 
         CXXRuntime::finalize();
 
