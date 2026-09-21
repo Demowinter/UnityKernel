@@ -1,14 +1,22 @@
 #pragma once
 #include <cstddef>
+#include <libarch/api.hpp>
+#include <libplatform/api.hpp>
 
-namespace UnityBootProtocol{
-    struct MemoryRegion {
-        uintptr_t start;
-        uintptr_t end;
-    };
-
+namespace UnityBootProtocol {
     struct Info {
-        MemoryRegion memoryRegion;
-        char* cmdline;
+        Arch::Type arch;
+        
+        Platform::FirmwareType firmware;
+        Platform::BootloaderType bootloader;
+        Platform::HDType hardwareDescriptoinType;
+
+        uintptr_t kernelELFStart;
+        uintptr_t kernelELFEnd;
+
+        uintptr_t heapStart;
+        uintptr_t heapEnd;
+        
+        const char* cmdline;
     };
 }

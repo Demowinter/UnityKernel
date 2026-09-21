@@ -17,16 +17,16 @@ namespace Kernel {
 
         Console::info("Starting kernel32...");
 
-        Memory::initialize(info.memoryRegion.start, info.memoryRegion.end);
-        CXXRuntime::initialize();
+        // Memory::initialize(info.memoryRegion.start, info.memoryRegion.end);
+        // CXXRuntime::initialize();
 
-        Arch::initialize();
+        // Arch::initialize();
 
-        Console::info("Memory region:");
-        Console::info("        start: ", false);
-        Console::println(STDLib::hex(info.memoryRegion.start));
-        Console::info("          end: ", false);
-        Console::println(STDLib::hex(info.memoryRegion.end));
+        // Console::info("Memory region:");
+        // Console::info("        start: ", false);
+        // Console::println(STDLib::hex(info.memoryRegion.start));
+        // Console::info("          end: ", false);
+        // Console::println(STDLib::hex(info.memoryRegion.end));
 
         Console::newline();
 
@@ -43,7 +43,7 @@ namespace Kernel {
         Console::newline();
 
         // Start the interactive shell
-        Shell::run(info.cmdline);
+        // Shell::run(info.cmdline);
 
         CXXRuntime::finalize();
 
