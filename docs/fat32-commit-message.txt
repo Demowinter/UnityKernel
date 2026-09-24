@@ -1,0 +1,63 @@
+Add FAT32 RAM disk and basic file shell commands
+
+Add a small sector-based block abstraction and a RAM-backed FAT32-style
+filesystem so the kernel can create, read, write, list, and remove files from
+the interactive shell.
+
+This change introduces Kernel::Block::MemoryDevice, a simple 512-byte sector
+device backed by a memory buffer. The device provides bounded LBA read/write
+operations and gives the filesystem layer a disk-like interface without
+requiring a real storage driver yet.
+
+Add Kernel::FAT32, which initializes a small in-memory FAT32-style volume with:
+
+- a FAT32 boot sector / BPB in sector 0
+- one FAT region
+- a root directory at cluster 2
+- fixed 512-byte clusters
+- FAT chain allocation and freeing
+- packed 32-byte FAT directory entries
+- short 8.3 filename validation and display conversion
+- absolute and relative path traversal
+- support for "." and ".."
+- file creation, overwrite, append, read, stat, and deletion
+- directory creation, listing, traversal, and empty-directory removal
+
+Mount the FAT32 RAM disk during kernel startup and print a startup message once
+it is available. The volume is seeded with /welcome.txt and /tmp so the shell
+has immediate filesystem state after boot.
+
+Extend the shell with Unix-like file commands:
+
+- pwd: print the current working directory
+- ls [path]: list a directory or show a file entry
+- cd <path>: change the current working directory
+- cat <file>: print file contents
+- touch <file>: create an empty file
+- write <file> <text>: replace file contents
+- append <file> <text>: append to file contents
+- mkdir <dir>: create a directory
+- rm <path>: remove a file or empty directory
+- stat <path>: show basic metadata
+
+Update the interactive prompt to include the current working directory, e.g.
+"/ $" and "/tmp $". Add filesystem status-to-text conversion so shell commands
+can report readable errors such as "not found", "is a directory", "directory not
+empty", and "invalid FAT32 8.3 name".
+
+The implementation is intentionally RAM-backed and volatile. It does not yet
+mount an external disk image, parse arbitrary FAT32 BPBs, support long file
+names, maintain timestamps, expose file descriptors, or connect to ATA/AHCI/
+virtio storage. Those are future steps; this commit establishes the kernel-side
+filesystem semantics, block-device boundary, and shell workflow needed for that
+work.
+
+Verification:
+
+- Built the project through Docker with:
+  docker build -t unitykernel .
+- Exported the rebuilt ISO to out/kernel.iso with:
+  docker run --rm -v "$PWD/out:/out" unitykernel sh -c 'cp build/kernel.iso /out/kernel.iso'
+- Smoke-ran the ISO under QEMU in Docker with an 8-second timeout. QEMU remained
+  alive until timeout, which is expected because the kernel enters the
+  interactive shell and waits for input.

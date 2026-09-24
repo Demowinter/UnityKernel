@@ -1,4 +1,6 @@
 set(KERNEL_SOURCES
+    cxx/block.cpp
+    cxx/fat32.cpp
     cxx/memory.cpp
     cxx/system.cpp
     cxx/console.cpp

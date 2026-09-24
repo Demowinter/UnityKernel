@@ -7,6 +7,7 @@
 #include <kernel/memory.hpp>
 #include <kernel/console.hpp>
 #include <kernel/shell.hpp>
+#include <kernel/fat32.hpp>
 #include <libstd/function.hpp>
 #include <libstd/string.hpp>
 #include <unityboot/protocol.hpp>
@@ -21,6 +22,7 @@ namespace Kernel {
         CXXRuntime::initialize();
 
         Arch::initialize();
+        FAT32::initialize();
 
         Console::info("Memory region:");
         Console::info("        start: ", false);
@@ -37,6 +39,7 @@ namespace Kernel {
 
         Console::print("Welcome to ");
         Console::println("UnityKernel! v0.1.0-alpha", 5);
+        Console::ok("Mounted FAT32 ram disk");
 
         Console::newline();
         Console::println("Starting shell...");

@@ -1,5 +1,6 @@
 #include <kernel/shell.hpp>
 #include <kernel/console.hpp>
+#include <kernel/fat32.hpp>
 #include <kernel/system.hpp>
 #include <libarch/api.hpp>
 #include <libstd/string.hpp>
@@ -50,6 +51,33 @@ namespace Kernel::Shell {
         return ltrim(cmd.substr(word.size()));
     }
 
+    static void printView(std::string_view text) {
+        for (char ch : text) Console::putchar(ch);
+    }
+
+    static void printFsError(std::string_view command, std::string_view target, FAT32::Status status) {
+        if (status == FAT32::Status::ok) return;
+
+        Console::print(command);
+        if (!target.empty()) {
+            Console::print(": ");
+            Console::print(target);
+        }
+        Console::print(": ");
+        Console::println(FAT32::statusText(status));
+    }
+
+    static void printEntry(const FAT32::EntryInfo& entry, void*) {
+        Console::print(entry.directory ? "d " : "- ");
+        Console::print(STDLib::toString(entry.size));
+        Console::print(" ");
+        Console::println(entry.name);
+    }
+
+    static void printChunk(std::string_view chunk, void*) {
+        printView(chunk);
+    }
+
     static void cmdHelp(std::string_view args) {
         (void)args;  // Unused
         Console::println("=== UnityKernel Shell Commands ===");
@@ -59,6 +87,16 @@ namespace Kernel::Shell {
         Console::println("echo <text>       Print text to console");
         Console::println("uname             Print kernel info");
         Console::println("cpuid             Print cpu manufacturer");
+        Console::println("pwd               Print current directory");
+        Console::println("ls [path]         List directory contents");
+        Console::println("cd <path>         Change directory");
+        Console::println("cat <file>        Print file contents");
+        Console::println("touch <file>      Create an empty file");
+        Console::println("write <file> <s>  Replace file with text");
+        Console::println("append <file> <s> Append text to file");
+        Console::println("mkdir <dir>       Create a directory");
+        Console::println("rm <path>         Remove a file or empty directory");
+        Console::println("stat <path>       Show file metadata");
         Console::println("reboot            Reboot the system");
         Console::println("shutdown          Halt the system");
         Console::println("");
@@ -83,6 +121,109 @@ namespace Kernel::Shell {
 
     static void cmdCPUID(std::string_view args) {
         Console::println(Arch::CPU::manufacturer());
+    }
+
+    static void cmdPwd(std::string_view args) {
+        (void)args;
+        Console::println(FAT32::cwd());
+    }
+
+    static void cmdLs(std::string_view args) {
+        FAT32::Status status = FAT32::list(args.empty() ? std::string_view(".") : args, printEntry, nullptr);
+        printFsError("ls", args, status);
+    }
+
+    static void cmdCd(std::string_view args) {
+        FAT32::Status status = FAT32::changeDirectory(args.empty() ? std::string_view("/") : args);
+        printFsError("cd", args, status);
+    }
+
+    static void cmdCat(std::string_view args) {
+        if (args.empty()) {
+            Console::println("cat: missing file");
+            return;
+        }
+
+        FAT32::Status status = FAT32::readFile(args, printChunk, nullptr);
+        if (status == FAT32::Status::ok) Console::newline();
+        else printFsError("cat", args, status);
+    }
+
+    static void cmdTouch(std::string_view args) {
+        if (args.empty()) {
+            Console::println("touch: missing file");
+            return;
+        }
+
+        FAT32::Status status = FAT32::touch(args);
+        printFsError("touch", args, status);
+    }
+
+    static void cmdWrite(std::string_view args) {
+        std::string_view path = getFirstWord(args);
+        std::string_view text = getArgs(args);
+
+        if (path.empty()) {
+            Console::println("write: missing file");
+            return;
+        }
+
+        FAT32::Status status = FAT32::writeFile(path, text, false);
+        printFsError("write", path, status);
+    }
+
+    static void cmdAppend(std::string_view args) {
+        std::string_view path = getFirstWord(args);
+        std::string_view text = getArgs(args);
+
+        if (path.empty()) {
+            Console::println("append: missing file");
+            return;
+        }
+
+        FAT32::Status status = FAT32::writeFile(path, text, true);
+        printFsError("append", path, status);
+    }
+
+    static void cmdMkdir(std::string_view args) {
+        if (args.empty()) {
+            Console::println("mkdir: missing directory");
+            return;
+        }
+
+        FAT32::Status status = FAT32::makeDirectory(args);
+        printFsError("mkdir", args, status);
+    }
+
+    static void cmdRm(std::string_view args) {
+        if (args.empty()) {
+            Console::println("rm: missing path");
+            return;
+        }
+
+        FAT32::Status status = FAT32::remove(args);
+        printFsError("rm", args, status);
+    }
+
+    static void cmdStat(std::string_view args) {
+        if (args.empty()) {
+            Console::println("stat: missing path");
+            return;
+        }
+
+        FAT32::EntryInfo info;
+        FAT32::Status status = FAT32::stat(args, info);
+        if (status != FAT32::Status::ok) {
+            printFsError("stat", args, status);
+            return;
+        }
+
+        Console::print(info.directory ? "directory " : "file ");
+        Console::println(info.name);
+        Console::print("size: ");
+        Console::println(STDLib::toString(info.size));
+        Console::print("cluster: ");
+        Console::println(STDLib::toString(info.cluster));
     }
 
     static void cmdReboot(std::string_view args) {
@@ -128,6 +269,26 @@ namespace Kernel::Shell {
             cmdUname(args);
         } else if (strcmp(command, "cpuid")) {
             cmdCPUID(args);
+        } else if (strcmp(command, "pwd")) {
+            cmdPwd(args);
+        } else if (strcmp(command, "ls")) {
+            cmdLs(args);
+        } else if (strcmp(command, "cd")) {
+            cmdCd(args);
+        } else if (strcmp(command, "cat")) {
+            cmdCat(args);
+        } else if (strcmp(command, "touch")) {
+            cmdTouch(args);
+        } else if (strcmp(command, "write")) {
+            cmdWrite(args);
+        } else if (strcmp(command, "append")) {
+            cmdAppend(args);
+        } else if (strcmp(command, "mkdir")) {
+            cmdMkdir(args);
+        } else if (strcmp(command, "rm")) {
+            cmdRm(args);
+        } else if (strcmp(command, "stat")) {
+            cmdStat(args);
         } else if (strcmp(command, "reboot")) {
             cmdReboot(args);
         } else if (strcmp(command, "shutdown")) {
@@ -150,7 +311,8 @@ namespace Kernel::Shell {
         char inputBuffer[bufferSize];
 
         while (true) {
-            Console::print("> ");
+            Console::print(FAT32::cwd());
+            Console::print(" $ ");
             
             size_t len = Console::readline(inputBuffer, bufferSize);
             
