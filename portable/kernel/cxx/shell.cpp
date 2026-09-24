@@ -87,6 +87,7 @@ namespace Kernel::Shell {
         Console::println("echo <text>       Print text to console");
         Console::println("uname             Print kernel info");
         Console::println("cpuid             Print cpu manufacturer");
+        Console::println("sysinfo           Print system information");
         Console::println("pwd               Print current directory");
         Console::println("ls [path]         List directory contents");
         Console::println("cd <path>         Change directory");
@@ -121,6 +122,15 @@ namespace Kernel::Shell {
 
     static void cmdCPUID(std::string_view args) {
         Console::println(Arch::CPU::manufacturer());
+    }
+
+    static void sysinfo(std::string_view args) {
+        (void)args;  // Unused
+        Console::println("=== System Information ===");
+        Console::print("CPU Manufacturer: ");
+        Console::println(Arch::CPU::manufacturer());
+        Console::print("Kernel Version: ");
+        Console::println("v0.1.0-alpha");
     }
 
     static void cmdPwd(std::string_view args) {
@@ -269,6 +279,8 @@ namespace Kernel::Shell {
             cmdUname(args);
         } else if (strcmp(command, "cpuid")) {
             cmdCPUID(args);
+        } else if (strcmp(command, "sysinfo")) {
+            sysinfo(args);
         } else if (strcmp(command, "pwd")) {
             cmdPwd(args);
         } else if (strcmp(command, "ls")) {
