@@ -11,7 +11,9 @@ namespace STDLib {
     class Vector {
     public:
         using Iterator = NormalIterator<Type*>;
+        using ConstIterator = NormalIterator<const Type*>;
         using ReverseIterator = std::reverse_iterator<Iterator>;
+        using ConstReverseIterator = std::reverse_iterator<ConstIterator>;
 
         Vector() = default;
         Vector(size_t size);
@@ -65,8 +67,14 @@ namespace STDLib {
         Iterator begin();
         Iterator end();
 
+        ConstIterator begin() const;
+        ConstIterator end() const;
+
         ReverseIterator rbegin();
         ReverseIterator rend();
+
+        ConstReverseIterator rbegin() const;
+        ConstReverseIterator rend() const;
     private:
         std::unique_ptr<Type[]> buffer = nullptr;
 

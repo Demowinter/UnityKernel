@@ -183,6 +183,16 @@ namespace STDLib {
     }
 
     template<typename Type>
+    typename Vector<Type>::ConstIterator Vector<Type>::begin() const {
+        return buffer.get();
+    }
+
+    template<typename Type>
+    typename Vector<Type>::ConstIterator Vector<Type>::end() const {
+        return buffer.get() + buffSize;
+    }
+
+    template<typename Type>
     typename Vector<Type>::ReverseIterator Vector<Type>::rbegin() {
         return ReverseIterator{end()};
     }
@@ -190,5 +200,15 @@ namespace STDLib {
     template<typename Type>
     typename Vector<Type>::ReverseIterator Vector<Type>::rend() {
         return ReverseIterator{begin()};
+    }
+
+    template<typename Type>
+    typename Vector<Type>::ConstReverseIterator Vector<Type>::rbegin() const {
+        return ConstReverseIterator{end()};
+    }
+
+    template<typename Type>
+    typename Vector<Type>::ConstReverseIterator Vector<Type>::rend() const {
+        return ConstReverseIterator{begin()};
     }
 }

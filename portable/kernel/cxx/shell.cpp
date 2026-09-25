@@ -52,7 +52,7 @@ namespace Kernel::Shell {
     }
 
     static void printView(std::string_view text) {
-        for (char ch : text) Console::putchar(ch);
+        Console::print(text);
     }
 
     static void printFsError(std::string_view command, std::string_view target, FAT32::Status status) {

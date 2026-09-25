@@ -588,7 +588,7 @@ write: verylongname.txt: invalid FAT32 8.3 name
    - Збирати FAT32 logic у host test binary.
    - Тестувати path resolution, allocation, deletion, append і directory behavior.
 
-## Build І Run Через Docker
+## Зібрати через Docker
 
 Зібрати kernel image:
 

@@ -1,6 +1,5 @@
 data types (classes, structures, Enum) -> PascalCase
 namespaces -> PascalCase
-Enum entries -> PascalCase
 
 functions -> camelCase
 variables -> camelCase

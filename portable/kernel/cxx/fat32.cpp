@@ -23,7 +23,7 @@ namespace Kernel::FAT32 {
         constexpr uint8_t attrArchive = 0x20;
         constexpr uint8_t attrLongName = attrReadOnly | attrHidden | attrSystem | attrVolumeId;
 
-        struct DirectoryEntry {
+        struct [[gnu::packed]] DirectoryEntry {
             char name[11];
             uint8_t attr;
             uint8_t ntReserved;
@@ -36,7 +36,7 @@ namespace Kernel::FAT32 {
             uint16_t writeDate;
             uint16_t firstClusterLow;
             uint32_t fileSize;
-        } __attribute__((packed));
+        };
 
         static_assert(sizeof(DirectoryEntry) == 32);
 
