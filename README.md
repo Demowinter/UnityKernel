@@ -10,6 +10,11 @@ This is a simple C++ kernel designed for X86-64(AMD64) architecture.
 - Freestanding C++ kernel code without the host standard library
 - Multiboot2 boot protocol and GRUB boot menu
 
+## Screenshots
+
+![screenshot](assets/uk.png)
+![screenshot1](assets/uk1.png)
+
 ## Run the ISO with QEMU
 
 Docker is only needed to build the ISO. After the build, run the exported
