@@ -1,9 +1,12 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <libbase/algo.hpp>
 #include <libbase/string.hpp>
 
 extern "C" {
+    constexpr size_t LUCaseOffset = 'a' - 'A'; // Lower/Upper case offset
+
     size_t strlen(const char* str) {
         size_t length = 0;
 
@@ -167,5 +170,25 @@ extern "C" {
         }
 
         return str;
+    }
+
+    bool isdigit(char ch) {
+        return inRangeII(ch, '0', '9');
+    }
+
+    bool isalpha(char ch) {
+        return inRangeII(ch, ' ', '~');
+    }
+
+    char toUpper(char ch) {
+        if (inRangeII(ch, 'a', 'z')) return ch - LUCaseOffset;
+
+        return ch;
+    }
+
+    char toLower(char ch) {
+        if (inRangeII(ch, 'A', 'Z')) return ch + LUCaseOffset;
+
+        return ch;
     }
 }

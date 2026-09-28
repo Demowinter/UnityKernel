@@ -17,4 +17,10 @@ extern "C" {
     size_t strcspn(const char* str, const char* reject);
 
     char* strtok_r(char* str, const char* delim, char** saveptr);
+
+    bool isdigit(char ch);
+    bool isalpha(char ch);
+
+    char toUpper(char ch);
+    char toLower(char ch);
 }
