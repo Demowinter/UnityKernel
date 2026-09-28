@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <liblltools/allocator.hpp>
+#include <unityboot/system.hpp>
 #include <unityboot/memory.hpp>
 
 namespace UnityBoot::Memory {
@@ -19,11 +20,15 @@ namespace UnityBoot::Memory {
     }
 
     void* allocate(size_t size) {
-        return (freezeFlag) ? nullptr : heapAlloc.allocate(size);
+        if (freezeFlag) System::panic("UnityBoot::Memory::allocate()", "Memory is frozen");
+
+        return heapAlloc.allocate(size);
     }
 
     void deallocate(void* ptr) {
-        if (!freezeFlag) heapAlloc.deallocate(static_cast<uint8_t*>(ptr));
+        if (freezeFlag) System::panic("UnityBoot::Memory::deallocate()", "Memory is frozen");
+
+        heapAlloc.deallocate(static_cast<uint8_t*>(ptr));
     }
 
     void freeze() {
