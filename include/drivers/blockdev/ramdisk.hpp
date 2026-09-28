@@ -5,8 +5,6 @@
 #include <drivers/blockdev/api.hpp>
 
 namespace Driver::Blockdev {
-    constexpr uint32_t sectorSize = 512;
-
     class RamdiskDriver : public BlockdevDriver {
     public:
         RamdiskDriver();    

@@ -2,6 +2,8 @@
 #include <drivers/api.hpp>
 
 namespace Driver::Blockdev {
+    constexpr uint32_t sectorSize = 512;
+    
     class BlockdevDriver : public BaseDriver {
     public:
         BlockdevDriver(Type driType) : BaseDriver{Category::BLK, driType} {}
