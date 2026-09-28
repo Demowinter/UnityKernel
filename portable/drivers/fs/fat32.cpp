@@ -1,28 +1,10 @@
-#include <kernel/block.hpp>
+// #include <kernel/block.hpp>
 #include <libbase/memory.hpp>
-// #include <drivers/fs/fat32.hpp>
+#include <drivers/blockdev/api.hpp>
+#include <drivers/fs/fat32.hpp>
 
-namespace Kernel::FAT32 {
+namespace Driver::FS {
     namespace {
-        constexpr uint8_t sectorsPerCluster = 1;
-        constexpr uint32_t reservedSectors = 32;
-        constexpr uint32_t fatSectors = 2;
-        constexpr uint32_t clusterCount = 128;
-        constexpr uint32_t rootCluster = 2;
-        constexpr uint32_t totalSectors = reservedSectors + fatSectors + clusterCount * sectorsPerCluster;
-        constexpr uint32_t clusterBytes = Block::sectorSize * sectorsPerCluster;
-        constexpr uint32_t diskBytes = totalSectors * Block::sectorSize;
-
-        constexpr uint32_t endOfChain = 0x0FFFFFFF;
-        constexpr uint32_t endOfChainMin = 0x0FFFFFF8;
-        constexpr uint8_t attrReadOnly = 0x01;
-        constexpr uint8_t attrHidden = 0x02;
-        constexpr uint8_t attrSystem = 0x04;
-        constexpr uint8_t attrVolumeId = 0x08;
-        constexpr uint8_t attrDirectory = 0x10;
-        constexpr uint8_t attrArchive = 0x20;
-        constexpr uint8_t attrLongName = attrReadOnly | attrHidden | attrSystem | attrVolumeId;
-
         struct [[gnu::packed]] DirectoryEntry {
             char name[11];
             uint8_t attr;
@@ -40,7 +22,7 @@ namespace Kernel::FAT32 {
 
         static_assert(sizeof(DirectoryEntry) == 32);
 
-        constexpr uint32_t entriesPerCluster = clusterBytes / sizeof(DirectoryEntry);
+        constexpr uint32_t entriesPerCluster = FAT32::clusterBytes / sizeof(DirectoryEntry);
 
         struct EntryRef {
             uint32_t entryCluster = 0;
@@ -54,13 +36,6 @@ namespace Kernel::FAT32 {
             EntryRef ref = {};
             uint32_t cluster = rootCluster;
         };
-
-        uint8_t disk[diskBytes];
-        Block::MemoryDevice device;
-        bool mounted = false;
-        uint32_t cwdCluster = rootCluster;
-        char cwdPath[128] = "/";
-        size_t cwdPathLength = 1;
 
         bool textEquals(std::string_view lhs, const char* rhs) {
             size_t index = 0;
@@ -658,11 +633,15 @@ namespace Kernel::FAT32 {
         }
     }
 
-    void initialize() {
+    Status FAT32Driver::format() {
+        char zerobuf[Blockdev::sectorSize]{0};
+
+        for (size_t i = 0; i < driver->sectors(); i++) driver->write(i, zerobuf);
+    }
+
+    bool FAT32Driver::initialize() {
         if (mounted) return;
 
-        memset(disk, 0, sizeof(disk));
-        device.initialize(disk, totalSectors);
 
         writeBootSector();
 
