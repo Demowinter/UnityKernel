@@ -3,7 +3,7 @@
 #include <drivers/blockdev/ramdisk.hpp>
 
 namespace Driver::Blockdev {
-    RamdiskDriver::RamdiskDriver() : BlockdevDriver{Category::BLK, Type::RAMDISK} {}
+    RamdiskDriver::RamdiskDriver() : BlockdevDriver{Type::RAMDISK} {}
 
     bool RamdiskDriver::initialize() { return true; }
     void RamdiskDriver::finalize() {}

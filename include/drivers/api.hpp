@@ -1,5 +1,4 @@
 #pragma once
-#include <initializer_list>
 #include <libstd/vector.hpp>
 
 namespace Driver {
@@ -25,23 +24,26 @@ namespace Driver {
 
     class BaseDriver {
     public:
-        BaseDriver(Category driCategory, Type driType, std::initializer_list<Info> deps = {});
+        BaseDriver(Category driCategory, Type driType) : driverInfo{driCategory, driType} {}
         virtual ~BaseDriver() = default;
 
         virtual bool initialize() = 0;
         virtual void finalize() = 0;
 
-        virtual bool canSatisfy(BaseDriver* driver) = 0;
-        virtual void useDriver(BaseDriver* driver) = 0;
+        virtual bool canSatisfy(BaseDriver* driver) { return false; };
+        virtual void useDriver(BaseDriver* driver) {};
 
-        Category category() const;
-        Type type() const;
+        virtual const STDLib::Vector<Info>& dependencies() const { return {}; }
 
-        const STDLib::Vector<Info>& dependencies() const;
+        Category category() const {
+            return driverInfo.category;
+        }
+
+        Type type() const {
+            return driverInfo.type;
+        }
 
     private:
         Info driverInfo;
-
-        STDLib::Vector<Info> driverDependencies;
     };
 }
