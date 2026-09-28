@@ -55,7 +55,9 @@ namespace Driver::FS {
 
         virtual Status stat(std::string_view path, EntryInfo& info) = 0;
 
-    private:
+        virtual Status format() = 0;
+
+    protected:
         Blockdev::BlockdevDriver* driver;
     };
 }
