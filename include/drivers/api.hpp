@@ -43,7 +43,7 @@ namespace Driver {
             return driverInfo.type;
         }
 
-    private:
+    protected:
         Info driverInfo;
     };
 }
