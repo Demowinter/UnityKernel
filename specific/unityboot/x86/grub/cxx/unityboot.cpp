@@ -2,9 +2,6 @@
 #include <libelf/file.hpp>
 #include <libarch/api.hpp>
 #include <libplatform/api.hpp>
-#include <libstd/string.hpp>
-#include <libstd/assert.hpp>
-#include <libbase/math.hpp>
 #include <unityboot/protocol.hpp>
 #include <unityboot/console.hpp>
 #include <unityboot/memory.hpp>
