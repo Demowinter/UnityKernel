@@ -1,5 +1,5 @@
 #include <kernel/console.hpp>
-#include <kernel/memory.hpp>
+#include <kernel/heap.hpp>
 #include <kernel/system.hpp>
 #include <libenv/tty.hpp>
 #include <libenv/memory.hpp>
@@ -54,11 +54,11 @@ namespace ENV {
 
     namespace Memory {
         void* allocate(size_t size) {
-            return Kernel::Memory::allocateBasic(size);
+            return Kernel::Heap::allocate(size);
         }
 
         void deallocate(void* ptr) {
-            Kernel::Memory::deallocateBasic(ptr);
+            Kernel::Heap::deallocate(ptr);
         }
     }
 

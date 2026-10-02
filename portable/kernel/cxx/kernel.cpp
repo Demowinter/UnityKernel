@@ -1,17 +1,11 @@
-#include <memory>
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
 #include <libarch/api.hpp>
 #include <librt/runtime.hpp>
-#include <kernel/memory.hpp>
+#include <libacpi/acpi.hpp>
+#include <unityboot/protocol.hpp>
+#include <kernel/heap.hpp>
 #include <kernel/console.hpp>
 #include <kernel/shell.hpp>
 #include <kernel/fat32.hpp>
-#include <drivers/acpi/acpi.hpp>
-#include <libstd/function.hpp>
-#include <libstd/string.hpp>
-#include <unityboot/protocol.hpp>
 
 namespace Kernel {
     extern "C" [[noreturn]] void kernelMain(const UnityBootProtocol::BootInfo& info) {
@@ -19,7 +13,7 @@ namespace Kernel {
 
         Console::info("Starting kernel32...");
 
-        Memory::initialize(info.heapStart, info.heapEnd);
+        Heap::initialize(info.heapStart, info.heapEnd);
         CXXRuntime::initialize();
 
         Arch::initialize();
