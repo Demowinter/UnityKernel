@@ -8,6 +8,7 @@
 #include <kernel/console.hpp>
 #include <kernel/shell.hpp>
 #include <kernel/fat32.hpp>
+#include <drivers/acpi/acpi.hpp>
 #include <libstd/function.hpp>
 #include <libstd/string.hpp>
 #include <unityboot/protocol.hpp>
@@ -23,6 +24,12 @@ namespace Kernel {
 
         Arch::initialize();
         FAT32::initialize();
+
+        if (Driver::ACPI::initialize(info.acpiRsdp, info.acpiRsdpSize)) {
+            Console::ok("ACPI tables initialized");
+        } else {
+            Console::warn("ACPI tables unavailable or invalid");
+        }
 
         Console::info("Memory region:");
         Console::info("        start: ", false);

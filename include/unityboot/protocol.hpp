@@ -18,5 +18,7 @@ namespace UnityBootProtocol {
         uintptr_t heapEnd;
         
         const char* cmdline;
+        const void* acpiRsdp;
+        size_t acpiRsdpSize;
     };
 }
