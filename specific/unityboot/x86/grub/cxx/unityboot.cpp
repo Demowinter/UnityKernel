@@ -7,7 +7,7 @@
 #include <unityboot/memory.hpp>
 
 namespace UnityBoot {
-    extern "C" [[noreturn]] void unityBootMain(uint32_t mbMagic, GRUB::MultibootInfo* mbInfo) {
+    extern "C" [[noreturn]] void bootMain(uint32_t mbMagic, GRUB::MultibootInfo* mbInfo) {
         Memory::initialize();
         Console::info("Hello from UnityBoot!");
 

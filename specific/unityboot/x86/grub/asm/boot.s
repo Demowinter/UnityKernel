@@ -18,7 +18,7 @@ header_end:
 
 .global _start
 
-.extern unityBootMain
+.extern bootMain
 
 .extern __stack_top
 
@@ -28,7 +28,7 @@ _start:
     push %ebx
     push %eax
 
-    call unityBootMain
+    call bootMain
 
     cli
 
