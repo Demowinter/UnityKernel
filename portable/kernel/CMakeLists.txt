@@ -1,9 +1,8 @@
 set(KERNEL_SOURCES
-    ../drivers/acpi/acpi.cpp
-    ../drivers/ahci/ahci.cpp
     cxx/block.cpp
     cxx/fat32.cpp
     cxx/memory.cpp
+    cxx/heap.cpp
     cxx/system.cpp
     cxx/console.cpp
     cxx/shell.cpp
@@ -12,7 +11,7 @@ set(KERNEL_SOURCES
 )
 
 set(KERNEL_LINK_LIBS
-    "$<LINK_GROUP:RESCAN,libstd,libbase,librt,libgrub,liblltools,libplatform,libarch>"
+    "$<LINK_GROUP:RESCAN,libacpi,libelf,libstd,libbase,librt,liblltools,libplatform,libarch>"
     gcc
 )
 
