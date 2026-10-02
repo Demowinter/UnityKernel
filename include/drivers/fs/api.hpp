@@ -36,7 +36,7 @@ namespace Driver::FS {
         virtual bool canSatisfy(BaseDriver* driver) override { return true; };
         virtual void useDriver(BaseDriver* driver) override { this->driver = static_cast<Blockdev::BlockdevDriver*>(driver); };
 
-        virtual const STDLib::Vector<Info>& dependencies() const override { return {{Category::BLK}}; }
+        virtual STDLib::Vector<Info> dependencies() const override { return {{Category::BLK}}; }
 
         const char* statusText(Status status);
 

@@ -1,6 +1,7 @@
 set(KERNEL_SOURCES
     cxx/block.cpp
     cxx/fat32.cpp
+    cxx/driver.cpp
     cxx/memory.cpp
     cxx/heap.cpp
     cxx/system.cpp
@@ -11,7 +12,7 @@ set(KERNEL_SOURCES
 )
 
 set(KERNEL_LINK_LIBS
-    "$<LINK_GROUP:RESCAN,libacpi,libelf,libstd,libbase,librt,liblltools,libplatform,libarch>"
+    "$<LINK_GROUP:RESCAN,libdri,libacpi,libelf,libstd,libbase,librt,liblltools,libplatform,libarch>"
     gcc
 )
 

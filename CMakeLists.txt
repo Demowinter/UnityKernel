@@ -38,6 +38,7 @@ add_subdirectory(portable/libbase)
 add_subdirectory(portable/librt)
 add_subdirectory(portable/libstd)
 add_subdirectory(portable/libgrub)
+add_subdirectory(portable/drivers)
 add_subdirectory(portable/kernel)
 
 

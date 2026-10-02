@@ -18,7 +18,9 @@ namespace Driver::Blockdev {
 
         auto it = storage.begin() + lba * sectorSize;
 
-        std::copy(it, it + count * sectorSize, buffer);
+        uint8_t* bytebuf = static_cast<uint8_t*>(buffer);
+
+        std::copy(it, it + count * sectorSize, bytebuf);
 
         // memcpy(buffer, storage + lba * sectorSize, count * sectorSize);
 
@@ -31,7 +33,9 @@ namespace Driver::Blockdev {
 
         auto it = storage.begin() + lba * sectorSize;
 
-        std::copy(buffer, buffer + count * sectorSize, it);
+        const uint8_t* bytebuf = static_cast<const uint8_t*>(buffer);
+
+        std::copy(bytebuf, bytebuf + count * sectorSize, it);
 
         // memcpy(storage + lba * sectorSize, buffer, count * sectorSize);
 
