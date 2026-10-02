@@ -1,5 +1,4 @@
 #include <cstdint>
-#include <kernel/memory.hpp>
 #include <libstd/string.hpp>
 #include <libarch/x86/cpu.hpp>
 
