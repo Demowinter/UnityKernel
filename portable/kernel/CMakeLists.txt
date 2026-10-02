@@ -1,5 +1,6 @@
 set(KERNEL_SOURCES
     ../drivers/acpi/acpi.cpp
+    ../drivers/ahci/ahci.cpp
     cxx/block.cpp
     cxx/fat32.cpp
     cxx/memory.cpp
