@@ -45,7 +45,7 @@ namespace Kernel::DriverSubsystem {
     }
 
     bool loadInitDriver(Driver::BaseDriver* driver) {
-        if (!driver) return;
+        if (!driver) return false;
 
         loadedDrivers.push_back(driver);
 
@@ -64,6 +64,7 @@ namespace Kernel::DriverSubsystem {
     }
 
     //----------------------API----------------------
+
     void initialize() {
         drivers = Driver::loadDriverList();
     }
@@ -101,5 +102,6 @@ namespace Kernel::DriverSubsystem {
     bool isDriverLoaded(Driver::BaseDriver* driver) {
         return std::find(loadedDrivers.begin(), loadedDrivers.end(), driver) != loadedDrivers.end();
     }
+    
     //----------------------API----------------------
 }

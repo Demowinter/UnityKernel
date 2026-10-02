@@ -3,6 +3,7 @@
 #include <libacpi/acpi.hpp>
 #include <unityboot/protocol.hpp>
 #include <kernel/heap.hpp>
+#include <kernel/subsystems/driver.hpp>
 #include <kernel/console.hpp>
 #include <kernel/shell.hpp>
 #include <kernel/fat32.hpp>
@@ -17,6 +18,8 @@ namespace Kernel {
         CXXRuntime::initialize();
 
         Arch::initialize();
+        DriverSubsystem::initialize();
+
         FAT32::initialize();
 
         if (Driver::ACPI::initialize(info.acpiRsdp, info.acpiRsdpSize)) {
