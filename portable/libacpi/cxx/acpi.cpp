@@ -1,5 +1,5 @@
 #include <cstdint>
-#include <drivers/acpi/acpi.hpp>
+#include <libacpi/acpi.hpp>
 
 namespace Driver::ACPI {
     namespace {
