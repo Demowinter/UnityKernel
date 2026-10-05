@@ -312,45 +312,58 @@ namespace Kernel::Shell {
     }
 
     void run(const char* kcmdline) {
-        Arch::Timer::sleep(1000);
-        Console::clear();
-        Console::println("Welcome to UnityKernel Shell!");
-        Console::println(" ");
-        Console::println(" ###    ### ######      ### ### ############# ###     ###");
-        Console::println(" ###    ### ### ###     ### ### #############  ###   ###");
-        Console::println(" ###    ### ###  ###    ### ###      ###         #####");
-        Console::println(" ###    ### ###   ###   ### ###      ###          ###");
-        Console::println(" ###    ### ###    ###  ### ###      ###          ###");
-        Console::println("  ##    ##  ###     ### ### ###      ###          ###");
-        Console::println("    ####    ###      ###### ###      ###          ###");
-        Console::println(" ");
-        Console::println("   ######   ###   ### ######### ###       ###");
-        Console::println(" ###    ### ###   ### ######### ###       ###");
-        Console::println("  ###       ###   ### ###       ###       ###");
-        Console::println("   ###      ######### ######### ###       ###");
-        Console::println("     ###    ######### ######### ###       ###");
-        Console::println("       ###  ###   ### ###       ###       ###");
-        Console::println(" ###    ### ###   ### ######### ######### #########");
-        Console::println("   ######   ###   ### ######### ######### #########");
-        Arch::Timer::sleep(1000);
-        Console::clear();
-        Console::print("Welcome to UnityKernel Shell! ");
-        Console::println(kcmdline);
-        Console::println("Type 'help' for available commands");
-        Console::newline();
+    Arch::Timer::sleep(1000);
 
-        static constexpr size_t bufferSize = 256;
-        char inputBuffer[bufferSize];
+    Console::clear();
+    Console::println("UnityKernel v0.1.0-alpha");
+    Console::println(" ");
 
-        while (true) {
-            Console::print(FAT32::cwd());
-            Console::print(" $ ");
-            
-            size_t len = Console::readline(inputBuffer, bufferSize);
-            
-            if (len > 0) {
-                executeCommand(std::string_view(inputBuffer, len));
-            }
+    //ASCII art banner for UnityKernel Shell
+    static const char* banner[] = {
+        " ###    ### ######      ### ### ############# ###     ###",
+        " ###    ### ### ###     ### ### #############  ###   ###",
+        " ###    ### ###  ###    ### ###      ###         #####",
+        " ###    ### ###   ###   ### ###      ###          ###",
+        " ###    ### ###    ###  ### ###      ###          ###",
+        "  ##    ##  ###     ### ### ###      ###          ###",
+        "    ####    ###      ###### ###      ###          ###",
+        " ",
+        "   ######   ###   ### ######### ###       ###",
+        " ###    ### ###   ### ######### ###       ###",
+        "  ###       ###   ### ###       ###       ###",
+        "   ###      ######### ######### ###       ###",
+        "     ###    ######### ######### ###       ###",
+        "       ###  ###   ### ###       ###       ###",
+        " ###    ### ###   ### ######### ######### #########",
+        "   ######   ###   ### ######### ######### #########",
+    };
+
+    for (const char* line : banner) {
+        Console::println(line);
+        Arch::Timer::sleep(30);
+    }
+    Console::println(" ");
+    Console::println("Welcome to UnityKernel Shell!");
+    Arch::Timer::sleep(1000);
+
+    Console::clear();
+    Console::print("Welcome to UnityKernel Shell! ");
+    Console::println(kcmdline);
+    Console::println("Type 'help' for available commands");
+    Console::newline();
+
+    static constexpr size_t bufferSize = 256;
+    char inputBuffer[bufferSize];
+
+    while (true) {
+        Console::print(FAT32::cwd());
+        Console::print(" $ ");
+
+        size_t len = Console::readline(inputBuffer, bufferSize);
+
+        if (len > 0) {
+            executeCommand(std::string_view(inputBuffer, len));
         }
     }
+}
 }
