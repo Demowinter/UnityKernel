@@ -125,13 +125,41 @@ namespace Kernel::Shell {
     }
 
     static void sysinfo(std::string_view args) {
-        (void)args;  // Unused
-        Console::println("=== System Information ===");
-        Console::print("CPU Manufacturer: ");
-        Console::println(Arch::CPU::manufacturer());
-        Console::print("Kernel Version: ");
-        Console::println("v0.1.0-alpha");
+    (void)args;
+
+    static const char* art[] = {
+    "  _    _ ",
+    " | |  | |",
+    " | |  | |",
+    " | |  | |",
+    " | |__| |",
+    "  \\____/ ",
+};
+    constexpr size_t lines    = sizeof(art) / sizeof(art[0]);
+    constexpr size_t artWidth = 12;
+
+    for (size_t i = 0; i < lines; ++i) {
+        const char* line = art[i];
+        size_t len = 0;
+        while (line[len]) ++len;
+
+        Console::print(line);
+        for (size_t j = len; j < artWidth; ++j) {
+            Console::print(" ");
+        }
+
+        switch (i) {
+            case 0: Console::println("user@unitykernel");          break;
+            case 1: Console::println("------------------");        break;
+            case 2: Console::println("OS:        UnityKernel");    break;
+            case 3: Console::println("Version:   v0.1.0-alpha");   break;
+            case 4: Console::println("Kernel:    v0.1.0-alpha");   break;
+            case 5: Console::print  ("CPU:       ");
+                    Console::println(Arch::CPU::manufacturer());   break;
+            default: Console::newline();                           break;
+        }
     }
+}
 
     static void cmdPwd(std::string_view args) {
         (void)args;
