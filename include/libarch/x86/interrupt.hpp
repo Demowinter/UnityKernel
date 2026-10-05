@@ -29,6 +29,7 @@ namespace Arch::X86::Interrupt {
     void loadIDT(void* idt_ptr, size_t size);
     void init();
     void picRemap();
+    void sleepMilliseconds(uint32_t milliseconds);
 
     void enable();
     void disable();

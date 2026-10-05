@@ -312,9 +312,29 @@ namespace Kernel::Shell {
     }
 
     void run(const char* kcmdline) {
+        Arch::Timer::sleep(1000);
         Console::clear();
-        Console::println("=== UnityKernel Shell ===");
-        Console::print("Kernel command line: ");
+        Console::println("Welcome to UnityKernel Shell!");
+        Console::println(" ");
+        Console::println(" ###    ### ######      ### ### ############# ###     ###");
+        Console::println(" ###    ### ### ###     ### ### #############  ###   ###");
+        Console::println(" ###    ### ###  ###    ### ###      ###         #####");
+        Console::println(" ###    ### ###   ###   ### ###      ###          ###");
+        Console::println(" ###    ### ###    ###  ### ###      ###          ###");
+        Console::println("  ##    ##  ###     ### ### ###      ###          ###");
+        Console::println("    ####    ###      ###### ###      ###          ###");
+        Console::println(" ");
+        Console::println("   ######   ###   ### ######### ###       ###");
+        Console::println(" ###    ### ###   ### ######### ###       ###");
+        Console::println("  ###       ###   ### ###       ###       ###");
+        Console::println("   ###      ######### ######### ###       ###");
+        Console::println("     ###    ######### ######### ###       ###");
+        Console::println("       ###  ###   ### ###       ###       ###");
+        Console::println(" ###    ### ###   ### ######### ######### #########");
+        Console::println("   ######   ###   ### ######### ######### #########");
+        Arch::Timer::sleep(1000);
+        Console::clear();
+        Console::print("Welcome to UnityKernel Shell! ");
         Console::println(kcmdline);
         Console::println("Type 'help' for available commands");
         Console::newline();

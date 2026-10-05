@@ -9,6 +9,7 @@
 
 namespace Arch::X86::Interrupt {
     static std::array<IDTEntry, 256> entries;
+    static volatile uint32_t timerTicks = 0;
 
     // Keyboard state
     static bool keyboardShift = false;
@@ -104,7 +105,7 @@ namespace Arch::X86::Interrupt {
 
     [[gnu::interrupt]]
     static void irq_timer(InterruptFrame*) {
-        // Handle timer interrupt
+        ++timerTicks;
         sendEOI(0);
     }
 
@@ -149,10 +150,24 @@ namespace Arch::X86::Interrupt {
 
         loadIDT(entries.data(), sizeof(entries));
 
+        constexpr uint16_t pitDivisor = 1193;
+        using namespace Arch::X86::PMIO;
+        write<uint8_t>(0x43, 0x36);
+        write<uint8_t>(0x40, static_cast<uint8_t>(pitDivisor & 0xFF));
+        write<uint8_t>(0x40, static_cast<uint8_t>(pitDivisor >> 8));
+
+        enableIRQ(0);
         // Enable keyboard interrupt (IRQ 1)
         enableIRQ(1);
 
         enable();
+    }
+
+    void sleepMilliseconds(uint32_t milliseconds) {
+        const uint32_t start = timerTicks;
+        while (static_cast<uint32_t>(timerTicks - start) < milliseconds) {
+            asm volatile("hlt" ::: "memory");
+        }
     }
 
     void enable() {

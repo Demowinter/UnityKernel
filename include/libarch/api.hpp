@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <libstd/string.hpp>
 
 namespace Arch {
@@ -20,5 +21,9 @@ namespace Arch {
     namespace Interrupt {
         void enable();
         void disable();
+    }
+
+    namespace Timer {
+        void sleep(uint32_t milliseconds);
     }
 }

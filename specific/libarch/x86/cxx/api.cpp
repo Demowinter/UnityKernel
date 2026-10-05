@@ -27,4 +27,10 @@ namespace Arch {
             X86::Interrupt::disable();
         }
     }
+
+    namespace Timer {
+        void sleep(uint32_t milliseconds) {
+            X86::Interrupt::sleepMilliseconds(milliseconds);
+        }
+    }
 }
