@@ -52,7 +52,7 @@ namespace GRUB {
             uint32_t start;
             uint32_t end;
 
-            char string[];
+            char* string;
         };
 
         struct LoadBaseAddrTag : MultibootTag {
