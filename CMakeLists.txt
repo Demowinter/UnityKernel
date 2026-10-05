@@ -9,6 +9,8 @@ set(TARGET_COMPILE_FLAGS
     -O2
     -g
     -Wall
+    -Wextra
+    -Wpedantic
     -ffreestanding
     -fno-exceptions
     -fno-rtti
