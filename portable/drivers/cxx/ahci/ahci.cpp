@@ -57,6 +57,8 @@ namespace Driver::AHCI {
         constexpr size_t commandListBytes = 1024;
         constexpr size_t receivedFisBytes = 256;
         constexpr size_t commandTableBytes = 256;
+        constexpr size_t hbaGlobalRegisterSize = portRegisterOffset;
+        const char* initializationError = "AHCI initialization has not run";
 
         struct __attribute__((packed)) CommandHeader {
             uint16_t flags;
@@ -180,7 +182,7 @@ namespace Driver::AHCI {
 
             const uint32_t barMask = mask & 0xFFFFFFF0;
             const uint32_t barSize = ~barMask + 1;
-            if (barMask == 0 || barSize < hbaRegisterSize ||
+            if (barMask == 0 || barSize < hbaGlobalRegisterSize ||
                 (barSize & (barSize - 1)) != 0) {
                 return false;
             }
@@ -228,13 +230,10 @@ namespace Driver::AHCI {
             return fisStopped;
         }
 
-        PortType classifyPort(volatile HBAPortRegisters* port) {
+        bool hasActiveLink(volatile HBAPortRegisters* port) {
             const uint32_t sataStatus = port->sataStatus;
-            if ((sataStatus & sataStatusDeviceDetectionMask) != sataStatusDevicePresent ||
-                (sataStatus & sataStatusInterfacePowerMask) != sataStatusInterfaceActive) {
-                return PortType::NoDevice;
-            }
-            return port->signature == sataSignature ? PortType::SATA : PortType::Unknown;
+            return (sataStatus & sataStatusDeviceDetectionMask) == sataStatusDevicePresent &&
+                (sataStatus & sataStatusInterfacePowerMask) == sataStatusInterfaceActive;
         }
 
         uint64_t physicalAddress(const void* pointer) {
@@ -247,6 +246,10 @@ namespace Driver::AHCI {
         }
     }
 
+    const char* lastInitializationError() {
+        return initializationError;
+    }
+
     AHCIDriver::AHCIDriver() : Blockdev::BlockdevDriver{Type::AHCI} {}
 
     AHCIDriver::~AHCIDriver() {
@@ -254,26 +257,35 @@ namespace Driver::AHCI {
     }
 
     bool AHCIDriver::initialize() {
+        initializationError = "AHCI initialization failed";
         finalize();
         if (registers != nullptr || commandListAllocation != nullptr ||
             receivedFisAllocation != nullptr || commandTableAllocation != nullptr) {
+            initializationError = "Previous AHCI port could not be stopped";
             return false;
         }
 
         PciDevice pciDevice{};
-        if (!findAhciPciDevice(pciDevice)) return false;
+        if (!findAhciPciDevice(pciDevice)) {
+            initializationError = "PCI AHCI controller not found";
+            return false;
+        }
 
         uint32_t abar = 0;
         uint32_t abarSize = 0;
-        if (!getAhciBar(pciDevice, abar, abarSize)) return false;
+        if (!getAhciBar(pciDevice, abar, abarSize)) {
+            initializationError = "AHCI controller has an invalid or unsupported ABAR";
+            return false;
+        }
 
         uint16_t pciCommand = pciRead16(pciDevice, pciCommandOffset);
         pciCommand |= pciCommandMemorySpace | pciCommandBusMaster;
         pciWrite16(pciDevice, pciCommandOffset, pciCommand);
 
         registers = reinterpret_cast<volatile HBARegisters*>(static_cast<uintptr_t>(abar));
-        if (registers == nullptr || abarSize < hbaRegisterSize) {
+        if (registers == nullptr || abarSize < hbaGlobalRegisterSize) {
             registers = nullptr;
+            initializationError = "AHCI ABAR is not directly accessible";
             return false;
         }
 
@@ -281,6 +293,7 @@ namespace Driver::AHCI {
             registers->biosHandoffControl |= hbaOsOwned;
             if (!waitForClear(registers->biosHandoffControl, hbaBiosOwned | hbaBiosBusy)) {
                 registers = nullptr;
+                initializationError = "AHCI BIOS/OS ownership handoff timed out";
                 return false;
             }
         }
@@ -289,18 +302,37 @@ namespace Driver::AHCI {
         registers->globalHostControl |= hbaReset;
         if (!waitForClear(registers->globalHostControl, hbaReset)) {
             registers = nullptr;
+            initializationError = "AHCI HBA reset timed out";
             return false;
         }
         registers->globalHostControl =
             (registers->globalHostControl | ahciEnable) & ~hbaInterruptEnable;
 
         const uint32_t implemented = registers->portsImplemented;
+        size_t requiredSize = hbaGlobalRegisterSize;
+        for (uint8_t portNumber = 0; portNumber < portCount; ++portNumber) {
+            if ((implemented & (uint32_t{1} << portNumber)) != 0) {
+                requiredSize = portRegisterOffset +
+                    (static_cast<size_t>(portNumber) + 1) * portRegisterSize;
+            }
+        }
+        if (requiredSize > abarSize) {
+            registers = nullptr;
+            initializationError = "AHCI ABAR is too small for the implemented ports";
+            return false;
+        }
+
+        bool foundSataPort = false;
         for (uint8_t portNumber = 0; portNumber < portCount; ++portNumber) {
             if ((implemented & (uint32_t{1} << portNumber)) == 0) continue;
 
             volatile HBAPortRegisters* candidate = &registers->ports[portNumber];
-            if (classifyPort(candidate) != PortType::SATA) continue;
-            if (!stopPortEngine(candidate)) continue;
+            if (!hasActiveLink(candidate)) continue;
+            foundSataPort = true;
+            if (!stopPortEngine(candidate)) {
+                initializationError = "AHCI SATA port failed to stop";
+                continue;
+            }
 
             port = candidate;
             selectedPort = portNumber;
@@ -314,7 +346,10 @@ namespace Driver::AHCI {
 
             if (commandList == nullptr || receivedFis == nullptr || commandTable == nullptr) {
                 finalize();
-                if (port != nullptr) return false;
+                if (port != nullptr) {
+                    initializationError = "Failed to allocate AHCI DMA structures";
+                    return false;
+                }
                 continue;
             }
 
@@ -338,7 +373,10 @@ namespace Driver::AHCI {
                 allocateAligned(identifyBytes, 2, identifyAllocation));
             if (identifyData == nullptr) {
                 finalize();
-                if (port != nullptr) return false;
+                if (port != nullptr) {
+                    initializationError = "Failed to allocate the ATA IDENTIFY buffer";
+                    return false;
+                }
                 continue;
             }
 
@@ -372,12 +410,22 @@ namespace Driver::AHCI {
             }
 
             Kernel::Heap::deallocate(identifyAllocation);
-            if (sectorCount != 0) return true;
+            if (sectorCount != 0) {
+                initializationError = nullptr;
+                return true;
+            }
 
             finalize();
-            if (port != nullptr) return false;
+            if (port != nullptr) {
+                initializationError = "AHCI port could not be safely stopped after IDENTIFY";
+                return false;
+            }
+            initializationError = identified
+                ? "SATA disk lacks supported DMA, LBA48, or 512-byte sectors"
+                : "ATA IDENTIFY DEVICE command failed or timed out";
         }
 
+        if (!foundSataPort) initializationError = "No active SATA disk on implemented AHCI ports";
         return false;
     }
 

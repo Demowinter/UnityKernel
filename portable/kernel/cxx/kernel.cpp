@@ -31,7 +31,8 @@ namespace Kernel {
             Console::info("Sectors: ", false);
             Console::println(STDLib::hex(ahci->sectors()));
         } else {
-            Console::warn("No supported AHCI SATA disk found");
+            Console::warn("AHCI disk unavailable: ", false);
+            Console::println(Driver::AHCI::lastInitializationError());
         }
 
         FAT32::initialize();

@@ -63,6 +63,8 @@ namespace Driver::AHCI {
         Unknown
     };
 
+    const char* lastInitializationError();
+
     class AHCIDriver final : public Blockdev::BlockdevDriver {
     public:
         AHCIDriver();

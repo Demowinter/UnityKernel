@@ -14,7 +14,10 @@ The kernel driver in `portable/drivers/cxx/ahci/ahci.cpp`:
   not implemented.
 - Performs the optional BIOS/OS ownership handoff, resets the HBA, enables
   AHCI mode, and disables HBA interrupts because commands are polled.
-- Finds the first implemented SATA port with an active link.
+- Finds an implemented port with an active link and attempts ATA
+  `IDENTIFY DEVICE`; this also handles controllers such as QEMU that report
+  an active link before exposing a usable `PxSIG` value. SATAPI and other
+  non-ATA devices are rejected when ATA identification fails.
 - Allocates aligned command-list, received-FIS, and command-table buffers from
   the kernel heap, programs the port, and sends ATA IDENTIFY DEVICE.
 - Requires LBA48 and 512-byte logical sectors. Disks with other logical sector
