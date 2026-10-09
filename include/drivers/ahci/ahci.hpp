@@ -1,6 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
+#include <drivers/blockdev/api.hpp>
 
 namespace Driver::AHCI {
     constexpr size_t portCount = 32;
@@ -62,16 +63,35 @@ namespace Driver::AHCI {
         Unknown
     };
 
-    class Controller {
+    class AHCIDriver final : public Blockdev::BlockdevDriver {
     public:
-        bool initialize(volatile HBARegisters* registers, size_t mappedSize);
-        bool isInitialized() const;
-        uint32_t implementedPortMask() const;
-        uint32_t implementedPortCount() const;
-        PortType portType(uint8_t portNumber) const;
-        volatile HBAPortRegisters* portRegisters(uint8_t portNumber) const;
+        AHCIDriver();
+        ~AHCIDriver() override;
+
+        bool initialize() override;
+        void finalize() override;
+
+        bool read(uint32_t lba, void* buffer, uint32_t count = 1) const override;
+        bool write(uint32_t lba, const void* buffer, uint32_t count = 1) override;
+        uint32_t sectors() const override;
+
+        uint8_t portNumber() const;
 
     private:
+        bool executeCommand(uint8_t command, uint64_t lba, uint16_t count,
+                            bool write, void* buffer, size_t bufferSize) const;
+        bool stopPort() const;
+        void releaseDmaBuffers();
+
         volatile HBARegisters* registers = nullptr;
+        volatile HBAPortRegisters* port = nullptr;
+        uint8_t* commandList = nullptr;
+        uint8_t* receivedFis = nullptr;
+        uint8_t* commandTable = nullptr;
+        void* commandListAllocation = nullptr;
+        void* receivedFisAllocation = nullptr;
+        void* commandTableAllocation = nullptr;
+        uint64_t sectorCount = 0;
+        uint8_t selectedPort = 0xFF;
     };
 }

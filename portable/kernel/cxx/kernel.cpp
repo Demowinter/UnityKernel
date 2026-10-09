@@ -1,6 +1,8 @@
 #include <libarch/api.hpp>
 #include <librt/runtime.hpp>
+#include <libstd/string.hpp>
 #include <libacpi/acpi.hpp>
+#include <drivers/ahci/ahci.hpp>
 #include <unityboot/protocol.hpp>
 #include <kernel/heap.hpp>
 #include <kernel/subsystems/driver.hpp>
@@ -19,6 +21,18 @@ namespace Kernel {
 
         Arch::initialize();
         DriverSubsystem::initialize();
+
+        auto* ahci = static_cast<Driver::AHCI::AHCIDriver*>(
+            DriverSubsystem::loadDriver(Driver::Category::BLK, Driver::Type::AHCI));
+        if (ahci != nullptr) {
+            Console::ok("AHCI SATA disk initialized");
+            Console::info("AHCI port: ", false);
+            Console::println(STDLib::hex(ahci->portNumber()));
+            Console::info("Sectors: ", false);
+            Console::println(STDLib::hex(ahci->sectors()));
+        } else {
+            Console::warn("No supported AHCI SATA disk found");
+        }
 
         FAT32::initialize();
 
@@ -52,6 +66,7 @@ namespace Kernel {
         // Start the interactive shell
         Shell::run(info.cmdline);
 
+        DriverSubsystem::finalize();
         CXXRuntime::finalize();
 
         Arch::Interrupt::disable();

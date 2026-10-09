@@ -14,7 +14,8 @@ namespace Driver {
         USB,
         PS2,
         RAMDISK,
-        FAT32
+        FAT32,
+        AHCI
     };
 
     struct Info {

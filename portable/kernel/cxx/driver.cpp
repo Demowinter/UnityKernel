@@ -60,7 +60,11 @@ namespace Kernel::DriverSubsystem {
             }
         }
 
-        return driver->initialize();
+        if (driver->initialize()) return true;
+
+        auto it = std::find(loadedDrivers.begin(), loadedDrivers.end(), driver);
+        if (it != loadedDrivers.end()) loadedDrivers.erase(it);
+        return false;
     }
 
     //----------------------API----------------------
@@ -70,6 +74,12 @@ namespace Kernel::DriverSubsystem {
     }
 
     void finalize() {
+        while (loadedDrivers.size() != 0) {
+            Driver::BaseDriver* driver = loadedDrivers[loadedDrivers.size() - 1];
+            driver->finalize();
+            loadedDrivers.pop_back();
+        }
+
         for (auto driver : drivers) delete driver;
 
         drivers.clear();
@@ -77,6 +87,7 @@ namespace Kernel::DriverSubsystem {
 
     Driver::BaseDriver* loadDriver(Driver::Category category, Driver::Type type) {
         Driver::BaseDriver* driver = findDriver(category, type, true);
+        if (driver && isDriverLoaded(driver)) return driver;
 
         return loadInitDriver(driver) ? driver : nullptr;
     }
