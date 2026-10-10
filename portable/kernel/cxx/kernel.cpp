@@ -22,7 +22,7 @@ namespace Kernel {
         Arch::initialize();
         DriverSubsystem::initialize();
 
-        auto* ahci = static_cast<Driver::AHCI::AHCIDriver*>(
+        auto ahci = static_cast<Driver::AHCI::AHCIDriver*>(
             DriverSubsystem::loadDriver(Driver::Category::BLK, Driver::Type::AHCI));
         if (ahci != nullptr) {
             Console::ok("AHCI SATA disk initialized");
@@ -37,7 +37,7 @@ namespace Kernel {
 
         FAT32::initialize();
 
-        if (Driver::ACPI::initialize(info.acpiRsdp, info.acpiRsdpSize)) {
+        if (ACPI::initialize(info.acpiRsdp, info.acpiRsdpSize)) {
             Console::ok("ACPI tables initialized");
         } else {
             Console::warn("ACPI tables unavailable or invalid");
@@ -61,8 +61,10 @@ namespace Kernel {
         Console::ok("Mounted FAT32 ram disk");
 
         Console::newline();
-        Console::println("Starting shell...");
+        Console::println("Starting shell in 10 seconds...");
         Console::newline();
+
+        Arch::Timer::sleep(10000);
 
         // Start the interactive shell
         Shell::run(info.cmdline);
