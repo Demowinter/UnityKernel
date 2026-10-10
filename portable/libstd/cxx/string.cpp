@@ -339,13 +339,13 @@ namespace STDLib {
     }
 
     bool operator==(const String& lhs, char rhs) {
-        if (lhs.size() == 1);
+        if (lhs.size() != 1) return false;
 
         return *lhs.begin() == rhs;
     }
 
     bool operator==(char lhs, const String& rhs) {
-        if (rhs.size() == 1);
+        if (rhs.size() != 1) return false;
 
         return *rhs.begin() == lhs;
     }
