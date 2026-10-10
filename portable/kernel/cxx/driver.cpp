@@ -46,6 +46,7 @@ namespace Kernel::DriverSubsystem {
 
     bool loadInitDriver(Driver::BaseDriver* driver) {
         if (!driver) return false;
+        if (isDriverLoaded(driver)) return true;
 
         loadedDrivers.push_back(driver);
 
@@ -53,10 +54,11 @@ namespace Kernel::DriverSubsystem {
             auto depDrivers = findDrivers(dep.category, dep.type, excludeNoneFlag);
 
             for (auto depDri : depDrivers) {
-                if (driver->canSatisfy(depDri) && !isDriverLoaded(depDri))
-                    if (!loadInitDriver(depDri)) continue;
+                if (driver->canSatisfy(depDri)) {
+                    if (!isDriverLoaded(depDri) && !loadInitDriver(depDri)) continue;
 
-                driver->useDriver(depDri);
+                    driver->useDriver(depDri);
+                }
             }
         }
 
@@ -64,6 +66,7 @@ namespace Kernel::DriverSubsystem {
 
         auto it = std::find(loadedDrivers.begin(), loadedDrivers.end(), driver);
         if (it != loadedDrivers.end()) loadedDrivers.erase(it);
+        
         return false;
     }
 
