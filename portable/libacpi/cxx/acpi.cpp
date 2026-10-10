@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <libacpi/acpi.hpp>
 
-namespace Driver::ACPI {
+namespace ACPI {
     namespace {
         #pragma pack(push, 1)
         struct RSDPDescriptor {

@@ -2,7 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace Driver::ACPI {
+namespace ACPI {
     #pragma pack(push, 1)
     struct SystemDescriptionTable {
         char signature[4];
