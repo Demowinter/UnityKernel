@@ -76,7 +76,18 @@ add_custom_target(iso
 
 add_custom_target(run-bios
     COMMAND qemu-system-x86_64
-    -cdrom ${CMAKE_BINARY_DIR}/kernel.iso -enable-kvm -cpu host
+    -cdrom ${CMAKE_BINARY_DIR}/kernel.iso
+    -serial stdio
+
+    DEPENDS iso
+)
+
+add_custom_target(run-bios-ahci
+    COMMAND qemu-system-x86_64
+    -cdrom ${CMAKE_BINARY_DIR}/kernel.iso
+    -drive id=disk,format=raw,file=${CMAKE_SOURCE_DIR}/sata-test.img,if=none
+    -device ahci,id=ahci
+    -device ide-hd,drive=disk,bus=ahci.0
     -serial stdio
 
     DEPENDS iso
