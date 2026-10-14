@@ -61,10 +61,8 @@ namespace Kernel {
         Console::ok("Mounted FAT32 ram disk");
 
         Console::newline();
-        Console::println("Starting shell in 10 seconds...");
+        Console::println("Starting shell...");
         Console::newline();
-
-        Arch::Timer::sleep(10000);
 
         // Start the interactive shell
         Shell::run(info.cmdline);
