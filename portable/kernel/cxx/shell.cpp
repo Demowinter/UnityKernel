@@ -2,9 +2,12 @@
 #include <kernel/console.hpp>
 #include <kernel/fat32.hpp>
 #include <kernel/system.hpp>
+#include <kernel/dformat.hpp>
+#include <kernel/subsystems/driver.hpp>
 #include <libarch/api.hpp>
 #include <libstd/string.hpp>
 #include <libbase/string.hpp>
+#include <drivers/ahci/ahci.hpp>
 
 namespace Kernel::Shell {
     //Compare strings
@@ -46,9 +49,16 @@ namespace Kernel::Shell {
 
     //Get remaining arguments after first word
     static std::string_view getArgs(std::string_view cmd) {
-        std::string_view word = getFirstWord(cmd);
-        if (word.empty()) return "";
-        return ltrim(cmd.substr(word.size()));
+        cmd = ltrim(cmd);
+
+        size_t wordLength = 0;
+        while (wordLength < cmd.size() &&
+               cmd[wordLength] != ' ' && cmd[wordLength] != '\t') {
+            wordLength++;
+        }
+        if (wordLength == cmd.size()) return "";
+
+        return trim(cmd.substr(wordLength));
     }
 
     static void printView(std::string_view text) {
@@ -88,6 +98,7 @@ namespace Kernel::Shell {
         Console::println("uname             Print kernel info");
         Console::println("cpuid             Print cpu manufacturer");
         Console::println("sysinfo           Print system information");
+        Console::println("dformat fat32     Partition SATA disk and format it as FAT32");
         Console::println("pwd               Print current directory");
         Console::println("ls [path]         List directory contents");
         Console::println("cd <path>         Change directory");
@@ -164,6 +175,49 @@ namespace Kernel::Shell {
     static void cmdPwd(std::string_view args) {
         (void)args;
         Console::println(FAT32::cwd());
+    }
+
+    static void dformat(std::string_view args) {
+        args = trim(args);
+        const std::string_view format = getFirstWord(args);
+        const std::string_view extraArgs = trim(args.substr(format.size()));
+        if (!strcmp(format, "fat32") && extraArgs.empty()) {
+            auto* device = static_cast<Driver::AHCI::AHCIDriver*>(
+                DriverSubsystem::loadDriver(Driver::Category::BLK, Driver::Type::AHCI));
+            if (device == nullptr) {
+                Console::println("dformat: SATA disk is unavailable");
+                return;
+            }
+
+            Console::print("This will erase and repartition the SATA disk (");
+            Console::print(STDLib::toString(device->sectors()));
+            Console::println(" sectors) as one FAT32 partition.");
+            Console::println("Type y and press Enter to continue; any other response cancels:");
+            char confirmation[8];
+            const size_t confirmationLength = Console::readline(
+                confirmation, sizeof(confirmation));
+            const std::string_view response = trim(
+                std::string_view(confirmation, confirmationLength));
+            if (response.size() == 1 &&
+                (response[0] == 'y' || response[0] == 'Y')) {
+                Console::println("Formatting SATA disk...");
+            } else {
+                Console::println("dformat: cancelled");
+                return;
+            }
+
+            const DFORMAT::Status status = DFORMAT::partitionAndFormatFat32(*device);
+            if (status == DFORMAT::Status::ok) {
+                Console::println("dformat: FAT32 partition created successfully");
+            } else {
+                Console::print("dformat: ");
+                Console::println(DFORMAT::statusText(status));
+            }
+            return;
+        }
+
+        Console::println("Usage: dformat fat32");
+        Console::println("This erases the detected SATA disk and creates one FAT32 partition.");
     }
 
     static void cmdLs(std::string_view args) {
@@ -309,6 +363,8 @@ namespace Kernel::Shell {
             cmdCPUID(args);
         } else if (strcmp(command, "sysinfo")) {
             sysinfo(args);
+        } else if (strcmp(command, "dformat")) {
+            dformat(args);
         } else if (strcmp(command, "pwd")) {
             cmdPwd(args);
         } else if (strcmp(command, "ls")) {

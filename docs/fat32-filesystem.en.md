@@ -2,7 +2,7 @@
 
 This document explains the FAT32-related work added to UnityKernel: the new block-device abstraction, the RAM-backed FAT32 volume, the filesystem API, and the Unix-like shell commands that operate on files and directories.
 
-The current implementation is intentionally small and kernel-friendly. It gives UnityKernel real file and directory semantics without requiring an ATA, AHCI, NVMe, USB, or virtio disk driver yet. The storage is volatile and backed by kernel memory, but the internal layout follows FAT32-style structures: a boot sector, a FAT table, clusters, short 8.3 directory entries, cluster chains, and directory traversal.
+The current implementation is intentionally small and kernel-friendly. The shell filesystem is volatile and backed by kernel memory, with a FAT32-style boot sector, FAT table, clusters, short 8.3 directory entries, and cluster chains. A separate disk utility can partition the detected AHCI SATA disk and create a standard FAT32 volume on it.
 
 ## What Was Added
 
@@ -42,6 +42,7 @@ The shell now supports these file-related commands:
 | `mkdir <dir>` | Create a directory. |
 | `rm <path>` | Remove a file or an empty directory. |
 | `stat <path>` | Print basic metadata: type, display name, size, and first cluster. |
+| `dformat fat32` | Erase and repartition the detected SATA disk as one FAT32 volume. |
 
 The prompt now includes the current directory:
 
@@ -99,11 +100,18 @@ The relevant startup flow is:
 2. Memory is initialized through `Memory::initialize()`.
 3. C++ runtime constructors are run through `CXXRuntime::initialize()`.
 4. Architecture-specific initialization runs through `Arch::initialize()`.
-5. `FAT32::initialize()` creates and mounts the RAM-backed FAT32 volume.
-6. The kernel prints `Mounted FAT32 ram disk`.
-7. The interactive shell starts.
+5. `DriverSubsystem` initializes the AHCI driver and detects a SATA disk when available.
+6. `FAT32::initialize()` creates and mounts the RAM-backed FAT32 volume.
+7. The kernel prints `Mounted FAT32 ram disk`.
+8. The interactive shell starts.
 
 The filesystem is ready before the shell prompt appears.
+
+## Formatting a SATA Disk
+
+Run `dformat fat32` in the shell, then type `y` and press Enter to confirm. No disk writes begin until the complete confirmation line has been read. It creates one MBR partition of type `0x0C` covering the disk except for the 1 MiB alignment gap at the start, then writes a FAT32 boot sector, FSInfo sectors, two FAT copies, and an empty root directory. The disk must be large enough for a standard FAT32 volume.
+
+Formatting is destructive. The shell's file commands continue to use the separate RAM disk; this utility does not mount the newly formatted SATA volume.
 
 ## Block Layer
 
@@ -131,7 +139,7 @@ namespace Kernel::Block {
 - Bounds are checked before copying.
 - The backing storage is a raw `uint8_t*` memory region owned by the filesystem implementation.
 
-This is deliberately shaped like a real block device so a future hardware driver can replace the memory backend more easily. For example, a future ATA driver could expose the same read/write style while using real disk sectors instead of an in-memory array.
+This is deliberately shaped like a real block device. The AHCI driver exposes the same sector-based read/write interface for SATA disks, which the disk formatter uses to write the partition and FAT32 metadata.
 
 ## FAT32 Volume Geometry
 
@@ -626,4 +634,3 @@ docker run --rm unitykernel \
 ```
 
 An exit code of `124` from `timeout` means QEMU was still running when the timeout expired. In this case that is expected because the kernel enters the interactive shell and waits for input.
-
