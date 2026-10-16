@@ -17,7 +17,9 @@ namespace Driver::Blockdev {
         return true;
     }
 
-    void RamdiskDriver::finalize() {}
+    void RamdiskDriver::finalize() {
+        Kernel::ResourceSubsystem::unregisterResource(resourceId);
+    }
 
     void RamdiskDriver::resize(uint32_t sectors) {
         storage.resize(sectors * sectorSize);
