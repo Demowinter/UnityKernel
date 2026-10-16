@@ -7,7 +7,7 @@ namespace Driver::Blockdev {
     RamdiskDriver::RamdiskDriver() : BlockdevDriver{Type::RAMDISK} {}
 
     bool RamdiskDriver::initialize() {
-        Kernel::ResourceSubsystem::ResourceInfo resource;
+        Kernel::ResourceSubsystem::ResourceInfo resource{};
         resource.type = Kernel::ResourceSubsystem::ResourceType::SOMETHING_ELSE;
         resource.creator = this;
         resource.maintaner = this;

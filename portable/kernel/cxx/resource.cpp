@@ -7,9 +7,9 @@
 
 namespace Kernel::ResourceSubsystem {
     static STDLib::Map<ResourceID, ResourceInfo> resources;
+    static STDLib::Vector<ResourceID> freeIds;
 
     ResourceID getFreeId() {
-        static STDLib::Vector<ResourceID> freeIds;
         static ResourceID nextId = 0;
 
         ResourceID id = -1;
@@ -22,7 +22,7 @@ namespace Kernel::ResourceSubsystem {
             freeIds.erase(it);
         }
 
-        else if (id < std::numeric_limits<ResourceID>::max()) id = nextId++;
+        else if (nextId < std::numeric_limits<ResourceID>::max()) id = nextId++;
 
         return id;
     }
@@ -41,6 +41,7 @@ namespace Kernel::ResourceSubsystem {
 
     void unregisterResource(ResourceID id) {
         resources.erase(id);
+        freeIds.push_back(id);
     }
 
     STDLib::Vector<ResourceID> getResourceList() {
