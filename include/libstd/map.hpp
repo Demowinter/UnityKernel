@@ -60,7 +60,7 @@ namespace STDLib {
             return &node->value;
         }
 
-        const pointer base() const {
+        pointer base() const {
             return &node->value;
         }
 
@@ -101,6 +101,8 @@ namespace STDLib {
 
         void copy(const Map& obj);
         void swap(Map& obj);
+
+        Value& at(const Key& key);
 
         size_t size() const;
 

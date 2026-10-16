@@ -1,3 +1,6 @@
+#pragma once
+#include <librt/runtime.hpp>
+
 namespace STDLib {
 
     template<typename Key, typename Value, typename Compare>
@@ -65,6 +68,15 @@ namespace STDLib {
         obj.head = tmpHead;
         obj.count = tmpCount;
         obj.cmp = tmpCmp;
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    Value& Map<Key, Value, Compare>::at(const Key& key) {
+        Value* v = find(key);
+
+        if (!v) CXXRuntime::abort("STDLib::Map::at()", "Key not found");
+
+        return *v;
     }
 
     template<typename Key, typename Value, typename Compare>
