@@ -46,9 +46,6 @@ namespace Arch::X86::PMIO {
         return val;
     }
 
-    template<typename Type>
-    void write(uint16_t port, Type val);
-
     template<>
     void write(uint16_t port, uint8_t val) {
         asm volatile (
