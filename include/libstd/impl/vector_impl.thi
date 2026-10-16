@@ -93,7 +93,7 @@ namespace STDLib {
 
     template<typename Type>
     Type& Vector<Type>::at(size_t index) {
-        if (index >= buffSize) CXXRuntime::abort("CXXRuntime::Vector::at()", "invalid index");
+        if (index >= buffSize) CXXRuntime::abort("STDLib::Vector::at()", "Invalid index");
 
         return buffer[index];
     }

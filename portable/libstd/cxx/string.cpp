@@ -97,7 +97,7 @@ namespace STDLib {
     }
 
     char& String::at(size_t index) {
-        if (index >= length) CXXRuntime::abort("STDLib::String::at()", "invalid index");
+        if (index >= length) CXXRuntime::abort("STDLib::String::at()", "Invalid index");
 
         return buffer[index];
     }
