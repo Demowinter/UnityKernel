@@ -3,6 +3,7 @@
 #include <initializer_list>
 #include <iterator>
 #include <cstddef>
+#include <libstd/iterator.hpp>
 
 namespace STDLib {
     template<typename Type>
@@ -102,7 +103,7 @@ namespace STDLib {
         LinkedList(LinkedList&& obj);
         ~LinkedList();
 
-        template<typename InputIterator>
+        template<typename InputIterator, typename = RequireInputIter<InputIterator>>
         LinkedList(InputIterator begin, InputIterator end) { insert(this->begin(), begin, end); }
 
         LinkedList& operator=(std::initializer_list<Type> list);
@@ -117,7 +118,7 @@ namespace STDLib {
         void insert(Iterator pos, const Type& value);
         void insert(Iterator pos, const Type& value, size_t size);
 
-        template<typename InputIterator>
+        template<typename InputIterator, typename = RequireInputIter<InputIterator>>
         void insert(Iterator pos, InputIterator begin, InputIterator end) {
             for (auto it = begin; it != end; it++) insert(pos, *it);
         }

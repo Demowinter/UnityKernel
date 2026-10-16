@@ -45,7 +45,7 @@ namespace STDLib {
         void insert(Iterator pos, const Type& value);
         void insert(Iterator pos, const Type& value, size_t size);
 
-        template<typename InputIterator>
+        template<typename InputIterator, typename = RequireInputIter<InputIterator>>
         void insert(Iterator pos, InputIterator begin, InputIterator end) {
             size_t posNum = pos - this->begin();
 

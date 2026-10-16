@@ -1,7 +1,11 @@
 #pragma once
 #include <iterator>
+#include <type_traits>
 
 namespace STDLib {
+    template<typename It>
+    using RequireInputIter = std::enable_if_t<std::is_base_of<std::input_iterator_tag, typename std::iterator_traits<It>::iterator_category>::value>;
+
     template<typename It>
     class NormalIterator {
     public:
