@@ -2,6 +2,7 @@ set(KERNEL_SOURCES
     cxx/block.cpp
     cxx/dformat.cpp
     cxx/fat32.cpp
+    cxx/resource.cpp
     cxx/driver.cpp
     cxx/memory.cpp
     cxx/heap.cpp
