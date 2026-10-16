@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <libstd/vector.hpp>
+#include <kernel/subsystems/resource.hpp>
 #include <drivers/blockdev/api.hpp>
 
 namespace Driver::Blockdev {
@@ -21,5 +22,7 @@ namespace Driver::Blockdev {
 
     private:
         STDLib::Vector<uint8_t> storage;
+
+        Kernel::ResourceSubsystem::ResourceID resourceId;
     };
 }

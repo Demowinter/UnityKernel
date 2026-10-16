@@ -1,11 +1,22 @@
 #include <algorithm>
 #include <libbase/memory.hpp>
+#include <kernel/subsystems/resource.hpp>
 #include <drivers/blockdev/ramdisk.hpp>
 
 namespace Driver::Blockdev {
     RamdiskDriver::RamdiskDriver() : BlockdevDriver{Type::RAMDISK} {}
 
-    bool RamdiskDriver::initialize() { return true; }
+    bool RamdiskDriver::initialize() {
+        Kernel::ResourceSubsystem::ResourceInfo resource;
+        resource.type = Kernel::ResourceSubsystem::ResourceType::SOMETHING_ELSE;
+        resource.creator = this;
+        resource.maintaner = this;
+
+        resourceId = Kernel::ResourceSubsystem::registerResource(resource);
+
+        return true;
+    }
+
     void RamdiskDriver::finalize() {}
 
     void RamdiskDriver::resize(uint32_t sectors) {
