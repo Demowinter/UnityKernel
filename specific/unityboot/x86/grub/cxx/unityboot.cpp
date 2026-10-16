@@ -1,6 +1,8 @@
 #include <libgrub/multiboot.hpp>
 #include <libelf/file.hpp>
 #include <libarch/api.hpp>
+#include <libarch/x86/gdt.hpp>
+#include <libarch/x86/cpu.hpp>
 #include <libplatform/api.hpp>
 #include <unityboot/protocol.hpp>
 #include <unityboot/console.hpp>
