@@ -58,6 +58,8 @@ namespace STDLib {
 
     template<typename Type>
     void Vector<Type>::copy(const Vector& obj) {
+        if (this == &obj) return;
+
         clear();
 
         insert(begin(), obj.begin(), obj.end());
@@ -116,8 +118,9 @@ namespace STDLib {
         auto itOut = itInEnd + size;
 
         std::copy_backward(itInBegin,  itInEnd, itOut);
+        std::fill_n(itInBegin, size, value);
 
-        while (size--) buffer[buffSize++] = value;
+        buffSize += size;
     }
 
     template<typename Type>
