@@ -9,3 +9,4 @@ build.sh
 .fd
 kernel.iso
 sata-test.img
+.DS_Store
