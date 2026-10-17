@@ -60,7 +60,7 @@ namespace STDLib {
         void push_back(const Type& value);
         void pop_back();
 
-        char* data();
+        Type* data();
 
         void clear();
 

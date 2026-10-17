@@ -5,6 +5,8 @@ namespace STDLib {
     template<typename Type>
     Vector<Type>::Vector(size_t size) {
         resize(size);
+
+        buffSize = size;
     }
 
     template<typename Type>
@@ -36,6 +38,8 @@ namespace STDLib {
         clear();
 
         insert(begin(), list.begin(), list.end());
+
+        return *this;
     }
 
     template<typename Type>
@@ -109,7 +113,7 @@ namespace STDLib {
 
         auto itInBegin = begin() + pos;
         auto itInEnd = end();
-        auto itOut = itInBegin + size;
+        auto itOut = itInEnd + size;
 
         std::copy_backward(itInBegin,  itInEnd, itOut);
 
@@ -140,6 +144,8 @@ namespace STDLib {
         auto itOut = begin() + pos;
 
         std::copy(itInBegin, itInEnt, itOut);
+
+        buffSize -= size;
     }
 
     template<typename Type>
@@ -163,12 +169,16 @@ namespace STDLib {
     }
 
     template<typename Type>
-    char* Vector<Type>::data() {
-        return buffer.data();
+    Type* Vector<Type>::data() {
+        return buffer.get();
     }
 
     template<typename Type>
     void Vector<Type>::clear() {
+        buffer.reset();
+        buffer = nullptr;
+
+        buffCapacity = 0;
         buffSize = 0;
     }
 

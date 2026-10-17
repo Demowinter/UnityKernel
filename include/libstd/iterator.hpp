@@ -43,7 +43,7 @@ namespace STDLib {
 
         NormalIterator operator--(int) {
             pointer copy = ptr;
-            ptr++;
+            ptr--;
 
             return copy;
         }
