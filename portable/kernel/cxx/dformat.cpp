@@ -85,7 +85,7 @@ namespace Kernel::DFORMAT {
                 const uint32_t count = sectorCount < zeroBufferSectors
                     ? sectorCount
                     : zeroBufferSectors;
-                if (!device.write(startLba, zeros, count)) return false;
+                if (!device.write(0, startLba, zeros, count)) return false;
 
                 startLba += count;
                 sectorCount -= count;
@@ -144,7 +144,7 @@ namespace Kernel::DFORMAT {
             write32(fatSector, 0, 0x0FFFFFF8);
             write32(fatSector, 4, 0x0FFFFFFF);
             write32(fatSector, rootCluster * 4, 0x0FFFFFFF);
-            return device.write(fatStart, fatSector);
+            return device.write(0, fatStart, fatSector);
         }
 
         bool writeMbr(Driver::Blockdev::BlockdevDriver& device,
@@ -162,12 +162,12 @@ namespace Kernel::DFORMAT {
             write32(partition, 12, partitionSectors);
             mbr[510] = 0x55;
             mbr[511] = 0xAA;
-            return device.write(0, mbr);
+            return device.write(0, 0, mbr);
         }
     }
 
     Status partitionAndFormatFat32(Driver::Blockdev::BlockdevDriver& device) {
-        const uint32_t totalSectors = device.sectors();
+        const uint32_t totalSectors = device.sectors(0);
         if (totalSectors <= partitionStart) return Status::invalidDevice;
 
         const uint32_t partitionSectors = totalSectors - partitionStart;
@@ -190,14 +190,14 @@ namespace Kernel::DFORMAT {
 
         alignas(16) uint8_t sector[sectorSize];
         makeBootSector(sector, partitionSectors, geometry);
-        if (!device.write(partitionStart, sector) ||
-            !device.write(partitionStart + 6, sector)) {
+        if (!device.write(0, partitionStart, sector) ||
+            !device.write(0, partitionStart + 6, sector)) {
             return Status::ioError;
         }
 
         makeFsInfo(sector, geometry.clusterCount - 1);
-        if (!device.write(partitionStart + 1, sector) ||
-            !device.write(partitionStart + 7, sector)) {
+        if (!device.write(0, partitionStart + 1, sector) ||
+            !device.write(0, partitionStart + 7, sector)) {
             return Status::ioError;
         }
 

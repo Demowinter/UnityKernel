@@ -12,24 +12,24 @@ namespace Driver::Blockdev {
         resource.creator = this;
         resource.maintaner = this;
 
-        resourceId = Kernel::ResourceSubsystem::registerResource(resource);
+        resources.insert(Kernel::ResourceSubsystem::registerResource(resource), {});
 
         return true;
     }
 
     void RamdiskDriver::finalize() {
-        Kernel::ResourceSubsystem::unregisterResource(resourceId);
+        for (auto it = resources.begin(); it != resources.end(); it++) Kernel::ResourceSubsystem::unregisterResource(it.key());
     }
 
-    void RamdiskDriver::resize(uint32_t sectors) {
-        storage.resize(sectors * sectorSize);
+    void RamdiskDriver::resize(Kernel::ResourceSubsystem::ResourceID resid, uint32_t sectors) {
+        resources.at(resid).resize(sectors * sectorSize);
     }
 
-    bool RamdiskDriver::read(uint32_t lba, void* buffer, uint32_t count) const {
-        if (!storage.size() || !buffer) return false;
-        if (lba > sectors() || count > sectors() - lba) return false;
+    bool RamdiskDriver::read(Kernel::ResourceSubsystem::ResourceID resid, uint32_t lba, void* buffer, uint32_t count) const {
+        if (!resources.at(resid).size() || !buffer) return false;
+        if (lba > sectors(resid) || count > sectors(resid) - lba) return false;
 
-        auto it = storage.begin() + lba * sectorSize;
+        auto it = resources.at(resid).begin() + lba * sectorSize;
 
         uint8_t* bytebuf = static_cast<uint8_t*>(buffer);
 
@@ -40,11 +40,11 @@ namespace Driver::Blockdev {
         return true;
     }
 
-    bool RamdiskDriver::write(uint32_t lba, const void* buffer, uint32_t count) {
-        if (!storage.size() || !buffer) return false;
-        if (lba > sectors() || count > sectors() - lba) return false;
+    bool RamdiskDriver::write(Kernel::ResourceSubsystem::ResourceID resid, uint32_t lba, const void* buffer, uint32_t count) {
+        if (!resources.at(resid).size() || !buffer) return false;
+        if (lba > sectors(resid) || count > sectors(resid) - lba) return false;
 
-        auto it = storage.begin() + lba * sectorSize;
+        auto it = resources.at(resid).begin() + lba * sectorSize;
 
         const uint8_t* bytebuf = static_cast<const uint8_t*>(buffer);
 
@@ -55,7 +55,7 @@ namespace Driver::Blockdev {
         return true;
     }
 
-    uint32_t RamdiskDriver::sectors() const {
-        return storage.size() / sectorSize;
+    uint32_t RamdiskDriver::sectors(Kernel::ResourceSubsystem::ResourceID resid) const {
+        return resources.at(resid).size() / sectorSize;
     }
 }

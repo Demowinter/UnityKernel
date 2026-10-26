@@ -190,7 +190,7 @@ namespace Kernel::Shell {
             }
 
             Console::print("This will erase and repartition the SATA disk (");
-            Console::print(STDLib::toString(device->sectors()));
+            Console::print(STDLib::toString(device->sectors(0)));
             Console::println(" sectors) as one FAT32 partition.");
             Console::println("Type y and press Enter to continue; any other response cancels:");
             char confirmation[8];

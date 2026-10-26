@@ -29,7 +29,7 @@ namespace Kernel {
             Console::info("AHCI port: ", false);
             Console::println(STDLib::hex(ahci->portNumber()));
             Console::info("Sectors: ", false);
-            Console::println(STDLib::hex(ahci->sectors()));
+            Console::println(STDLib::hex(ahci->sectors(0)));
         } else {
             Console::warn("AHCI disk unavailable: ", false);
             Console::println(Driver::AHCI::lastInitializationError());

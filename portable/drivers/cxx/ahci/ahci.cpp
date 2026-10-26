@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <libarch/x86/pmio.hpp>
 #include <kernel/heap.hpp>
+#include <kernel/subsystems/resource.hpp>
 #include <drivers/ahci/ahci.hpp>
 
 namespace Driver::AHCI {
@@ -525,18 +526,18 @@ namespace Driver::AHCI {
         return false;
     }
 
-    bool AHCIDriver::read(uint32_t lba, void* buffer, uint32_t count) const {
+    bool AHCIDriver::read([[maybe_unused]] Kernel::ResourceSubsystem::ResourceID resid, uint32_t lba, void* buffer, uint32_t count) const {
         if (buffer == nullptr || count == 0 || count > maxSectorsPerCommand ||
-            lba > sectors() || count > sectors() - lba) {
+            lba > sectors(0) || count > sectors(0) - lba) {
             return false;
         }
         return executeCommand(ataReadDmaExt, lba, static_cast<uint16_t>(count),
                               false, buffer, static_cast<size_t>(count) * Blockdev::sectorSize);
     }
 
-    bool AHCIDriver::write(uint32_t lba, const void* buffer, uint32_t count) {
+    bool AHCIDriver::write([[maybe_unused]] Kernel::ResourceSubsystem::ResourceID resid, uint32_t lba, const void* buffer, uint32_t count) {
         if (buffer == nullptr || count == 0 || count > maxSectorsPerCommand ||
-            lba > sectors() || count > sectors() - lba) {
+            lba > sectors(0) || count > sectors(0) - lba) {
             return false;
         }
         return executeCommand(ataWriteDmaExt, lba, static_cast<uint16_t>(count),
@@ -544,9 +545,9 @@ namespace Driver::AHCI {
                               static_cast<size_t>(count) * Blockdev::sectorSize);
     }
 
-    uint32_t AHCIDriver::sectors() const {
+    uint32_t AHCIDriver::sectors(Kernel::ResourceSubsystem::ResourceID resid) const {
         return sectorCount > 0xFFFFFFFFULL
-            ? 0xFFFFFFFFU
+            ? 0xFFFFFFFFULL
             : static_cast<uint32_t>(sectorCount);
     }
 
