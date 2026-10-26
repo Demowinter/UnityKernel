@@ -1,8 +1,8 @@
 #pragma once
 #include <string_view>
 #include <libstd/vector.hpp>
-#include <drivers/api.hpp>
-#include <drivers/blockdev/api.hpp>
+#include <drivers/driver.hpp>
+#include <drivers/blockdev.hpp>
 
 namespace Driver::FS {
     enum class Status {
@@ -33,7 +33,7 @@ namespace Driver::FS {
         FSDriver(Type driType) : BaseDriver{Category::FS, driType} {}
         virtual ~FSDriver() = default;
 
-        virtual bool canSatisfy(BaseDriver* driver) override { return true; };
+        virtual bool canSatisfy([[maybe_unused]] BaseDriver* driver) override { return true; };
         virtual void useDriver(BaseDriver* driver) override { this->driver = static_cast<Blockdev::BlockdevDriver*>(driver); };
 
         virtual STDLib::Vector<Info> dependencies() const override { return {{Category::BLK}}; }

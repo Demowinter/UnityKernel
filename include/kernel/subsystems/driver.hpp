@@ -1,6 +1,6 @@
 #pragma once
 #include <libstd/vector.hpp>
-#include <drivers/api.hpp>
+#include <drivers/driver.hpp>
 
 namespace Kernel::DriverSubsystem {
     void initialize();

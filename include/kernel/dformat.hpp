@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include <drivers/blockdev/api.hpp>
+#include <drivers/blockdev.hpp>
 
 namespace Kernel::DFORMAT {
     enum class Status {

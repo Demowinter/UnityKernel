@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <libstd/vector.hpp>
-#include <drivers/api.hpp>
+#include <drivers/driver.hpp>
 #include <drivers/loadlist.hpp>
 #include <kernel/subsystems/driver.hpp>
 

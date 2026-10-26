@@ -1,7 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
-#include <drivers/blockdev/api.hpp>
+#include <drivers/blockdev.hpp>
 
 namespace Driver::AHCI {
     constexpr size_t portCount = 32;

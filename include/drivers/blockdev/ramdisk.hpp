@@ -1,9 +1,8 @@
 #pragma once
-#include <cstddef>
 #include <cstdint>
 #include <libstd/vector.hpp>
 #include <kernel/subsystems/resource.hpp>
-#include <drivers/blockdev/api.hpp>
+#include <drivers/blockdev.hpp>
 
 namespace Driver::Blockdev {
     class RamdiskDriver : public BlockdevDriver {

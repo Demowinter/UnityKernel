@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <libstd/string.hpp>
-#include <drivers/fs/api.hpp>
+#include <drivers/fs.hpp>
 
 namespace Driver::FS {
     namespace FAT32 {

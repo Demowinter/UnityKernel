@@ -1,6 +1,6 @@
 #pragma once
 #include <libstd/vector.hpp>
-#include <drivers/api.hpp>
+#include <drivers/driver.hpp>
 #include <drivers/ahci/ahci.hpp>
 #include <drivers/blockdev/ramdisk.hpp>
 #include <drivers/fs/fat32.hpp>
