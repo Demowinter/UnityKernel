@@ -1,7 +1,7 @@
 #include <limits>
 #include <libstd/vector.hpp>
 #include <libstd/map.hpp>
-#include <drivers/api.hpp>
+#include <drivers/driver.hpp>
 #include <kernel/system.hpp>
 #include <kernel/subsystems/resource.hpp>
 
@@ -12,7 +12,7 @@ namespace Kernel::ResourceSubsystem {
     ResourceID getFreeId() {
         static ResourceID nextId = 0;
 
-        ResourceID id = -1;
+        ResourceID id = invalidID;
 
         if (freeIds.size()) {
             auto it = freeIds.begin();
@@ -32,7 +32,7 @@ namespace Kernel::ResourceSubsystem {
     ResourceID registerResource(ResourceInfo info) {
         info.id = getFreeId();
 
-        if (info.id < 0) System::panic("Kernel::ResourceSubsystem::registerResource()", "Too many resources");
+        if (info.id == invalidID) System::panic("Kernel::ResourceSubsystem::registerResource()", "Too many resources");
 
         resources.insert(info.id, info);
 
@@ -40,6 +40,8 @@ namespace Kernel::ResourceSubsystem {
     }
 
     void unregisterResource(ResourceID id) {
+        if (!resources.find(id)) System::panic("Kernel::ResourceSubsystem::unregisterResource()", "Invalid ID");
+
         resources.erase(id);
         freeIds.push_back(id);
     }

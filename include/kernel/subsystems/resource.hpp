@@ -1,10 +1,12 @@
 #pragma once
 #include <cstdint>
 #include <libstd/vector.hpp>
-#include <drivers/api.hpp>
+#include <drivers/driver.hpp>
 
 namespace Kernel::ResourceSubsystem {
-    using ResourceID = int32_t;
+    using ResourceID = uint32_t;
+
+    constexpr ResourceID invalidID = -1U;
 
     enum ResourceType {
         DEVICE,
