@@ -1,14 +1,13 @@
 # DriverSubsystem та архітектура драйверів UnityKernel
 
-Цей документ описує задуману й поточну архітектуру драйверів у UnityKernel на основі файлів:
+Цей документ описує поточну архітектуру драйверів UnityKernel та її взаємодію з ресурсами. Основні файли:
 
-- `include/kernel/subsystems/driver.hpp`
-- `portable/kernel/cxx/driver.cpp`
-- `include/drivers/api.hpp`
-- `include/drivers/loadlist.hpp`
-- `include/drivers/*.hpp`
+- `include/kernel/subsystems/driver.hpp` і `portable/kernel/cxx/driver.cpp` — керування життєвим циклом драйверів;
+- `include/drivers/driver.hpp` і `include/drivers/loadlist.hpp` — базовий інтерфейс та список драйверів;
+- `include/kernel/subsystems/resource.hpp` і `portable/kernel/cxx/resource.cpp` — реєстр метаданих ресурсів;
+- `include/drivers/blockdev.hpp` і `include/drivers/blockdev/ramdisk.hpp` — інтерфейс блокових пристроїв та RAM-диск.
 
-Мета системи проста й дуже важлива для ядра: забезпечити єдиний механізм завантаження, ініціалізації, зв'язування та знищення драйверів, не дозволяючи їм жити ізольовано відносно один одного.
+`DriverSubsystem` керує драйверами та їхніми залежностями. `ResourceSubsystem` окремо реєструє ресурси, які драйвери створюють або обслуговують. Ці підсистеми мають різні ролі.
 
 ## 1. Основна ідея
 
@@ -25,10 +24,12 @@
 
 У цьому підході:
 
-- базовий клас описує інтерфейс, а не готову реалізацію;
-- конкретні драйвери визначають поведінку;
-- високорівневі драйвери (наприклад, файлові системи) можуть працювати поверх низькорівневих (наприклад, block devices);
-- один підсистемний менеджер централізує ініціалізацію та очищення.
+- базовий клас описує спільний інтерфейс драйвера;
+- драйвер відповідає за обслуговування ресурсів; керування фізичним обладнанням — лише один із можливих способів цього;
+- один екземпляр драйвера може обслуговувати кілька ресурсів;
+- ресурс може бути створений одним драйвером, а обслуговуватися іншим;
+- спеціалізовані інтерфейси, як-от block-device API, визначають операції, доступні для конкретної категорії ресурсів;
+- `DriverSubsystem` управляє драйверами, а `ResourceSubsystem` — метаданими ресурсів.
 
 ---
 
@@ -254,7 +255,7 @@ protected:
 
 ## 6. Блоковий шар
 
-`include/drivers/blockdev/api.hpp` задає інтерфейс block device:
+Поточний інтерфейс оголошено в `include/drivers/blockdev.hpp`.
 
 ```cpp
 namespace Driver::Blockdev {
@@ -264,30 +265,67 @@ namespace Driver::Blockdev {
     public:
         BlockdevDriver(Type driType) : BaseDriver{Category::BLK, driType} {}
 
-        virtual void resize(uint32_t sectors) {}
+        virtual void resize(Kernel::ResourceSubsystem::ResourceID resid,
+                            uint32_t sectors) {}
 
-        virtual bool read(uint32_t lba, void* buffer, uint32_t count = 1) const = 0;
-        virtual bool write(uint32_t lba, const void* buffer, uint32_t count = 1) = 0;
+        virtual bool read(Kernel::ResourceSubsystem::ResourceID resid,
+                          uint32_t lba, void* buffer,
+                          uint32_t count = 1) const = 0;
 
-        virtual uint32_t sectors() const = 0;
+        virtual bool write(Kernel::ResourceSubsystem::ResourceID resid,
+                           uint32_t lba, const void* buffer,
+                           uint32_t count = 1) = 0;
+
+        virtual uint32_t sectors(
+            Kernel::ResourceSubsystem::ResourceID resid) const = 0;
     };
 }
 ```
 
 ### Основні властивості
 
-- блоковий пристрій працює з секторами (`LBA`);
-- `sectorSize` фіксований: 512 байт;
-- API надає `read` і `write`;
-- кількість секторів доступна через `sectors()`;
-- драйвери можуть підтримувати `resize()`.
+- операції адресують конкретний ресурс через `ResourceID resid`;
+- `lba` задає початковий логічний блок, а `count` — кількість секторів;
+- `sectorSize` наразі дорівнює 512 байтам;
+- `sectors(resid)` повертає кількість секторів саме вибраного ресурсу;
+- `resize(resid, sectors)` є необов'язковою операцією для драйверів, що підтримують зміну розміру.
 
-Цей інтерфейс є природнім базовим шаром для:
+Це спеціалізований інтерфейс для блокових ресурсів, а не універсальний API для всіх типів ресурсів. Файли, сокети, канали та інші ресурси можуть мати інші набори операцій.
 
-- RAM-дисків;
-- ATA/AHCI/NVMe-драйверів;
-- USB mass storage;
-- файлових систем.
+---
+
+## 6.1. ResourceSubsystem і життєвий цикл ресурсів
+
+Реєстр ресурсів оголошено в `include/kernel/subsystems/resource.hpp` та реалізовано в `portable/kernel/cxx/resource.cpp`.
+
+`ResourceSubsystem` зберігає **метадані** ресурсу, а не реалізує його поведінку та не володіє його внутрішнім сховищем. До метаданих належать:
+
+- `ResourceID id` — ідентифікатор ресурсу;
+- `ResourceType type` — тип ресурсу;
+- `capabilities` — бітова маска можливостей;
+- `creator` — драйвер, який створив ресурс;
+- `maintaner` — драйвер, відповідальний за його обслуговування.
+
+У поточному коді поле й методи мають написання `maintaner`; це фактичне ім'я API, хоча надалі його можна виправити на `maintainer`.
+
+Основні операції:
+
+- `registerResource(info)` реєструє метадані та повертає призначений `ResourceID`;
+- `unregisterResource(id)` вилучає запис із реєстру;
+- `getResourceList()` повертає список зареєстрованих ID;
+- `getType()` і `getCapabilities()` читають метадані;
+- `getCreator()` і `getMaintaner()` повертають відповідні покажчики драйверів;
+- `changeMaintaner()` змінює драйвер, відповідальний за обслуговування.
+
+### ResourceID — не Driver ID
+
+`ResourceID` ідентифікує конкретний ресурс, а не драйвер. Один драйвер може мати багато різних `ResourceID`, і не слід вважати, що ID ресурсу дорівнює номеру або індексу драйвера.
+
+`ResourceID` має тип `uint32_t`; `invalidID` зарезервовано як маркер недійсного ID. ID потрібно отримувати з результату `registerResource()`, а не вгадувати чи жорстко задавати в коді.
+
+Реєстр може повторно використати ID після `unregisterResource()`. Тому після зняття ресурсу з реєстрації старий ID не можна надалі використовувати: за повторного використання він може вказувати вже на інший ресурс. Захист від застарілих посилань, наприклад через generation counter, є окремим питанням подальшого розвитку.
+
+Вилучення запису з реєстру саме по собі не звільняє ресурсні дані. Драйвер, який володіє внутрішнім станом ресурсу, відповідає за його очищення та узгоджене зняття ресурсу з реєстрації.
 
 ---
 
@@ -295,36 +333,18 @@ namespace Driver::Blockdev {
 
 ### 7.1. `RamdiskDriver`
 
-Файл: `include/drivers/blockdev/ramdisk.hpp`
+Файли: `include/drivers/blockdev/ramdisk.hpp` та `portable/drivers/cxx/blockdev/ramdisk.cpp`.
+
+RAM-драйвер зберігає ресурси в контейнері, індексованому за `ResourceID`:
 
 ```cpp
-class RamdiskDriver : public BlockdevDriver {
-public:
-    RamdiskDriver();
-
-    bool initialize() override;
-    void finalize() override;
-
-    void resize(uint32_t sectors) override;
-
-    bool read(uint32_t lba, void* buffer, uint32_t count = 1) const override;
-    bool write(uint32_t lba, const void* buffer, uint32_t count = 1) override;
-
-    uint32_t sectors() const override;
-
-private:
-    STDLib::Vector<uint8_t> storage;
-};
+STDLib::Map<Kernel::ResourceSubsystem::ResourceID,
+            STDLib::Vector<uint8_t>> resources;
 ```
 
-`RamdiskDriver` — це повноцінний block device у пам'яті. Він не прив'язаний до фізичного обладнання, але реалізує потрібний інтерфейс:
+Під час ініціалізації драйвер реєструє ресурс через `ResourceSubsystem::registerResource()` і використовує повернений ID як ключ для відповідного буфера. Операції `read`, `write`, `resize` і `sectors` отримують ID, щоб вибрати потрібний RAM-диск.
 
-- `read()` читає блоки зі сховища;
-- `write()` записує блоки в сховище;
-- `resize()` змінює розмір RAM-диска;
-- `sectors()` повертає кількість секторів.
-
-Це дуже корисно для ранньої розробки та тестування файлових систем, оскільки дозволяє вставити віртуальний диск без реального контролера диска.
+Це дає змогу одному екземпляру `RamdiskDriver` обслуговувати кілька RAM-дисків. `finalize()` знімає з реєстрації ресурси, зареєстровані драйвером; керування їхнім внутрішнім станом залишається відповідальністю самого драйвера.
 
 ### 7.2. `FAT32Driver`
 
@@ -685,6 +705,6 @@ bool FAT32Driver::canSatisfy(BaseDriver* candidate) {
 
 Найширше узагальнення таке:
 
-> `DriverSubsystem` — це не просто список драйверів, а графовий менеджер ресурсів ядра, який збирає, перевіряє й підтримує стабільну ієрархію драйверів від апаратного шару до логічних абстракцій.
+> `DriverSubsystem` керує реєстром драйверів, їхнім життєвим циклом і залежностями. `ResourceSubsystem` окремо зберігає метадані ресурсів. Драйвери реалізують поведінку ресурсів, а не сам реєстр.
 
 Ця структура гарно підходить для розвитку ядра: від RAM-диска та простих block-інтерфейсів до реальних PCI/USB/AHCI/FS-стеків без повної переробки базової моделі.
