@@ -103,15 +103,17 @@ namespace STDLib {
         void swap(Map& obj);
 
         Value& at(const Key& key);
+        Value& at(const Key& key) const;
 
         size_t size() const;
 
-        Value* find(const Key& key);
+        Value* find(const Key& key) const;
 
         void insert(const Key& key, const Value& value);
         void erase(const Key& key);
 
         Value& operator[](const Key& key);
+        // Value& operator[](const Key& key) const;
 
         void clear();
 

@@ -80,12 +80,21 @@ namespace STDLib {
     }
 
     template<typename Key, typename Value, typename Compare>
+    Value& Map<Key, Value, Compare>::at(const Key& key) const {
+        Value* v = find(key);
+
+        if (!v) CXXRuntime::abort("STDLib::Map::at()", "Key not found");
+
+        return *v;
+    }    
+
+    template<typename Key, typename Value, typename Compare>
     size_t Map<Key, Value, Compare>::size() const {
         return count;
     }
 
     template<typename Key, typename Value, typename Compare>
-    Value* Map<Key, Value, Compare>::find(const Key& key) {
+    Value* Map<Key, Value, Compare>::find(const Key& key) const {
         MapNode<Key, Value>* cur = head;
         while (cur) {
             if (!cmp(cur->key, key) && !cmp(key, cur->key)) return &cur->value;
