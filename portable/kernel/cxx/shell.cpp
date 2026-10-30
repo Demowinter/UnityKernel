@@ -99,6 +99,8 @@ namespace Kernel::Shell {
         Console::println("cpuid             Print cpu manufacturer");
         Console::println("sysinfo           Print system information");
         Console::println("dformat fat32     Partition SATA disk and format it as FAT32");
+        Console::println("mnt               Mount the SATA FAT32 filesystem");
+        Console::println("unmnt             Unmount SATA and return to the RAM filesystem");
         Console::println("pwd               Print current directory");
         Console::println("ls [path]         List directory contents");
         Console::println("cd <path>         Change directory");
@@ -218,6 +220,41 @@ namespace Kernel::Shell {
 
         Console::println("Usage: dformat fat32");
         Console::println("This erases the detected SATA disk and creates one FAT32 partition.");
+    }
+
+    static void cmdMnt(std::string_view args) {
+        if (!args.empty()) {
+            Console::println("Usage: mnt");
+            return;
+        }
+
+        auto* device = static_cast<Driver::AHCI::AHCIDriver*>(
+            DriverSubsystem::loadDriver(Driver::Category::BLK, Driver::Type::AHCI));
+        if (device == nullptr) {
+            Console::println("mnt: SATA disk is unavailable");
+            return;
+        }
+
+        FAT32::Status status = FAT32::mountSata(*device);
+        if (status == FAT32::Status::ok) {
+            Console::println("mnt: SATA FAT32 filesystem mounted");
+        } else {
+            printFsError("mnt", "SATA", status);
+        }
+    }
+
+    static void cmdUnmnt(std::string_view args) {
+        if (!args.empty()) {
+            Console::println("Usage: unmnt");
+            return;
+        }
+
+        FAT32::Status status = FAT32::unmountSata();
+        if (status == FAT32::Status::ok) {
+            Console::println("unmnt: returned to the RAM filesystem");
+        } else {
+            printFsError("unmnt", "SATA", status);
+        }
     }
 
     static void cmdLs(std::string_view args) {
@@ -365,6 +402,10 @@ namespace Kernel::Shell {
             sysinfo(args);
         } else if (strcmp(command, "dformat")) {
             dformat(args);
+        } else if (strcmp(command, "mnt")) {
+            cmdMnt(args);
+        } else if (strcmp(command, "unmnt")) {
+            cmdUnmnt(args);
         } else if (strcmp(command, "pwd")) {
             cmdPwd(args);
         } else if (strcmp(command, "ls")) {

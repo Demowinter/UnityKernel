@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string_view>
+#include <drivers/blockdev.hpp>
 
 namespace Kernel::FAT32 {
     enum class Status {
@@ -14,7 +15,9 @@ namespace Kernel::FAT32 {
         isDirectory,
         directoryNotEmpty,
         noSpace,
-        ioError
+        ioError,
+        notMounted,
+        invalidVolume
     };
 
     struct EntryInfo {
@@ -29,6 +32,8 @@ namespace Kernel::FAT32 {
 
     void initialize();
     bool ready();
+    Status mountSata(Driver::Blockdev::BlockdevDriver& device);
+    Status unmountSata();
 
     const char* statusText(Status status);
     std::string_view cwd();

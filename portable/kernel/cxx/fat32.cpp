@@ -1,17 +1,41 @@
 #include <kernel/fat32.hpp>
 #include <kernel/block.hpp>
+#include <kernel/heap.hpp>
 #include <libbase/memory.hpp>
 
 namespace Kernel::FAT32 {
     namespace {
-        constexpr uint8_t sectorsPerCluster = 1;
-        constexpr uint32_t reservedSectors = 32;
-        constexpr uint32_t fatSectors = 2;
-        constexpr uint32_t clusterCount = 128;
-        constexpr uint32_t rootCluster = 2;
-        constexpr uint32_t totalSectors = reservedSectors + fatSectors + clusterCount * sectorsPerCluster;
-        constexpr uint32_t clusterBytes = Block::sectorSize * sectorsPerCluster;
-        constexpr uint32_t diskBytes = totalSectors * Block::sectorSize;
+        constexpr uint8_t ramSectorsPerCluster = 1;
+        constexpr uint32_t ramReservedSectors = 32;
+        constexpr uint32_t ramFatSectors = 2;
+        constexpr uint32_t ramClusterCount = 128;
+        constexpr uint32_t ramTotalSectors =
+            ramReservedSectors + ramFatSectors + ramClusterCount * ramSectorsPerCluster;
+        constexpr uint32_t maxSectorsPerCluster = 64;
+        constexpr uint32_t diskBytes = ramTotalSectors * Block::sectorSize;
+
+        class ClusterBuffer {
+        public:
+            explicit ClusterBuffer(uint32_t size)
+                : buffer(static_cast<uint8_t*>(Heap::allocate(size))) {}
+            ClusterBuffer(const ClusterBuffer&) = delete;
+            ClusterBuffer& operator=(const ClusterBuffer&) = delete;
+
+            ~ClusterBuffer() {
+                if (buffer != nullptr) Heap::deallocate(buffer);
+            }
+
+            explicit operator bool() const {
+                return buffer != nullptr;
+            }
+
+            uint8_t* data() {
+                return buffer;
+            }
+
+        private:
+            uint8_t* buffer;
+        };
 
         constexpr uint32_t endOfChain = 0x0FFFFFFF;
         constexpr uint32_t endOfChainMin = 0x0FFFFFF8;
@@ -39,8 +63,7 @@ namespace Kernel::FAT32 {
         } __attribute__((packed));
 
         static_assert(sizeof(DirectoryEntry) == 32);
-
-        constexpr uint32_t entriesPerCluster = clusterBytes / sizeof(DirectoryEntry);
+        uint32_t rootCluster = 2;
 
         struct EntryRef {
             uint32_t entryCluster = 0;
@@ -56,11 +79,55 @@ namespace Kernel::FAT32 {
         };
 
         uint8_t disk[diskBytes];
-        Block::MemoryDevice device;
+        Block::MemoryDevice ramDevice;
+        Driver::Blockdev::BlockdevDriver* sataDevice = nullptr;
+        uint32_t volumeStartLba = 0;
+        uint32_t volumeSectors = ramTotalSectors;
+        uint8_t sectorsPerCluster = ramSectorsPerCluster;
+        uint32_t reservedSectors = ramReservedSectors;
+        uint32_t fatCount = 1;
+        uint32_t fatSectors = ramFatSectors;
+        uint32_t clusterCount = ramClusterCount;
         bool mounted = false;
         uint32_t cwdCluster = rootCluster;
         char cwdPath[128] = "/";
         size_t cwdPathLength = 1;
+
+        uint32_t clusterBytes() {
+            return Block::sectorSize * sectorsPerCluster;
+        }
+
+        uint32_t entriesPerCluster() {
+            return clusterBytes() / sizeof(DirectoryEntry);
+        }
+
+        bool readSectors(uint32_t lba, void* buffer, uint32_t count = 1) {
+            if (sataDevice != nullptr) {
+                return sataDevice->read(0, volumeStartLba + lba, buffer, count);
+            }
+
+            return ramDevice.read(lba, buffer, count);
+        }
+
+        bool writeSectors(uint32_t lba, const void* buffer, uint32_t count = 1) {
+            if (sataDevice != nullptr) {
+                return sataDevice->write(0, volumeStartLba + lba, buffer, count);
+            }
+
+            return ramDevice.write(lba, buffer, count);
+        }
+
+        uint16_t read16(const uint8_t* buffer, uint32_t offset) {
+            return static_cast<uint16_t>(buffer[offset]) |
+                   (static_cast<uint16_t>(buffer[offset + 1]) << 8);
+        }
+
+        uint32_t read32(const uint8_t* buffer, uint32_t offset) {
+            return static_cast<uint32_t>(buffer[offset]) |
+                   (static_cast<uint32_t>(buffer[offset + 1]) << 8) |
+                   (static_cast<uint32_t>(buffer[offset + 2]) << 16) |
+                   (static_cast<uint32_t>(buffer[offset + 3]) << 24);
+        }
 
         bool textEquals(std::string_view lhs, const char* rhs) {
             size_t index = 0;
@@ -105,54 +172,57 @@ namespace Kernel::FAT32 {
         }
 
         uint32_t readFat(uint32_t cluster) {
-            uint32_t offset = reservedSectors * Block::sectorSize + cluster * 4;
-            uint32_t value = 0;
+            const uint32_t fatLba = reservedSectors + (cluster * 4) / Block::sectorSize;
+            const uint32_t offset = (cluster * 4) % Block::sectorSize;
+            alignas(16) uint8_t sector[Block::sectorSize];
+            if (!readSectors(fatLba, sector)) return 0;
 
-            value |= static_cast<uint32_t>(disk[offset]);
-            value |= static_cast<uint32_t>(disk[offset + 1]) << 8;
-            value |= static_cast<uint32_t>(disk[offset + 2]) << 16;
-            value |= static_cast<uint32_t>(disk[offset + 3]) << 24;
-
-            return value & 0x0FFFFFFF;
+            return read32(sector, offset) & 0x0FFFFFFF;
         }
 
         void writeFat(uint32_t cluster, uint32_t value) {
-            uint32_t offset = reservedSectors * Block::sectorSize + cluster * 4;
+            const uint32_t fatSectorOffset = (cluster * 4) / Block::sectorSize;
+            const uint32_t offset = (cluster * 4) % Block::sectorSize;
             value &= 0x0FFFFFFF;
 
-            disk[offset] = static_cast<uint8_t>(value & 0xFF);
-            disk[offset + 1] = static_cast<uint8_t>((value >> 8) & 0xFF);
-            disk[offset + 2] = static_cast<uint8_t>((value >> 16) & 0xFF);
-            disk[offset + 3] = static_cast<uint8_t>((value >> 24) & 0xFF);
+            alignas(16) uint8_t sector[Block::sectorSize];
+            for (uint32_t fat = 0; fat < fatCount; fat++) {
+                const uint32_t fatLba = reservedSectors + fat * fatSectors + fatSectorOffset;
+                if (!readSectors(fatLba, sector)) return;
+                write32(sector, offset, value);
+                if (!writeSectors(fatLba, sector)) return;
+            }
         }
 
         uint32_t clusterToLba(uint32_t cluster) {
-            return reservedSectors + fatSectors + (cluster - rootCluster) * sectorsPerCluster;
+            return reservedSectors + fatCount * fatSectors +
+                   (cluster - 2) * sectorsPerCluster;
         }
 
         bool validCluster(uint32_t cluster) {
-            return cluster >= rootCluster && cluster < rootCluster + clusterCount;
+            return cluster >= 2 && cluster < clusterCount + 2;
         }
 
         Status readCluster(uint32_t cluster, void* buffer) {
             if (!validCluster(cluster)) return Status::ioError;
-            if (!device.read(clusterToLba(cluster), buffer, sectorsPerCluster)) return Status::ioError;
+            if (!readSectors(clusterToLba(cluster), buffer, sectorsPerCluster)) return Status::ioError;
 
             return Status::ok;
         }
 
         Status writeCluster(uint32_t cluster, const void* buffer) {
             if (!validCluster(cluster)) return Status::ioError;
-            if (!device.write(clusterToLba(cluster), buffer, sectorsPerCluster)) return Status::ioError;
+            if (!writeSectors(clusterToLba(cluster), buffer, sectorsPerCluster)) return Status::ioError;
 
             return Status::ok;
         }
 
         Status zeroCluster(uint32_t cluster) {
-            uint8_t buffer[clusterBytes];
-            memset(buffer, 0, sizeof(buffer));
+            ClusterBuffer buffer(clusterBytes());
+            if (!buffer) return Status::ioError;
+            memset(buffer.data(), 0, clusterBytes());
 
-            return writeCluster(cluster, buffer);
+            return writeCluster(cluster, buffer.data());
         }
 
         uint32_t nextCluster(uint32_t cluster) {
@@ -163,7 +233,7 @@ namespace Kernel::FAT32 {
         }
 
         Status allocateCluster(uint32_t& cluster) {
-            for (uint32_t candidate = rootCluster + 1; candidate < rootCluster + clusterCount; candidate++) {
+            for (uint32_t candidate = 2; candidate < clusterCount + 2; candidate++) {
                 if (readFat(candidate) == 0) {
                     writeFat(candidate, endOfChain);
                     cluster = candidate;
@@ -277,26 +347,28 @@ namespace Kernel::FAT32 {
         Status writeEntry(const EntryRef& ref, const DirectoryEntry& entry) {
             if (ref.root || ref.synthetic) return Status::ioError;
 
-            uint8_t buffer[clusterBytes];
-            Status status = readCluster(ref.entryCluster, buffer);
+            ClusterBuffer buffer(clusterBytes());
+            if (!buffer) return Status::ioError;
+            Status status = readCluster(ref.entryCluster, buffer.data());
             if (status != Status::ok) return status;
 
-            auto* entries = reinterpret_cast<DirectoryEntry*>(buffer);
+            auto* entries = reinterpret_cast<DirectoryEntry*>(buffer.data());
             entries[ref.entryIndex] = entry;
 
-            return writeCluster(ref.entryCluster, buffer);
+            return writeCluster(ref.entryCluster, buffer.data());
         }
 
         Status findEntry(uint32_t dirCluster, const char shortName[11], EntryRef& ref) {
             uint32_t cluster = dirCluster;
-            uint8_t buffer[clusterBytes];
+            ClusterBuffer buffer(clusterBytes());
+            if (!buffer) return Status::ioError;
 
             while (validCluster(cluster)) {
-                Status status = readCluster(cluster, buffer);
+                Status status = readCluster(cluster, buffer.data());
                 if (status != Status::ok) return status;
 
-                auto* entries = reinterpret_cast<DirectoryEntry*>(buffer);
-                for (uint32_t index = 0; index < entriesPerCluster; index++) {
+                auto* entries = reinterpret_cast<DirectoryEntry*>(buffer.data());
+                for (uint32_t index = 0; index < entriesPerCluster(); index++) {
                     DirectoryEntry& entry = entries[index];
 
                     if (static_cast<uint8_t>(entry.name[0]) == 0x00) return Status::notFound;
@@ -322,14 +394,15 @@ namespace Kernel::FAT32 {
         Status findFreeEntry(uint32_t dirCluster, EntryRef& ref) {
             uint32_t cluster = dirCluster;
             uint32_t previous = 0;
-            uint8_t buffer[clusterBytes];
+            ClusterBuffer buffer(clusterBytes());
+            if (!buffer) return Status::ioError;
 
             while (validCluster(cluster)) {
-                Status status = readCluster(cluster, buffer);
+                Status status = readCluster(cluster, buffer.data());
                 if (status != Status::ok) return status;
 
-                auto* entries = reinterpret_cast<DirectoryEntry*>(buffer);
-                for (uint32_t index = 0; index < entriesPerCluster; index++) {
+                auto* entries = reinterpret_cast<DirectoryEntry*>(buffer.data());
+                for (uint32_t index = 0; index < entriesPerCluster(); index++) {
                     uint8_t first = static_cast<uint8_t>(entries[index].name[0]);
                     if (first == 0x00 || first == 0xE5) {
                         ref.entryCluster = cluster;
@@ -493,10 +566,11 @@ namespace Kernel::FAT32 {
         }
 
         Status initializeDirectory(uint32_t cluster, uint32_t parentCluster) {
-            uint8_t buffer[clusterBytes];
-            memset(buffer, 0, sizeof(buffer));
+            ClusterBuffer buffer(clusterBytes());
+            if (!buffer) return Status::ioError;
+            memset(buffer.data(), 0, clusterBytes());
 
-            auto* entries = reinterpret_cast<DirectoryEntry*>(buffer);
+            auto* entries = reinterpret_cast<DirectoryEntry*>(buffer.data());
 
             fillShortName(entries[0].name, ".");
             entries[0].attr = attrDirectory;
@@ -506,17 +580,18 @@ namespace Kernel::FAT32 {
             entries[1].attr = attrDirectory;
             setEntryFirstCluster(entries[1], parentCluster);
 
-            return writeCluster(cluster, buffer);
+            return writeCluster(cluster, buffer.data());
         }
 
         bool directoryEmpty(uint32_t cluster) {
-            uint8_t buffer[clusterBytes];
+            ClusterBuffer buffer(clusterBytes());
+            if (!buffer) return false;
 
             while (validCluster(cluster)) {
-                if (readCluster(cluster, buffer) != Status::ok) return false;
+                if (readCluster(cluster, buffer.data()) != Status::ok) return false;
 
-                auto* entries = reinterpret_cast<DirectoryEntry*>(buffer);
-                for (uint32_t index = 0; index < entriesPerCluster; index++) {
+                auto* entries = reinterpret_cast<DirectoryEntry*>(buffer.data());
+                for (uint32_t index = 0; index < entriesPerCluster(); index++) {
                     DirectoryEntry& entry = entries[index];
                     uint8_t first = static_cast<uint8_t>(entry.name[0]);
 
@@ -538,7 +613,8 @@ namespace Kernel::FAT32 {
         Status ensureChainSize(uint32_t& firstCluster, uint32_t byteSize) {
             if (byteSize == 0) return Status::ok;
 
-            uint32_t needed = (byteSize + clusterBytes - 1) / clusterBytes;
+            const uint32_t bytesPerCluster = clusterBytes();
+            uint32_t needed = (byteSize + bytesPerCluster - 1) / bytesPerCluster;
 
             if (firstCluster == 0) {
                 Status status = allocateCluster(firstCluster);
@@ -570,25 +646,27 @@ namespace Kernel::FAT32 {
             uint32_t cluster = firstCluster;
             uint32_t clusterOffset = offset;
 
-            while (clusterOffset >= clusterBytes) {
+            const uint32_t bytesPerCluster = clusterBytes();
+            while (clusterOffset >= bytesPerCluster) {
                 cluster = nextCluster(cluster);
                 if (cluster == 0) return Status::ioError;
-                clusterOffset -= clusterBytes;
+                clusterOffset -= bytesPerCluster;
             }
 
             size_t dataPos = 0;
-            uint8_t buffer[clusterBytes];
+            ClusterBuffer buffer(clusterBytes());
+            if (!buffer) return Status::ioError;
 
             while (dataPos < data.size()) {
-                Status status = readCluster(cluster, buffer);
+                Status status = readCluster(cluster, buffer.data());
                 if (status != Status::ok) return status;
 
-                size_t count = clusterBytes - clusterOffset;
+                size_t count = bytesPerCluster - clusterOffset;
                 if (count > data.size() - dataPos) count = data.size() - dataPos;
 
-                memcpy(buffer + clusterOffset, data.data() + dataPos, count);
+                memcpy(buffer.data() + clusterOffset, data.data() + dataPos, count);
 
-                status = writeCluster(cluster, buffer);
+                status = writeCluster(cluster, buffer.data());
                 if (status != Status::ok) return status;
 
                 dataPos += count;
@@ -634,7 +712,7 @@ namespace Kernel::FAT32 {
             write16(boot, 24, 63);
             write16(boot, 26, 255);
             write32(boot, 28, 0);
-            write32(boot, 32, totalSectors);
+            write32(boot, 32, volumeSectors);
             write32(boot, 36, fatSectors);
             write16(boot, 40, 0);
             write16(boot, 42, 0);
@@ -654,7 +732,124 @@ namespace Kernel::FAT32 {
             boot[510] = 0x55;
             boot[511] = 0xAA;
 
-            device.write(0, boot);
+            writeSectors(0, boot);
+        }
+
+        struct VolumeGeometry {
+            uint32_t startLba;
+            uint32_t totalSectors;
+            uint8_t sectorsPerCluster;
+            uint32_t reservedSectors;
+            uint32_t fatCount;
+            uint32_t fatSectors;
+            uint32_t clusterCount;
+            uint32_t rootCluster;
+        };
+
+        Status readVolumeGeometry(Driver::Blockdev::BlockdevDriver& device,
+                                  uint32_t startLba, uint32_t availableSectors,
+                                  VolumeGeometry& geometry) {
+            if (startLba >= device.sectors(0) ||
+                availableSectors > device.sectors(0) - startLba) {
+                return Status::invalidVolume;
+            }
+
+            alignas(16) uint8_t boot[Block::sectorSize];
+            if (!device.read(0, startLba, boot)) return Status::ioError;
+            if (boot[510] != 0x55 || boot[511] != 0xAA) return Status::invalidVolume;
+
+            const uint16_t bytesPerSector = read16(boot, 11);
+            const uint8_t sectorsPerCluster = boot[13];
+            const uint32_t reservedSectors = read16(boot, 14);
+            const uint32_t fatCount = boot[16];
+            const uint32_t totalSectors = read32(boot, 32);
+            const uint32_t fatSectors = read32(boot, 36);
+            const uint32_t rootCluster = read32(boot, 44) & 0x0FFFFFFF;
+
+            if (bytesPerSector != Block::sectorSize ||
+                sectorsPerCluster == 0 ||
+                sectorsPerCluster > maxSectorsPerCluster ||
+                (sectorsPerCluster & (sectorsPerCluster - 1)) != 0 ||
+                reservedSectors == 0 || fatCount == 0 || fatCount > 2 ||
+                fatSectors == 0 || totalSectors == 0 ||
+                totalSectors > availableSectors) {
+                return Status::invalidVolume;
+            }
+
+            const uint64_t metadataSectors =
+                static_cast<uint64_t>(reservedSectors) +
+                static_cast<uint64_t>(fatCount) * fatSectors;
+            if (metadataSectors >= totalSectors) return Status::invalidVolume;
+
+            const uint32_t clusterCount = static_cast<uint32_t>(
+                (totalSectors - metadataSectors) / sectorsPerCluster);
+            const uint64_t fatEntries =
+                static_cast<uint64_t>(fatSectors) * Block::sectorSize / 4;
+            if (clusterCount == 0 || fatEntries < clusterCount + 2 ||
+                rootCluster < 2 || rootCluster >= clusterCount + 2) {
+                return Status::invalidVolume;
+            }
+
+            const uint32_t rootDataLba =
+                static_cast<uint32_t>(metadataSectors) +
+                (rootCluster - 2) * sectorsPerCluster;
+            ClusterBuffer rootBuffer(
+                static_cast<uint32_t>(sectorsPerCluster) * Block::sectorSize);
+            if (!rootBuffer) return Status::ioError;
+            if (!device.read(0, startLba + rootDataLba, rootBuffer.data(),
+                             sectorsPerCluster)) {
+                return Status::ioError;
+            }
+
+            geometry = {
+                startLba,
+                totalSectors,
+                sectorsPerCluster,
+                reservedSectors,
+                fatCount,
+                fatSectors,
+                clusterCount,
+                rootCluster
+            };
+            return Status::ok;
+        }
+
+        Status findVolumeGeometry(Driver::Blockdev::BlockdevDriver& device,
+                                  VolumeGeometry& geometry) {
+            const uint32_t deviceSectors = device.sectors(0);
+            if (deviceSectors == 0) return Status::invalidVolume;
+
+            alignas(16) uint8_t mbr[Block::sectorSize];
+            if (!device.read(0, 0, mbr)) return Status::ioError;
+            if (mbr[510] == 0x55 && mbr[511] == 0xAA) {
+                for (uint32_t index = 0; index < 4; index++) {
+                    const uint8_t* partition = mbr + 446 + index * 16;
+                    const uint8_t type = partition[4];
+                    if (type != 0x0B && type != 0x0C) continue;
+
+                    const uint32_t startLba = read32(partition, 8);
+                    const uint32_t partitionSectors = read32(partition, 12);
+                    if (partitionSectors == 0) continue;
+
+                    const Status status = readVolumeGeometry(
+                        device, startLba, partitionSectors, geometry);
+                    if (status == Status::ok || status == Status::ioError) return status;
+                }
+            }
+
+            return readVolumeGeometry(device, 0, deviceSectors, geometry);
+        }
+
+        void selectRamVolume() {
+            sataDevice = nullptr;
+            volumeStartLba = 0;
+            volumeSectors = ramTotalSectors;
+            sectorsPerCluster = ramSectorsPerCluster;
+            reservedSectors = ramReservedSectors;
+            fatCount = 1;
+            fatSectors = ramFatSectors;
+            clusterCount = ramClusterCount;
+            rootCluster = 2;
         }
     }
 
@@ -662,7 +857,16 @@ namespace Kernel::FAT32 {
         if (mounted) return;
 
         memset(disk, 0, sizeof(disk));
-        device.initialize(disk, totalSectors);
+        sataDevice = nullptr;
+        volumeStartLba = 0;
+        volumeSectors = ramTotalSectors;
+        sectorsPerCluster = ramSectorsPerCluster;
+        reservedSectors = ramReservedSectors;
+        fatCount = 1;
+        fatSectors = ramFatSectors;
+        clusterCount = ramClusterCount;
+        rootCluster = 2;
+        ramDevice.initialize(disk, ramTotalSectors);
 
         writeBootSector();
 
@@ -685,6 +889,40 @@ namespace Kernel::FAT32 {
         return mounted;
     }
 
+    Status mountSata(Driver::Blockdev::BlockdevDriver& device) {
+        if (!mounted) return Status::notReady;
+
+        VolumeGeometry geometry = {};
+        const Status status = findVolumeGeometry(device, geometry);
+        if (status != Status::ok) return status;
+
+        sataDevice = &device;
+        volumeStartLba = geometry.startLba;
+        volumeSectors = geometry.totalSectors;
+        sectorsPerCluster = geometry.sectorsPerCluster;
+        reservedSectors = geometry.reservedSectors;
+        fatCount = geometry.fatCount;
+        fatSectors = geometry.fatSectors;
+        clusterCount = geometry.clusterCount;
+        rootCluster = geometry.rootCluster;
+        cwdCluster = rootCluster;
+        cwdPath[0] = '/';
+        cwdPath[1] = 0;
+        cwdPathLength = 1;
+        return Status::ok;
+    }
+
+    Status unmountSata() {
+        if (sataDevice == nullptr) return Status::notMounted;
+
+        selectRamVolume();
+        cwdCluster = rootCluster;
+        cwdPath[0] = '/';
+        cwdPath[1] = 0;
+        cwdPathLength = 1;
+        return Status::ok;
+    }
+
     const char* statusText(Status status) {
         switch (status) {
             case Status::ok: return "ok";
@@ -697,6 +935,8 @@ namespace Kernel::FAT32 {
             case Status::directoryNotEmpty: return "directory not empty";
             case Status::noSpace: return "no space left";
             case Status::ioError: return "I/O error";
+            case Status::notMounted: return "SATA filesystem is not mounted";
+            case Status::invalidVolume: return "invalid or unsupported FAT32 volume";
         }
 
         return "unknown error";
@@ -804,14 +1044,15 @@ namespace Kernel::FAT32 {
         }
 
         uint32_t cluster = result.cluster;
-        uint8_t buffer[clusterBytes];
+        ClusterBuffer buffer(clusterBytes());
+        if (!buffer) return Status::ioError;
 
         while (validCluster(cluster)) {
-            status = readCluster(cluster, buffer);
+            status = readCluster(cluster, buffer.data());
             if (status != Status::ok) return status;
 
-            auto* entries = reinterpret_cast<DirectoryEntry*>(buffer);
-            for (uint32_t index = 0; index < entriesPerCluster; index++) {
+            auto* entries = reinterpret_cast<DirectoryEntry*>(buffer.data());
+            for (uint32_t index = 0; index < entriesPerCluster(); index++) {
                 DirectoryEntry& entry = entries[index];
                 uint8_t first = static_cast<uint8_t>(entry.name[0]);
 
@@ -842,16 +1083,18 @@ namespace Kernel::FAT32 {
 
         uint32_t remaining = result.ref.entry.fileSize;
         uint32_t cluster = entryFirstCluster(result.ref.entry);
-        uint8_t buffer[clusterBytes];
+        ClusterBuffer buffer(clusterBytes());
+        if (!buffer) return Status::ioError;
 
         while (remaining > 0) {
             if (cluster == 0) return Status::ioError;
 
-            status = readCluster(cluster, buffer);
+            status = readCluster(cluster, buffer.data());
             if (status != Status::ok) return status;
 
-            uint32_t count = remaining > clusterBytes ? clusterBytes : remaining;
-            callback(std::string_view(reinterpret_cast<const char*>(buffer), count), context);
+            const uint32_t bytesPerCluster = clusterBytes();
+            uint32_t count = remaining > bytesPerCluster ? bytesPerCluster : remaining;
+            callback(std::string_view(reinterpret_cast<const char*>(buffer.data()), count), context);
 
             remaining -= count;
             cluster = nextCluster(cluster);
