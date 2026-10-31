@@ -4,7 +4,7 @@
 
 namespace ACPI {
     // #pragma pack(push, 1)
-    struct [[gnu::pack]] SystemDescriptionTable {
+    struct [[gnu::packed]] SystemDescriptionTable {
         char signature[4];
         uint32_t length;
         uint8_t revision;
