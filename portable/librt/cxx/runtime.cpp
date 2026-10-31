@@ -4,7 +4,6 @@
 #include <exception>
 #include <cstddef>
 #include <cstdint>
-#include <libarch/api.hpp>
 #include <libenv/memory.hpp>
 #include <libenv/system.hpp>
 #include <librt/runtime.hpp>

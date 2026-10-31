@@ -1,4 +1,6 @@
-#include <libarch/api.hpp>
+#include <libarch/arch.hpp>
+#include <libarch/cpu.hpp>
+#include <libarch/interrupt.hpp>
 #include <librt/runtime.hpp>
 #include <libstd/string.hpp>
 #include <libacpi/acpi.hpp>
@@ -20,6 +22,7 @@ namespace Kernel {
         CXXRuntime::initialize();
 
         Arch::initialize();
+        Platform::initialize(info.platform);
         DriverSubsystem::initialize();
 
         auto ahci = static_cast<Driver::AHCI::AHCIDriver*>(
@@ -37,11 +40,10 @@ namespace Kernel {
 
         FAT32::initialize();
 
-        if (ACPI::initialize(info.acpiRsdp, info.acpiRsdpSize)) {
-            Console::ok("ACPI tables initialized");
-        } else {
-            Console::warn("ACPI tables unavailable or invalid");
-        }
+        if (ACPI::initialize(info.acpiRsdp, info.acpiRsdpSize)) Console::ok("ACPI tables initialized");
+        else Console::warn("ACPI tables unavailable or invalid");
+
+        // ACPI::SystemDescriptionTable
 
         Console::info("Memory region:");
         Console::info("        start: ", false);

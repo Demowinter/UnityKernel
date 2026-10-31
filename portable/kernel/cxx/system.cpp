@@ -1,5 +1,6 @@
 #include <string_view>
-#include <libarch/api.hpp>
+#include <libarch/cpu.hpp>
+#include <libarch/interrupt.hpp>
 #include <libarch/x86/pmio.hpp>
 #include <kernel/console.hpp>
 #include <kernel/system.hpp>

@@ -1,5 +1,6 @@
 #include <string_view>
-#include <libarch/api.hpp>
+#include <libarch/cpu.hpp>
+#include <libarch/interrupt.hpp>
 #include <unityboot/console.hpp>
 #include <unityboot/system.hpp>
 

@@ -1,7 +1,7 @@
 #include <string_view>
 #include <cstddef>
 #include <cstdint>
-#include <libarch/api.hpp>
+#include <libarch/cpu.hpp>
 #include <kernel/console.hpp>
 
 namespace Kernel::Console {
