@@ -1,7 +1,10 @@
 #include <libstd/string.hpp>
 #include <libarch/x86/cpu.hpp>
 #include <libarch/x86/interrupt.hpp>
-#include <libarch/api.hpp>
+#include <libarch/arch.hpp>
+#include <libarch/cpu.hpp>
+#include <libarch/interrupt.hpp>
+#include <libarch/timer.hpp>
 
 namespace Arch {
     void initialize() {
