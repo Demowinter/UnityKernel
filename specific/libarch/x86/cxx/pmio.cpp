@@ -47,7 +47,7 @@ namespace Arch::X86::PMIO {
     }
 
     template<>
-    void write(uint16_t port, uint8_t val) {
+    void write<uint8_t>(uint16_t port, uint8_t val) {
         asm volatile (
             "outb %0, %1"
             :
@@ -56,12 +56,12 @@ namespace Arch::X86::PMIO {
     }
 
     template<>
-    void write(uint16_t port, bool val) {
+    void write<bool>(uint16_t port, bool val) {
         write<uint8_t>(port, val);
     }
 
     template<>
-    void write(uint16_t port, uint16_t val) {
+    void write<uint16_t>(uint16_t port, uint16_t val) {
         asm volatile (
             "outw %0, %1"
             :
@@ -70,7 +70,7 @@ namespace Arch::X86::PMIO {
     }
 
     template<>
-    void write(uint16_t port, uint32_t val) {
+    void write<uint32_t>(uint16_t port, uint32_t val) {
         asm volatile (
             "outl %0, %1"
             :

@@ -3,8 +3,8 @@
 #include <cstdint>
 
 namespace ACPI {
-    #pragma pack(push, 1)
-    struct SystemDescriptionTable {
+    // #pragma pack(push, 1)
+    struct [[gnu::pack]] SystemDescriptionTable {
         char signature[4];
         uint32_t length;
         uint8_t revision;
@@ -15,7 +15,7 @@ namespace ACPI {
         uint32_t creatorId;
         uint32_t creatorRevision;
     };
-    #pragma pack(pop)
+    // #pragma pack(pop)
 
     bool initialize(const void* rsdp, size_t rsdpSize);
     bool isInitialized();
