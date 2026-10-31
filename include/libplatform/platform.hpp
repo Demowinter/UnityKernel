@@ -1,5 +1,5 @@
 #pragma once
-#include <string_view>
+// #include <string_view>
 
 namespace Platform {
     enum class FirmwareType {
@@ -25,23 +25,18 @@ namespace Platform {
         Firmware
     };
 
-    // struct BootInfo {
-    //     FirmwareType firmware;
-    //     BootloaderType bootloader;
+    struct Info {
+        FirmwareType firmware;
+        BootloaderType bootloader;
+        HDType hdt;
+    };
 
-    // };
+    bool initialize(const Info& info);
 
-    bool initialize();
-
-    HDType descriptionType();
-
-    bool hasPCI();
     bool hasUSB();
 
-    // BootInfo bootInfo();
-
-    void shutdown();
-    void reboot();
-
-    // std::string_view
+    // namespace APIC {
+    //     void shutdown();
+    //     void reboot();
+    // }
 }

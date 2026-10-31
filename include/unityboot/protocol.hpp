@@ -1,15 +1,12 @@
 #pragma once
 #include <cstddef>
-#include <libarch/api.hpp>
-#include <libplatform/api.hpp>
+#include <libarch/arch.hpp>
+#include <libplatform/platform.hpp>
 
 namespace UnityBootProtocol {
     struct BootInfo {
         Arch::Type arch;
-        
-        Platform::FirmwareType firmware;
-        Platform::BootloaderType bootloader;
-        Platform::HDType hardwareDescriptionType;
+        Platform::Info platform;
 
         uintptr_t kernelELFStart;
         uintptr_t kernelELFEnd;

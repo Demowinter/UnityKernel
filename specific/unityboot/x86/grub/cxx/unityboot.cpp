@@ -1,9 +1,11 @@
 #include <libgrub/multiboot.hpp>
 #include <libelf/file.hpp>
-#include <libarch/api.hpp>
+#include <libarch/arch.hpp>
+#include <libarch/cpu.hpp>
+#include <libarch/interrupt.hpp>
 #include <libarch/x86/gdt.hpp>
 #include <libarch/x86/cpu.hpp>
-#include <libplatform/api.hpp>
+#include <libplatform/platform.hpp>
 #include <unityboot/protocol.hpp>
 #include <unityboot/console.hpp>
 #include <unityboot/memory.hpp>
@@ -26,8 +28,8 @@ namespace UnityBoot {
 
         UnityBootProtocol::BootInfo bootInfo{};
         bootInfo.arch = Arch::Type::x86;
-        bootInfo.firmware = Platform::FirmwareType::BIOS;
-        bootInfo.bootloader = Platform::BootloaderType::GRUB;
+        bootInfo.platform.firmware = Platform::FirmwareType::BIOS;
+        bootInfo.platform.bootloader = Platform::BootloaderType::GRUB;
         bool hasNewAcpiRSDP = false;
         
         for (auto& tag : parser) {
@@ -55,17 +57,19 @@ namespace UnityBoot {
                 }
 
                 case GRUB::MultibootTagType::Efi32:
-                case GRUB::MultibootTagType::Efi64: bootInfo.firmware = Platform::FirmwareType::UEFI; break;
+                case GRUB::MultibootTagType::Efi64: bootInfo.platform.firmware = Platform::FirmwareType::UEFI; break;
 
                 case GRUB::MultibootTagType::AcpiOld:
                 case GRUB::MultibootTagType::AcpiNew: {
                     const bool isNewRSDP = tag.type == GRUB::MultibootTagType::AcpiNew;
+
                     if (!hasNewAcpiRSDP || isNewRSDP) {
-                        bootInfo.hardwareDescriptionType = Platform::HDType::ACPI;
+                        bootInfo.platform.hdt = Platform::HDType::ACPI;
                         bootInfo.acpiRsdp = reinterpret_cast<const uint8_t*>(&tag) + sizeof(GRUB::MultibootTag);
                         bootInfo.acpiRsdpSize = tag.size - sizeof(GRUB::MultibootTag);
                         hasNewAcpiRSDP = isNewRSDP;
                     }
+
                     break;
                 }
 
