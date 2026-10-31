@@ -1,7 +1,11 @@
-#include <libplatform/api.hpp>
+#include <libplatform/platform.hpp>
 
 namespace Platform {
-    bool initialize() {
-        
+    Info platformInfo{};
+
+    bool initialize(const Info& info) {
+        platformInfo = info;
+
+        return true;
     }
 }

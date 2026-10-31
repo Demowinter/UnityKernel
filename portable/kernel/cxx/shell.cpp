@@ -4,7 +4,9 @@
 #include <kernel/system.hpp>
 #include <kernel/dformat.hpp>
 #include <kernel/subsystems/driver.hpp>
-#include <libarch/api.hpp>
+#include <libarch/cpu.hpp>
+#include <libarch/timer.hpp>
+#include <libplatform/pci.hpp>
 #include <libstd/string.hpp>
 #include <libbase/string.hpp>
 #include <drivers/ahci/ahci.hpp>
@@ -111,6 +113,7 @@ namespace Kernel::Shell {
         Console::println("mkdir <dir>       Create a directory");
         Console::println("rm <path>         Remove a file or empty directory");
         Console::println("stat <path>       Show file metadata");
+        Console::println("lspci             Show PCIe device list");
         Console::println("reboot            Reboot the system");
         Console::println("shutdown          Halt the system");
         Console::println("");
@@ -355,6 +358,27 @@ namespace Kernel::Shell {
         Console::println(STDLib::toString(info.cluster));
     }
 
+    static void cmdLspci([[maybe_unused]] std::string_view args) {
+        Console::println("PCIe devices on bus 0:");
+
+        for (uint32_t device = 0; device < 32; device++) {
+            auto vendor = Platform::PCI::readConfig<uint16_t>(0, device, 0, 0x00);
+            auto deviceid = Platform::PCI::readConfig<uint16_t>(0, device, 0, 0x02);
+
+            if (!vendor || *vendor == 0xFFFF) continue;
+            if (!deviceid) continue;
+
+            Console::print("  ");
+            Console::print("00:0");
+            Console::print(STDLib::toString(device));
+            Console::print(".0");
+            Console::print(" Vendor=");
+            Console::print(STDLib::hex(*vendor));
+            Console::print(" DeviceID=");
+            Console::println(STDLib::hex(*deviceid));
+        }
+    }
+
     static void cmdReboot(std::string_view args) {
         (void)args;  // Unused
         Console::println("Rebooting...");
@@ -426,6 +450,8 @@ namespace Kernel::Shell {
             cmdRm(args);
         } else if (strcmp(command, "stat")) {
             cmdStat(args);
+        } else if (strcmp(command, "lspci")) {
+            cmdLspci(args);
         } else if (strcmp(command, "reboot")) {
             cmdReboot(args);
         } else if (strcmp(command, "shutdown")) {
