@@ -35,6 +35,7 @@ namespace Driver::FS {
 
         virtual bool canSatisfy([[maybe_unused]] BaseDriver* driver) override { return true; };
         virtual void useDriver(BaseDriver* driver) override { this->driver = static_cast<Blockdev::BlockdevDriver*>(driver); };
+        virtual void unuseDriver(BaseDriver* driver) override { this->driver = nullptr; };
 
         virtual STDLib::Vector<Info> dependencies() const override { return {{Category::BLK}}; }
 
@@ -58,6 +59,6 @@ namespace Driver::FS {
         virtual Status format() = 0;
 
     protected:
-        Blockdev::BlockdevDriver* driver;
+        Blockdev::BlockdevDriver* driver = nullptr;
     };
 }

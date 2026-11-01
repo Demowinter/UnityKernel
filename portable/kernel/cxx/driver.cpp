@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <libstd/vector.hpp>
+#include <libstd/map.hpp>
 #include <drivers/driver.hpp>
 #include <drivers/loadlist.hpp>
 #include <kernel/subsystems/driver.hpp>
@@ -9,6 +10,7 @@
 namespace Kernel::DriverSubsystem {
     static STDLib::Vector<Driver::BaseDriver*> drivers;
     static STDLib::Vector<Driver::BaseDriver*> loadedDrivers;
+    static STDLib::Map<Driver::Category, STDLib::Map<Driver::Type, STDLib::Vector<Driver::BaseDriver*>>> depCallbacks;
 
     constexpr uint8_t excludeNoneFlag = 0x01;
     constexpr uint8_t excludeLoadedFlag = 0x02;
@@ -44,6 +46,40 @@ namespace Kernel::DriverSubsystem {
         return result;
     }
 
+    void registerDepCallback(Driver::BaseDriver* driver) {
+        for (const auto& dep : driver->dependencies()) depCallbacks[dep.category][dep.type].push_back(driver);
+    }
+
+    void unregisterDepCallback(Driver::BaseDriver* driver) {
+        for (const auto& dep : driver->dependencies()) {
+            auto& drilist = depCallbacks.at(dep.category).at(dep.type);
+            
+            auto dri = std::find(drilist.begin(), drilist.end(), driver);
+
+            if (dri != drilist.end()) drilist.erase(dri);
+        }
+    }
+
+    void notifyUseDriver(Driver::BaseDriver* driver) {
+        auto cbcat = depCallbacks.find(driver->category());
+
+        if (cbcat) {
+            auto cbdri = cbcat->find(driver->type());
+
+            if (cbdri) for (auto dri : *cbdri) if (dri != driver && dri->canSatisfy(driver)) dri->useDriver(driver);
+        }
+    }
+
+    void notifyUnuseDriver(Driver::BaseDriver* driver) {
+        auto cbcat = depCallbacks.find(driver->category());
+
+        if (cbcat) {
+            auto cbdri = cbcat->find(driver->type());
+
+            if (cbdri) for (auto dri : *cbdri) if (dri != driver && dri->canSatisfy(driver)) dri->unuseDriver(driver);
+        }
+    }
+
     bool loadInitDriver(Driver::BaseDriver* driver) {
         if (!driver) return false;
         if (isDriverLoaded(driver)) return true;
@@ -62,7 +98,12 @@ namespace Kernel::DriverSubsystem {
             }
         }
 
-        if (driver->initialize()) return true;
+        if (driver->initialize()) {
+            registerDepCallback(driver);
+            notifyUseDriver(driver);
+
+            return true;
+        }
 
         auto it = std::find(loadedDrivers.begin(), loadedDrivers.end(), driver);
         if (it != loadedDrivers.end()) loadedDrivers.erase(it);
@@ -99,6 +140,9 @@ namespace Kernel::DriverSubsystem {
         auto it = std::find(loadedDrivers.begin(), loadedDrivers.end(), driver);
 
         if (it != loadedDrivers.end()) {
+            notifyUnuseDriver(driver);
+            unregisterDepCallback(driver);
+
             driver->finalize();
 
             loadedDrivers.erase(it);

@@ -33,6 +33,7 @@ namespace Driver {
 
         virtual bool canSatisfy(BaseDriver* driver) { return false; };
         virtual void useDriver(BaseDriver* driver) {};
+        virtual void unuseDriver(BaseDriver* driver) {};
 
         virtual STDLib::Vector<Info> dependencies() const { return {}; }
 
