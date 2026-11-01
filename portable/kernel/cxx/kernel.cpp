@@ -1,6 +1,8 @@
 #include <libarch/arch.hpp>
 #include <libarch/cpu.hpp>
 #include <libarch/interrupt.hpp>
+#include <libplatform/platform.hpp>
+#include <libplatform/pci.hpp>
 #include <librt/runtime.hpp>
 #include <libstd/string.hpp>
 #include <libacpi/acpi.hpp>
@@ -23,6 +25,7 @@ namespace Kernel {
 
         Arch::initialize();
         Platform::initialize(info.platform);
+        Platform::PCI::initialize();
         DriverSubsystem::initialize();
 
         auto ahci = static_cast<Driver::AHCI::AHCIDriver*>(
