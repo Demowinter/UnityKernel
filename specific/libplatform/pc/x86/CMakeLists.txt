@@ -1,6 +1,8 @@
 set(LIBPLATFORM_SOURCES
     cxx/api.cpp
     cxx/pci.cpp
+    cxx/pci/cm1.cpp
+    cxx/pci/ecam.cpp
 )
 
 set(TARGET_KERNEL_LINK_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/kernel/link.ld" PARENT_SCOPE)

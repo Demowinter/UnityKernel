@@ -3,16 +3,8 @@
 #include <cstdint>
 
 namespace Platform::PCI {
-    // enum class Status {
-    //     PRESENT,
-    //     NOTPRESENT
-    // };
+    void initialize();
 
-    // class CM1 {
-
-    // };
-
-    // Status status();
     bool isAvailable();
 
     template<typename T>
