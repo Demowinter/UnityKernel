@@ -3,7 +3,7 @@ set(LIBARCH_SOURCES
     cxx/pmio.cpp
     cxx/mmio.cpp
     cxx/interrupt.cpp
-    cxx/api.cpp
+    cxx/arch.cpp
 )
 
 set(TARGET_ARCH_FLAGS
