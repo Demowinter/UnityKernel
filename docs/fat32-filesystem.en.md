@@ -1,29 +1,23 @@
 # UnityKernel FAT32 RAM Disk and File Shell Commands
 
-This document explains the FAT32-related work added to UnityKernel: the new block-device abstraction, the RAM-backed FAT32 volume, the filesystem API, and the Unix-like shell commands that operate on files and directories.
+This document covers the FAT32 implementation and shell filesystem commands. The shell now uses an ext4 RAM disk by default; FAT32 remains available on SATA.
 
-The current implementation is intentionally small and kernel-friendly. The shell filesystem is volatile and backed by kernel memory, with a FAT32-style boot sector, FAT table, clusters, short 8.3 directory entries, and cluster chains. A separate disk utility can partition the detected AHCI SATA disk and create a standard FAT32 volume on it.
+The FAT32 implementation is intentionally small and kernel-friendly. It uses a FAT32-style boot sector, FAT table, clusters, short 8.3 directory entries, and cluster chains. The disk utility can create either a partitioned FAT32 volume or an ext4 volume on the detected AHCI SATA disk.
 
 ## What Was Added
 
-The change adds four new source files:
+The filesystem integration adds:
 
-- `include/kernel/block.hpp`
-- `portable/kernel/cxx/block.cpp`
-- `include/kernel/fat32.hpp`
-- `portable/kernel/cxx/fat32.cpp`
-
-It also updates:
-
-- `portable/kernel/CMakeLists.txt`
-- `portable/kernel/cxx/kernel.cpp`
-- `portable/kernel/cxx/shell.cpp`
+- `include/kernel/filesystem.hpp` and `portable/kernel/cxx/filesystem.cpp` for the shared shell filesystem API.
+- `include/kernel/ext4.hpp` and `portable/kernel/cxx/ext4.cpp` for the ext4 driver.
+- `portable/kernel/cxx/dformat.cpp` and `portable/kernel/cxx/shell.cpp` for selectable SATA formatting and mounting.
 
 At a high level:
 
 - `Kernel::Block::MemoryDevice` provides sector-based read/write access over a memory buffer.
-- `Kernel::FAT32` creates and manages a small FAT32-style RAM disk.
-- `kernelMain()` mounts the RAM disk during startup.
+- `Kernel::Filesystem` selects ext4 for the default RAM-backed filesystem.
+- FAT32 remains available as an optional SATA filesystem.
+- `kernelMain()` formats and mounts the ext4 RAM disk during startup.
 - The shell exposes file commands such as `ls`, `cd`, `cat`, `touch`, `write`, `append`, `mkdir`, `rm`, and `stat`.
 
 ## Current User-Facing Commands
@@ -41,8 +35,10 @@ The shell now supports these file-related commands:
 | `append <file> <text>` | Append text to a file. Creates the file if needed. |
 | `mkdir <dir>` | Create a directory. |
 | `rm <path>` | Remove a file or an empty directory. |
-| `stat <path>` | Print basic metadata: type, display name, size, and first cluster. |
-| `dformat fat32` | Erase and repartition the detected SATA disk as one FAT32 volume. |
+| `stat <path>` | Print basic metadata: type, display name, size, and filesystem ID (FAT32 cluster or ext4 inode). |
+| `dformat fat32` | Erase and partition the detected SATA disk as one FAT32 volume. |
+| `dformat ext4` | Erase the detected SATA disk and create an ext4 volume. |
+| `mnt` / `unmnt` | Mount the last successfully formatted SATA filesystem / return to ext4 RAM. |
 
 The prompt now includes the current directory:
 
@@ -58,19 +54,14 @@ If you run `cd tmp`, the prompt becomes:
 
 ## Example Shell Session
 
-After boot, the filesystem starts with:
-
-- `/welcome.txt`
-- `/tmp`
+After boot, the ext4 RAM filesystem starts with an empty root directory and
+`/lost+found`.
 
 Example session:
 
 ```text
 / $ ls
-- 37 welcome.txt
-d 0 tmp
-/ $ cat welcome.txt
-UnityKernel FAT32 ram disk is online.
+d 0 lost+found
 / $ mkdir docs
 / $ cd docs
 /docs $ write note.txt hello from UnityKernel
@@ -82,7 +73,7 @@ hello from UnityKernel again
 /docs $ stat note.txt
 file note.txt
 size: 28
-cluster: 5
+id: 13
 /docs $ cd ..
 / $ rm docs
 rm: docs: directory not empty
@@ -109,9 +100,9 @@ The filesystem is ready before the shell prompt appears.
 
 ## Formatting a SATA Disk
 
-Run `dformat fat32` in the shell, then type `y` and press Enter to confirm. No disk writes begin until the complete confirmation line has been read. It creates one MBR partition of type `0x0C` covering the disk except for the 1 MiB alignment gap at the start, then writes a FAT32 boot sector, FSInfo sectors, two FAT copies, and an empty root directory. The disk must be large enough for a standard FAT32 volume.
+Run `dformat fat32` or `dformat ext4` in the shell, then type `y` and press Enter to confirm. No disk writes begin until the complete confirmation line has been read. FAT32 creates one MBR partition of type `0x0C`, aligned at 1 MiB, and writes the boot sector, FSInfo sectors, two FAT copies, and an empty root directory. ext4 writes a volume directly to the disk without an MBR partition. After successful formatting, `mnt` mounts the selected filesystem and `unmnt` returns to the ext4 RAM filesystem.
 
-Formatting is destructive. The shell's file commands continue to use the separate RAM disk; this utility does not mount the newly formatted SATA volume.
+Formatting is destructive. Only use a disposable disk image for testing.
 
 ## Block Layer
 

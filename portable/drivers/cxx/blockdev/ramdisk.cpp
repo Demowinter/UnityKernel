@@ -22,7 +22,8 @@ namespace Driver::Blockdev {
     }
 
     void RamdiskDriver::resize(Kernel::ResourceSubsystem::ResourceID resid, uint32_t sectors) {
-        resources.at(resid).resize(sectors * sectorSize);
+        resources.at(resid) = STDLib::Vector<uint8_t>(
+            0, static_cast<size_t>(sectors) * sectorSize);
     }
 
     bool RamdiskDriver::read(Kernel::ResourceSubsystem::ResourceID resid, uint32_t lba, void* buffer, uint32_t count) const {

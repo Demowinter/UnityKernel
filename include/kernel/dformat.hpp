@@ -12,5 +12,6 @@ namespace Kernel::DFORMAT {
     };
 
     Status partitionAndFormatFat32(Driver::Blockdev::BlockdevDriver& device);
+    Status formatExt4(Driver::Blockdev::BlockdevDriver& device);
     const char* statusText(Status status);
 }

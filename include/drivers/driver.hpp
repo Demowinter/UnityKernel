@@ -15,6 +15,7 @@ namespace Driver {
         PS2,
         RAMDISK,
         FAT32,
+        EXT4,
         AHCI
     };
 

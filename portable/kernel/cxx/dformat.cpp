@@ -1,5 +1,6 @@
 #include <kernel/dformat.hpp>
 #include <libbase/memory.hpp>
+#include <kernel/ext4.hpp>
 
 namespace Kernel::DFORMAT {
     namespace {
@@ -211,11 +212,22 @@ namespace Kernel::DFORMAT {
         return Status::ok;
     }
 
+    Status formatExt4(Driver::Blockdev::BlockdevDriver& device) {
+        Driver::FS::Ext4Driver filesystem;
+        filesystem.useDriver(&device);
+        filesystem.setResource(0);
+
+        const Driver::FS::Status status = filesystem.format();
+        if (status == Driver::FS::Status::ok) return Status::ok;
+        if (status == Driver::FS::Status::noSpace) return Status::diskTooSmall;
+        return Status::ioError;
+    }
+
     const char* statusText(Status status) {
         switch (status) {
             case Status::ok: return "format completed";
             case Status::invalidDevice: return "SATA disk is unavailable or too small";
-            case Status::diskTooSmall: return "disk is too small for a standard FAT32 volume";
+            case Status::diskTooSmall: return "disk is too small for the selected filesystem";
             case Status::unsupportedCapacity: return "disk capacity is outside supported FAT32 limits";
             case Status::ioError: return "disk I/O failed while formatting";
         }

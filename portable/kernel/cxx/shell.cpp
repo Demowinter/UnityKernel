@@ -1,6 +1,6 @@
 #include <kernel/shell.hpp>
 #include <kernel/console.hpp>
-#include <kernel/fat32.hpp>
+#include <kernel/filesystem.hpp>
 #include <kernel/system.hpp>
 #include <kernel/dformat.hpp>
 #include <kernel/subsystems/driver.hpp>
@@ -67,8 +67,8 @@ namespace Kernel::Shell {
         Console::print(text);
     }
 
-    static void printFsError(std::string_view command, std::string_view target, FAT32::Status status) {
-        if (status == FAT32::Status::ok) return;
+    static void printFsError(std::string_view command, std::string_view target, Filesystem::Status status) {
+        if (status == Filesystem::Status::ok) return;
 
         Console::print(command);
         if (!target.empty()) {
@@ -76,10 +76,10 @@ namespace Kernel::Shell {
             Console::print(target);
         }
         Console::print(": ");
-        Console::println(FAT32::statusText(status));
+        Console::println(Filesystem::statusText(status));
     }
 
-    static void printEntry(const FAT32::EntryInfo& entry, void*) {
+    static void printEntry(const Filesystem::EntryInfo& entry, void*) {
         Console::print(entry.directory ? "d " : "- ");
         Console::print(STDLib::toString(entry.size));
         Console::print(" ");
@@ -100,9 +100,9 @@ namespace Kernel::Shell {
         Console::println("uname             Print kernel info");
         Console::println("cpuid             Print cpu manufacturer");
         Console::println("sysinfo           Print system information");
-        Console::println("dformat fat32     Partition SATA disk and format it as FAT32");
-        Console::println("mnt               Mount the SATA FAT32 filesystem");
-        Console::println("unmnt             Unmount SATA and return to the RAM filesystem");
+        Console::println("dformat <fs>      Partition SATA disk and format as fat32 or ext4");
+        Console::println("mnt               Mount the selected SATA filesystem");
+        Console::println("unmnt             Unmount SATA and return to the ext4 RAM filesystem");
         Console::println("pwd               Print current directory");
         Console::println("ls [path]         List directory contents");
         Console::println("cd <path>         Change directory");
@@ -179,14 +179,16 @@ namespace Kernel::Shell {
 
     static void cmdPwd(std::string_view args) {
         (void)args;
-        Console::println(FAT32::cwd());
+        Console::println(Filesystem::cwd());
     }
 
     static void dformat(std::string_view args) {
         args = trim(args);
         const std::string_view format = getFirstWord(args);
         const std::string_view extraArgs = trim(args.substr(format.size()));
-        if (!strcmp(format, "fat32") && extraArgs.empty()) {
+        const bool fat32 = strcmp(format, "fat32");
+        const bool ext4 = strcmp(format, "ext4");
+        if ((fat32 || ext4) && extraArgs.empty()) {
             auto* device = static_cast<Driver::AHCI::AHCIDriver*>(
                 DriverSubsystem::loadDriver(Driver::Category::BLK, Driver::Type::AHCI));
             if (device == nullptr) {
@@ -194,9 +196,10 @@ namespace Kernel::Shell {
                 return;
             }
 
-            Console::print("This will erase and repartition the SATA disk (");
+            Console::print("This will erase the SATA disk (");
             Console::print(STDLib::toString(device->sectors(0)));
-            Console::println(" sectors) as one FAT32 partition.");
+            Console::print(" sectors) and create ");
+            Console::print(fat32 ? "one FAT32 partition." : "an ext4 volume.");
             Console::println("Type y and press Enter to continue; any other response cancels:");
             char confirmation[8];
             const size_t confirmationLength = Console::readline(
@@ -211,9 +214,21 @@ namespace Kernel::Shell {
                 return;
             }
 
-            const DFORMAT::Status status = DFORMAT::partitionAndFormatFat32(*device);
+            const Filesystem::Status switchStatus = Filesystem::prepareDiskFormat();
+            if (switchStatus != Filesystem::Status::ok) {
+                printFsError("dformat", "SATA", switchStatus);
+                return;
+            }
+
+            const DFORMAT::Status status = fat32
+                ? DFORMAT::partitionAndFormatFat32(*device)
+                : DFORMAT::formatExt4(*device);
             if (status == DFORMAT::Status::ok) {
-                Console::println("dformat: FAT32 partition created successfully");
+                Filesystem::setPreferredType(
+                    fat32 ? Filesystem::Type::fat32 : Filesystem::Type::ext4);
+                Console::print("dformat: ");
+                Console::print(fat32 ? "FAT32 partition" : "ext4 volume");
+                Console::println(" created successfully");
             } else {
                 Console::print("dformat: ");
                 Console::println(DFORMAT::statusText(status));
@@ -221,8 +236,8 @@ namespace Kernel::Shell {
             return;
         }
 
-        Console::println("Usage: dformat fat32");
-        Console::println("This erases the detected SATA disk and creates one FAT32 partition.");
+        Console::println("Usage: dformat <fat32|ext4>");
+        Console::println("This erases the detected SATA disk and creates the selected filesystem.");
     }
 
     static void cmdMnt(std::string_view args) {
@@ -238,9 +253,12 @@ namespace Kernel::Shell {
             return;
         }
 
-        FAT32::Status status = FAT32::mountSata(*device);
-        if (status == FAT32::Status::ok) {
-            Console::println("mnt: SATA FAT32 filesystem mounted");
+        Filesystem::Status status = Filesystem::mountSata(
+            Filesystem::preferredType(), *device);
+        if (status == Filesystem::Status::ok) {
+            Console::println(Filesystem::preferredType() == Filesystem::Type::ext4
+                ? "mnt: SATA ext4 filesystem mounted"
+                : "mnt: SATA FAT32 filesystem mounted");
         } else {
             printFsError("mnt", "SATA", status);
         }
@@ -252,21 +270,21 @@ namespace Kernel::Shell {
             return;
         }
 
-        FAT32::Status status = FAT32::unmountSata();
-        if (status == FAT32::Status::ok) {
-            Console::println("unmnt: returned to the RAM filesystem");
+        Filesystem::Status status = Filesystem::unmountSata();
+        if (status == Filesystem::Status::ok) {
+            Console::println("unmnt: returned to the ext4 RAM filesystem");
         } else {
             printFsError("unmnt", "SATA", status);
         }
     }
 
     static void cmdLs(std::string_view args) {
-        FAT32::Status status = FAT32::list(args.empty() ? std::string_view(".") : args, printEntry, nullptr);
+        Filesystem::Status status = Filesystem::list(args.empty() ? std::string_view(".") : args, printEntry, nullptr);
         printFsError("ls", args, status);
     }
 
     static void cmdCd(std::string_view args) {
-        FAT32::Status status = FAT32::changeDirectory(args.empty() ? std::string_view("/") : args);
+        Filesystem::Status status = Filesystem::changeDirectory(args.empty() ? std::string_view("/") : args);
         printFsError("cd", args, status);
     }
 
@@ -276,8 +294,8 @@ namespace Kernel::Shell {
             return;
         }
 
-        FAT32::Status status = FAT32::readFile(args, printChunk, nullptr);
-        if (status == FAT32::Status::ok) Console::newline();
+        Filesystem::Status status = Filesystem::readFile(args, printChunk, nullptr);
+        if (status == Filesystem::Status::ok) Console::newline();
         else printFsError("cat", args, status);
     }
 
@@ -287,7 +305,7 @@ namespace Kernel::Shell {
             return;
         }
 
-        FAT32::Status status = FAT32::touch(args);
+        Filesystem::Status status = Filesystem::touch(args);
         printFsError("touch", args, status);
     }
 
@@ -300,7 +318,7 @@ namespace Kernel::Shell {
             return;
         }
 
-        FAT32::Status status = FAT32::writeFile(path, text, false);
+        Filesystem::Status status = Filesystem::writeFile(path, text, false);
         printFsError("write", path, status);
     }
 
@@ -313,7 +331,7 @@ namespace Kernel::Shell {
             return;
         }
 
-        FAT32::Status status = FAT32::writeFile(path, text, true);
+        Filesystem::Status status = Filesystem::writeFile(path, text, true);
         printFsError("append", path, status);
     }
 
@@ -323,7 +341,7 @@ namespace Kernel::Shell {
             return;
         }
 
-        FAT32::Status status = FAT32::makeDirectory(args);
+        Filesystem::Status status = Filesystem::makeDirectory(args);
         printFsError("mkdir", args, status);
     }
 
@@ -333,7 +351,7 @@ namespace Kernel::Shell {
             return;
         }
 
-        FAT32::Status status = FAT32::remove(args);
+        Filesystem::Status status = Filesystem::remove(args);
         printFsError("rm", args, status);
     }
 
@@ -343,9 +361,9 @@ namespace Kernel::Shell {
             return;
         }
 
-        FAT32::EntryInfo info;
-        FAT32::Status status = FAT32::stat(args, info);
-        if (status != FAT32::Status::ok) {
+        Filesystem::EntryInfo info;
+        Filesystem::Status status = Filesystem::stat(args, info);
+        if (status != Filesystem::Status::ok) {
             printFsError("stat", args, status);
             return;
         }
@@ -354,7 +372,7 @@ namespace Kernel::Shell {
         Console::println(info.name);
         Console::print("size: ");
         Console::println(STDLib::toString(info.size));
-        Console::print("cluster: ");
+        Console::print("id: ");
         Console::println(STDLib::toString(info.cluster));
     }
 
@@ -507,7 +525,7 @@ namespace Kernel::Shell {
     char inputBuffer[bufferSize];
 
     while (true) {
-        Console::print(FAT32::cwd());
+        Console::print(Filesystem::cwd());
         Console::print(" $ ");
 
         size_t len = Console::readline(inputBuffer, bufferSize);

@@ -12,7 +12,7 @@
 #include <kernel/subsystems/driver.hpp>
 #include <kernel/console.hpp>
 #include <kernel/shell.hpp>
-#include <kernel/fat32.hpp>
+#include <kernel/filesystem.hpp>
 
 namespace Kernel {
     extern "C" [[noreturn]] void kernelMain(const UnityBootProtocol::BootInfo& info) {
@@ -41,7 +41,8 @@ namespace Kernel {
             Console::println(Driver::AHCI::lastInitializationError());
         }
 
-        FAT32::initialize();
+        if (Filesystem::initialize()) Console::ok("Mounted ext4 ram disk");
+        else Console::warn("Could not initialize the default ext4 filesystem");
 
         if (ACPI::initialize(info.acpiRsdp, info.acpiRsdpSize)) Console::ok("ACPI tables initialized");
         else Console::warn("ACPI tables unavailable or invalid");
@@ -63,8 +64,6 @@ namespace Kernel {
 
         Console::print("Welcome to ");
         Console::println("UnityKernel! v0.1.0-alpha", 5);
-        Console::ok("Mounted FAT32 ram disk");
-
         Console::newline();
         Console::println("Starting shell...");
         Console::newline();
