@@ -136,6 +136,7 @@ namespace Kernel::Filesystem {
         if (switchStatus != Status::ok) return switchStatus;
 
         if (type == Type::ext4) {
+            ext4.finalize();
             ext4.useDriver(&device);
             ext4.setResource(0);
             if (ext4.initialize()) {
