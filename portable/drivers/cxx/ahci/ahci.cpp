@@ -1,14 +1,13 @@
 #include <cstdint>
 #include <libarch/x86/pmio.hpp>
 #include <kernel/heap.hpp>
-#include <kernel/subsystems/resource.hpp>
+#include <kernel/subsystems/block.hpp>
+#include <kernel/subsystems/pci.hpp>
+#include <libplatform/pci.hpp>
 #include <drivers/ahci/ahci.hpp>
 
 namespace Driver::AHCI {
     namespace {
-        constexpr uint16_t pciConfigAddress = 0xCF8;
-        constexpr uint16_t pciConfigData = 0xCFC;
-        constexpr uint32_t pciAddressEnable = 0x80000000;
         constexpr uint32_t pciBar5Offset = 0x24;
         constexpr uint16_t pciCommandOffset = 0x04;
         constexpr uint16_t pciCommandMemorySpace = 1U << 1;
@@ -61,7 +60,7 @@ namespace Driver::AHCI {
         constexpr size_t hbaGlobalRegisterSize = portRegisterOffset;
         const char* initializationError = "AHCI initialization has not run";
 
-        struct __attribute__((packed)) CommandHeader {
+        struct [[gnu::packed]] CommandHeader {
             uint16_t flags;
             uint16_t prdtLength;
             uint32_t transferredBytes;
@@ -70,14 +69,14 @@ namespace Driver::AHCI {
             uint32_t reserved[4];
         };
 
-        struct __attribute__((packed)) PrdtEntry {
+        struct [[gnu::packed]] PrdtEntry {
             uint32_t dataBase;
             uint32_t dataBaseUpper;
             uint32_t reserved;
             uint32_t byteCountAndInterrupt;
         };
 
-        struct __attribute__((packed)) CommandTable {
+        struct [[gnu::packed]] CommandTable {
             uint8_t commandFis[64];
             uint8_t atapiCommand[16];
             uint8_t reserved[48];
@@ -89,139 +88,101 @@ namespace Driver::AHCI {
         static_assert(offsetof(CommandTable, prdt) == 128);
         static_assert(sizeof(HBARegisters) == hbaRegisterSize);
 
-        struct PciDevice {
-            uint8_t bus;
-            uint8_t device;
-            uint8_t function;
-        };
-
-        uint32_t pciRead32(const PciDevice& device, uint8_t offset) {
-            const uint32_t address = pciAddressEnable |
-                (static_cast<uint32_t>(device.bus) << 16) |
-                (static_cast<uint32_t>(device.device) << 11) |
-                (static_cast<uint32_t>(device.function) << 8) |
-                (offset & 0xFC);
-            Arch::X86::PMIO::write<uint32_t>(pciConfigAddress, address);
-            return Arch::X86::PMIO::read<uint32_t>(pciConfigData);
-        }
-
-        uint16_t pciRead16(const PciDevice& device, uint8_t offset) {
-            const uint32_t value = pciRead32(device, offset);
-            return static_cast<uint16_t>(value >> ((offset & 2) * 8));
-        }
-
-        void pciWrite16(const PciDevice& device, uint8_t offset, uint16_t value) {
-            const uint32_t address = pciAddressEnable |
-                (static_cast<uint32_t>(device.bus) << 16) |
-                (static_cast<uint32_t>(device.device) << 11) |
-                (static_cast<uint32_t>(device.function) << 8) |
-                (offset & 0xFC);
-            Arch::X86::PMIO::write<uint32_t>(pciConfigAddress, address);
-            const uint32_t shift = (offset & 2) * 8;
-            const uint32_t mask = 0xFFFFU << shift;
-            const uint32_t oldValue = Arch::X86::PMIO::read<uint32_t>(pciConfigData);
-            uint32_t preservedValue = oldValue & ~mask;
-            if ((offset & 0xFC) == pciCommandOffset) preservedValue &= 0x0000FFFF;
-            const uint32_t newValue = preservedValue |
-                (static_cast<uint32_t>(value) << shift);
-            Arch::X86::PMIO::write<uint32_t>(pciConfigData, newValue);
-        }
-
-        bool findAhciPciDevice(PciDevice& result) {
+        bool findAhciPciDevice(Kernel::PCISubsystem::Device& result) {
             for (uint32_t bus = 0; bus < 256; ++bus) {
                 for (uint32_t device = 0; device < 32; ++device) {
-                    PciDevice candidate{
-                        static_cast<uint8_t>(bus),
-                        static_cast<uint8_t>(device),
-                        0
-                    };
-                    const uint32_t id = pciRead32(candidate, 0);
-                    if (static_cast<uint16_t>(id) == 0xFFFF) continue;
+                    const auto id = Platform::PCI::readConfig<uint32_t>(bus, device, 0, 0);
+                    const auto header = Platform::PCI::readConfig<uint32_t>(bus, device, 0, 0x0C);
 
-                    const uint32_t header = pciRead32(candidate, 0x0C);
-                    const uint32_t functionCount = (header & (1U << 23)) ? 8 : 1;
+                    if (!id || static_cast<uint16_t>(*id) == 0xFFFF) continue;
+
+                    const uint32_t functionCount = (*header & (1U << 23)) ? 8 : 1;
+
                     for (uint32_t function = 0; function < functionCount; ++function) {
-                        candidate.function = static_cast<uint8_t>(function);
-                        if (static_cast<uint16_t>(pciRead32(candidate, 0)) == 0xFFFF) continue;
+                        auto checkFunc = *Platform::PCI::readConfig<uint32_t>(bus, device, function, 0);
 
-                        const uint32_t classInfo = (pciRead32(candidate, 0x08) >> 8) & 0xFFFFFF;
+                        if (static_cast<uint16_t>(checkFunc) == 0xFFFF) continue;
+
+                        const uint32_t classInfo = (*Platform::PCI::readConfig<uint32_t>(bus, device, function, 0x08) >> 8) & 0xFFFFFF;
+
                         if (classInfo == ahciClassCode) {
-                            result = candidate;
+                            result.bus = bus;
+                            result.device = device;
+                            result.function = function;
+
                             return true;
                         }
                     }
                 }
             }
+
             return false;
         }
 
-        bool getAhciBar(const PciDevice& device, uint32_t& base, uint32_t& size) {
-            const uint32_t bar = pciRead32(device, pciBar5Offset);
-            if (bar == 0 || bar == 0xFFFFFFFF || (bar & 1) != 0 || (bar & 6) != 0) return false;
+        bool getAhciBar(const Kernel::PCISubsystem::Device& device, uint32_t& base, uint32_t& size) {
+            const auto bar = Platform::PCI::readConfig<uint32_t>(device.bus, device.device, device.function, pciBar5Offset);
+            const auto originalCommand = Platform::PCI::readConfig<uint16_t>(device.bus, device.device, device.function, pciCommandOffset);
 
-            const uint16_t originalCommand = pciRead16(device, pciCommandOffset);
-            pciWrite16(device, pciCommandOffset, originalCommand & ~pciCommandMemorySpace);
-            const uint32_t originalBar = pciRead32(device, pciBar5Offset);
-            {
-                const uint32_t address = pciAddressEnable |
-                    (static_cast<uint32_t>(device.bus) << 16) |
-                    (static_cast<uint32_t>(device.device) << 11) |
-                    (static_cast<uint32_t>(device.function) << 8) |
-                    (pciBar5Offset & 0xFC);
-                Arch::X86::PMIO::write<uint32_t>(pciConfigAddress, address);
-                Arch::X86::PMIO::write<uint32_t>(pciConfigData, 0xFFFFFFFF);
-            }
-            const uint32_t mask = pciRead32(device, pciBar5Offset);
-            const uint32_t restoreAddress = pciAddressEnable |
-                (static_cast<uint32_t>(device.bus) << 16) |
-                (static_cast<uint32_t>(device.device) << 11) |
-                (static_cast<uint32_t>(device.function) << 8) |
-                (pciBar5Offset & 0xFC);
-            Arch::X86::PMIO::write<uint32_t>(pciConfigAddress, restoreAddress);
-            Arch::X86::PMIO::write<uint32_t>(pciConfigData, originalBar);
-            pciWrite16(device, pciCommandOffset, originalCommand);
+            if (!bar || *bar == 0 || *bar == 0xFFFFFFFF || (*bar & 1) != 0 || (*bar & 6) != 0) return false;
+            if (!originalCommand) return false;
 
-            const uint32_t barMask = mask & 0xFFFFFFF0;
+            Platform::PCI::writeConfig<uint16_t>(device.bus, device.device, device.function, pciCommandOffset, *originalCommand & ~pciCommandMemorySpace);
+
+            const auto originalBar = Platform::PCI::readConfig<uint32_t>(device.bus, device.device, device.function, pciBar5Offset);
+            if (!originalBar) return false;
+
+            Platform::PCI::writeConfig<uint32_t>(device.bus, device.device, device.function, pciBar5Offset, 0xFFFFFFFF);
+
+            const auto mask = Platform::PCI::readConfig<uint32_t>(device.bus, device.device, device.function, pciBar5Offset);
+            if (!mask) return false;
+
+            Platform::PCI::writeConfig<uint32_t>(device.bus, device.device, device.function, pciBar5Offset, *originalBar);
+            Platform::PCI::writeConfig<uint16_t>(device.bus, device.device, device.function, pciCommandOffset, *originalCommand);
+
+            const uint32_t barMask = *mask & 0xFFFFFFF0;
             const uint32_t barSize = ~barMask + 1;
-            if (barMask == 0 || barSize < hbaGlobalRegisterSize ||
-                (barSize & (barSize - 1)) != 0) {
-                return false;
-            }
 
-            base = bar & 0xFFFFFFF0;
+            if (barMask == 0 || barSize < hbaGlobalRegisterSize || (barSize & (barSize - 1)) != 0) return false;
+
+            base = *bar & 0xFFFFFFF0;
             size = barSize;
+
             return base != 0;
         }
 
         void* allocateAligned(size_t size, size_t alignment, void*& allocation) {
-            if (size == 0 || alignment == 0 || (alignment & (alignment - 1)) != 0 ||
-                size > static_cast<size_t>(-1) - (alignment - 1)) {
+            if (size == 0 || alignment == 0 || (alignment & (alignment - 1)) != 0 || size > static_cast<size_t>(-1) - (alignment - 1))
                 return nullptr;
-            }
-            allocation = Kernel::Heap::allocate(size + alignment - 1);
-            if (allocation == nullptr) return nullptr;
+
+            if ((allocation = Kernel::Heap::allocate(size + alignment - 1)) == nullptr) return nullptr;
 
             const uintptr_t rawAddress = reinterpret_cast<uintptr_t>(allocation);
             const uintptr_t alignedAddress = (rawAddress + alignment - 1) & ~(alignment - 1);
-            if (alignedAddress > 0xFFFFFFFFU ||
-                size - 1 > 0xFFFFFFFFU - alignedAddress) {
+
+            if (alignedAddress > 0xFFFFFFFFU || size - 1 > 0xFFFFFFFFU - alignedAddress) {
                 Kernel::Heap::deallocate(allocation);
+
                 allocation = nullptr;
+
                 return nullptr;
             }
+
             return reinterpret_cast<void*>(alignedAddress);
         }
 
         bool waitForClear(volatile uint32_t& value, uint32_t mask) {
             for (uint64_t i = 0; i < pollLimit; ++i) {
                 if ((value & mask) == 0) return true;
+
                 asm volatile("pause");
             }
+
             return false;
         }
 
         bool stopPortEngine(volatile HBAPortRegisters* port) {
             if (port == nullptr) return true;
+
             port->command &= ~portStart;
             const bool commandStopped = waitForClear(port->command, portCommandListRunning);
             if (!commandStopped) return false;
@@ -233,8 +194,9 @@ namespace Driver::AHCI {
 
         bool hasActiveLink(volatile HBAPortRegisters* port) {
             const uint32_t sataStatus = port->sataStatus;
+            
             return (sataStatus & sataStatusDeviceDetectionMask) == sataStatusDevicePresent &&
-                (sataStatus & sataStatusInterfacePowerMask) == sataStatusInterfaceActive;
+                   (sataStatus & sataStatusInterfacePowerMask) == sataStatusInterfaceActive;
         }
 
         uint64_t physicalAddress(const void* pointer) {
@@ -243,6 +205,7 @@ namespace Driver::AHCI {
 
         void zeroMemory(void* memory, size_t size) {
             auto* bytes = static_cast<uint8_t*>(memory);
+
             for (size_t i = 0; i < size; ++i) bytes[i] = 0;
         }
     }
@@ -266,7 +229,7 @@ namespace Driver::AHCI {
             return false;
         }
 
-        PciDevice pciDevice{};
+        Kernel::PCISubsystem::Device pciDevice{};
         if (!findAhciPciDevice(pciDevice)) {
             initializationError = "PCI AHCI controller not found";
             return false;
@@ -279,9 +242,9 @@ namespace Driver::AHCI {
             return false;
         }
 
-        uint16_t pciCommand = pciRead16(pciDevice, pciCommandOffset);
+        uint16_t pciCommand = Platform::PCI::readConfig<uint16_t>(pciDevice.bus, pciDevice.device, pciDevice.function, pciCommandOffset).value_or(0xFFFF);
         pciCommand |= pciCommandMemorySpace | pciCommandBusMaster;
-        pciWrite16(pciDevice, pciCommandOffset, pciCommand);
+        Platform::PCI::writeConfig<uint16_t>(pciDevice.bus, pciDevice.device, pciDevice.function, pciCommandOffset, pciCommand);
 
         registers = reinterpret_cast<volatile HBARegisters*>(static_cast<uintptr_t>(abar));
         if (registers == nullptr || abarSize < hbaGlobalRegisterSize) {
@@ -526,7 +489,7 @@ namespace Driver::AHCI {
         return false;
     }
 
-    bool AHCIDriver::read([[maybe_unused]] Kernel::ResourceSubsystem::ResourceID resid, uint32_t lba, void* buffer, uint32_t count) const {
+    bool AHCIDriver::read([[maybe_unused]] Kernel::BlockSubsystem::ResourceID resid, uint32_t lba, void* buffer, uint32_t count) const {
         if (buffer == nullptr || count == 0 || count > maxSectorsPerCommand ||
             lba > sectors(0) || count > sectors(0) - lba) {
             return false;
@@ -535,7 +498,7 @@ namespace Driver::AHCI {
                               false, buffer, static_cast<size_t>(count) * Blockdev::sectorSize);
     }
 
-    bool AHCIDriver::write([[maybe_unused]] Kernel::ResourceSubsystem::ResourceID resid, uint32_t lba, const void* buffer, uint32_t count) {
+    bool AHCIDriver::write([[maybe_unused]] Kernel::BlockSubsystem::ResourceID resid, uint32_t lba, const void* buffer, uint32_t count) {
         if (buffer == nullptr || count == 0 || count > maxSectorsPerCommand ||
             lba > sectors(0) || count > sectors(0) - lba) {
             return false;
@@ -545,7 +508,7 @@ namespace Driver::AHCI {
                               static_cast<size_t>(count) * Blockdev::sectorSize);
     }
 
-    uint32_t AHCIDriver::sectors(Kernel::ResourceSubsystem::ResourceID resid) const {
+    uint32_t AHCIDriver::sectors(Kernel::BlockSubsystem::ResourceID resid) const {
         return sectorCount > 0xFFFFFFFFULL
             ? 0xFFFFFFFFULL
             : static_cast<uint32_t>(sectorCount);
