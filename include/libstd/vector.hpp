@@ -40,6 +40,12 @@ namespace STDLib {
         Type& operator[](size_t index);
         Type& at(size_t index);
 
+        Type& back() const;
+        Type& front() const;
+
+        Type& back();
+        Type& front();
+
         void insert(size_t pos, const Type& value);
         void insert(size_t pos, const Type& value, size_t size);
         void insert(Iterator pos, const Type& value);

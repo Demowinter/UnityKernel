@@ -105,6 +105,26 @@ namespace STDLib {
     }
 
     template<typename Type>
+    Type& Vector<Type>::back() const {
+        return *(end() - 1);
+    }
+
+    template<typename Type>
+    Type& Vector<Type>::front() const {
+        return *begin();
+    }
+
+    template<typename Type>
+    Type& Vector<Type>::back() {
+        return *(end() - 1);
+    }
+
+    template<typename Type>
+    Type& Vector<Type>::front() {
+        return *begin();
+    }
+
+    template<typename Type>
     void Vector<Type>::insert(size_t pos, const Type& value) {
         insert(pos, value, 1);
     }
