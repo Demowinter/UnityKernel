@@ -2,7 +2,7 @@
 #include <kernel/fat32.hpp>
 #include <kernel/ext4.hpp>
 #include <kernel/subsystems/driver.hpp>
-#include <kernel/subsystems/resource.hpp>
+#include <kernel/subsystems/file.hpp>
 #include <drivers/blockdev/ramdisk.hpp>
 #include <libbase/memory.hpp>
 
@@ -17,7 +17,7 @@ namespace Kernel::Filesystem {
         constexpr uint32_t ramdiskSectors = 4096;
         Driver::Blockdev::RamdiskDriver* ramdisk = nullptr;
         Driver::FS::Ext4Driver ext4;
-        ResourceSubsystem::ResourceID ramdiskResource = ResourceSubsystem::invalidID;
+        BlockSubsystem::ResourceID ramdiskResource = -1ULL;
         Backend backend = Backend::ext4Ram;
         Type preferred = Type::ext4;
         bool initialized = false;
@@ -84,10 +84,10 @@ namespace Kernel::Filesystem {
         }
 
         Status mountRamExt4() {
-            if (ramdisk == nullptr || ramdiskResource == ResourceSubsystem::invalidID) {
+            if (ramdisk == nullptr || ramdiskResource == -1ULL) {
                 return Status::notReady;
             }
-            ext4.useDriver(ramdisk);
+            // ext4.useDriver(ramdisk);
             ext4.setResource(ramdiskResource);
             if (!ext4.initialize()) return Status::ioError;
             backend = Backend::ext4Ram;
@@ -113,17 +113,17 @@ namespace Kernel::Filesystem {
         ramdisk = static_cast<Driver::Blockdev::RamdiskDriver*>(blockDriver);
         if (ramdisk == nullptr) return false;
 
-        const auto resources = ResourceSubsystem::getResourceList();
-        for (ResourceSubsystem::ResourceID id : resources) {
-            if (ResourceSubsystem::getCreator(id) == ramdisk) {
-                ramdiskResource = id;
-                break;
-            }
-        }
-        if (ramdiskResource == ResourceSubsystem::invalidID) return false;
+        // const auto resources = ResourceSubsystem::getResourceList();
+        // for (size_t id : resources) {
+        //     if (ResourceSubsystem::getCreator(id) == ramdisk) {
+        //         ramdiskResource = id;
+        //         break;
+        //     }
+        // }
+        if (ramdiskResource == -1ULL) return false;
 
         ramdisk->resize(ramdiskResource, ramdiskSectors);
-        ext4.useDriver(ramdisk);
+        // ext4.useDriver(ramdisk);
         ext4.setResource(ramdiskResource);
         initialized = ext4.format() == Driver::FS::Status::ok;
         backend = Backend::ext4Ram;
@@ -137,7 +137,7 @@ namespace Kernel::Filesystem {
 
         if (type == Type::ext4) {
             ext4.finalize();
-            ext4.useDriver(&device);
+            // ext4.useDriver(&device);
             ext4.setResource(0);
             if (ext4.initialize()) {
                 backend = Backend::ext4Sata;
