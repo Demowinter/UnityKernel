@@ -1,5 +1,6 @@
 #include <libarch/arch.hpp>
 #include <libarch/cpu.hpp>
+#include <libarch/timer.hpp>
 #include <libarch/interrupt.hpp>
 #include <libplatform/platform.hpp>
 #include <libplatform/pci.hpp>
@@ -41,8 +42,10 @@ namespace Kernel {
             Console::println(Driver::AHCI::lastInitializationError());
         }
 
-        if (Filesystem::initialize()) Console::ok("Mounted ext4 ram disk");
-        else Console::warn("Could not initialize the default ext4 filesystem");
+        Console::warn("Filesystem initialization is temporarily disabled!");
+
+        // if (Filesystem::initialize()) Console::ok("Mounted ext4 ram disk");
+        // else Console::warn("Could not initialize the default ext4 filesystem");
 
         if (ACPI::initialize(info.acpiRsdp, info.acpiRsdpSize)) Console::ok("ACPI tables initialized");
         else Console::warn("ACPI tables unavailable or invalid");
@@ -67,6 +70,8 @@ namespace Kernel {
         Console::newline();
         Console::println("Starting shell...");
         Console::newline();
+
+        Arch::Timer::sleep(2000);
 
         // Start the interactive shell
         Shell::run(info.cmdline);
