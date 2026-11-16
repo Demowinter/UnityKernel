@@ -33,12 +33,6 @@ namespace Driver::FS {
         FSDriver(Type driType) : BaseDriver{Category::FS, driType} {}
         virtual ~FSDriver() = default;
 
-        virtual bool canSatisfy([[maybe_unused]] BaseDriver* driver) override { return true; };
-        virtual void useDriver(BaseDriver* driver) override { this->driver = static_cast<Blockdev::BlockdevDriver*>(driver); };
-        virtual void unuseDriver(BaseDriver* driver) override { this->driver = nullptr; };
-
-        virtual STDLib::Vector<Info> dependencies() const override { return {{Category::BLK}}; }
-
         const char* statusText(Status status);
 
         virtual std::string_view cwd() = 0;
