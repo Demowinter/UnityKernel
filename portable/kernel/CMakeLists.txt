@@ -4,7 +4,7 @@ set(KERNEL_SOURCES
     cxx/fat32.cpp
     cxx/filesystem.cpp
     cxx/ext4.cpp
-    cxx/resource.cpp
+    # cxx/resource.cpp
     cxx/driver.cpp
     cxx/memory.cpp
     cxx/heap.cpp
