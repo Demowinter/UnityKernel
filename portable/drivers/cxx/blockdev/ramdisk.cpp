@@ -1,32 +1,25 @@
 #include <algorithm>
 #include <libbase/memory.hpp>
-#include <kernel/subsystems/resource.hpp>
+#include <kernel/subsystems/block.hpp>
 #include <drivers/blockdev/ramdisk.hpp>
 
 namespace Driver::Blockdev {
     RamdiskDriver::RamdiskDriver() : BlockdevDriver{Type::RAMDISK} {}
 
     bool RamdiskDriver::initialize() {
-        Kernel::ResourceSubsystem::ResourceInfo resource{};
-        resource.type = Kernel::ResourceSubsystem::ResourceType::SOMETHING_ELSE;
-        resource.creator = this;
-        resource.maintaner = this;
-
-        resources.insert(Kernel::ResourceSubsystem::registerResource(resource), {});
-
         return true;
     }
 
     void RamdiskDriver::finalize() {
-        for (auto it = resources.begin(); it != resources.end(); it++) Kernel::ResourceSubsystem::unregisterResource(it.key());
+        // for (auto it = resources.begin(); it != resources.end(); it++) Kernel::ResourceSubsystem::unregisterResource(it.key());
     }
 
-    void RamdiskDriver::resize(Kernel::ResourceSubsystem::ResourceID resid, uint32_t sectors) {
+    void RamdiskDriver::resize(Kernel::BlockSubsystem::ResourceID resid, uint32_t sectors) {
         resources.at(resid) = STDLib::Vector<uint8_t>(
             0, static_cast<size_t>(sectors) * sectorSize);
     }
 
-    bool RamdiskDriver::read(Kernel::ResourceSubsystem::ResourceID resid, uint32_t lba, void* buffer, uint32_t count) const {
+    bool RamdiskDriver::read(Kernel::BlockSubsystem::ResourceID resid, uint32_t lba, void* buffer, uint32_t count) const {
         if (!resources.at(resid).size() || !buffer) return false;
         if (lba > sectors(resid) || count > sectors(resid) - lba) return false;
 
@@ -41,7 +34,7 @@ namespace Driver::Blockdev {
         return true;
     }
 
-    bool RamdiskDriver::write(Kernel::ResourceSubsystem::ResourceID resid, uint32_t lba, const void* buffer, uint32_t count) {
+    bool RamdiskDriver::write(Kernel::BlockSubsystem::ResourceID resid, uint32_t lba, const void* buffer, uint32_t count) {
         if (!resources.at(resid).size() || !buffer) return false;
         if (lba > sectors(resid) || count > sectors(resid) - lba) return false;
 
@@ -56,7 +49,7 @@ namespace Driver::Blockdev {
         return true;
     }
 
-    uint32_t RamdiskDriver::sectors(Kernel::ResourceSubsystem::ResourceID resid) const {
+    uint32_t RamdiskDriver::sectors(Kernel::BlockSubsystem::ResourceID resid) const {
         return resources.at(resid).size() / sectorSize;
     }
 }

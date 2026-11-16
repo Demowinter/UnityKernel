@@ -2,8 +2,8 @@
 #include <string_view>
 #include <cstddef>
 #include <cstdint>
+#include <kernel/subsystems/file.hpp>
 #include <drivers/fs.hpp>
-#include <kernel/subsystems/resource.hpp>
 
 namespace Driver::FS {
     namespace EXT4 {
@@ -88,7 +88,7 @@ namespace Driver::FS {
 
         // Which block-device resource this driver talks to (BlockdevDriver calls need a ResourceID).
         // Call before initialize()/format().
-        void setResource(Kernel::ResourceSubsystem::ResourceID id) { resid_ = id; }
+        void setResource(Kernel::FileSubsystem::ResourceID id) { resid_ = id; }
 
     private:
         // device adapter (the only place that touches the block device object)
@@ -161,7 +161,7 @@ namespace Driver::FS {
         Status fillInfo(uint32_t number, const char* name, size_t nameLength, EntryInfo& info);
 
         // state
-        Kernel::ResourceSubsystem::ResourceID resid_{};
+        Kernel::FileSubsystem::ResourceID resid_{};
         bool mounted_ = false;
         bool writable_ = false;
         bool dirty_ = false;

@@ -1,7 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
-#include <kernel/subsystems/resource.hpp>
+#include <kernel/subsystems/block.hpp>
 #include <drivers/blockdev.hpp>
 
 namespace Driver::AHCI {
@@ -74,9 +74,9 @@ namespace Driver::AHCI {
         bool initialize() override;
         void finalize() override;
 
-        bool read(Kernel::ResourceSubsystem::ResourceID resid, uint32_t lba, void* buffer, uint32_t count = 1) const override;
-        bool write(Kernel::ResourceSubsystem::ResourceID resid, uint32_t lba, const void* buffer, uint32_t count = 1) override;
-        uint32_t sectors(Kernel::ResourceSubsystem::ResourceID resid) const override;
+        bool read(Kernel::BlockSubsystem::ResourceID resid, uint32_t lba, void* buffer, uint32_t count = 1) const override;
+        bool write(Kernel::BlockSubsystem::ResourceID resid, uint32_t lba, const void* buffer, uint32_t count = 1) override;
+        uint32_t sectors(Kernel::BlockSubsystem::ResourceID resid) const override;
 
         uint8_t portNumber() const;
 
