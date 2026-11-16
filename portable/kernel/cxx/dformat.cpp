@@ -214,7 +214,7 @@ namespace Kernel::DFORMAT {
 
     Status formatExt4(Driver::Blockdev::BlockdevDriver& device) {
         Driver::FS::Ext4Driver filesystem;
-        filesystem.useDriver(&device);
+        // filesystem.useDriver(&device);
         filesystem.setResource(0);
 
         const Driver::FS::Status status = filesystem.format();
