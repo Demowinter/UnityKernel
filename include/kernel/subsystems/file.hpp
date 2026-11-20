@@ -1,10 +1,13 @@
 #pragma once
+#include <limits>
 #include <cstddef>
 #include <cstdint>
 #include <kernel/subsystems/auth.hpp>
 
 namespace Kernel::FileSubsystem {
     using ResourceID = std::size_t;
+
+    constexpr ResourceID invalidID = std::numeric_limits<ResourceID>::max();
 
     constexpr uint8_t execFlag = 0x01;
     constexpr uint8_t writeFlag = 0x02;
