@@ -3,6 +3,7 @@
 
 namespace Driver {
     enum class Category {
+        ANY,
         DEV,    // Device driver category
         BLK,    // Blockdev driver category
         FS      // Filesystem driver category
@@ -30,13 +31,7 @@ namespace Driver {
         virtual bool initialize() = 0;
         virtual void finalize() = 0;
 
-        Category category() const {
-            return driverInfo.category;
-        }
-
-        Type type() const {
-            return driverInfo.type;
-        }
+        Info info() { return driverInfo; }
 
     protected:
         Info driverInfo;

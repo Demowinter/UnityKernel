@@ -1,16 +1,24 @@
 #pragma once
+#include <limits>
+#include <cstddef>
 #include <libstd/vector.hpp>
 #include <drivers/driver.hpp>
 
 namespace Kernel::DriverSubsystem {
+    using DriverID = std::size_t;
+
+    constexpr DriverID invalidID = std::numeric_limits<DriverID>::max();
+
     void initialize();
     void finalize();
 
-    Driver::BaseDriver* loadDriver(Driver::Category category, Driver::Type type);
-    void unloadDriver(Driver::BaseDriver* driver);
+    bool loadDriver(DriverID id);
+    void unloadDriver(DriverID id);
 
-    const STDLib::Vector<Driver::BaseDriver*> getLoadedDrivers();
-    const STDLib::Vector<Driver::BaseDriver*> getLoadedDrivers(Driver::Category category, Driver::Type type);
+    STDLib::Vector<DriverID> getDrivers(Driver::Category category = Driver::Category::ANY, Driver::Type type = Driver::Type::ANY);
+    STDLib::Vector<DriverID> getLoadedDrivers(Driver::Category category = Driver::Category::ANY, Driver::Type type = Driver::Type::ANY);
 
-    bool isDriverLoaded(Driver::BaseDriver* driver);
+    bool isDriverLoaded(DriverID id);
+
+    Driver::Info getDriverInfo(DriverID id);
 }

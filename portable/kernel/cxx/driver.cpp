@@ -8,104 +8,106 @@
 #include <kernel/subsystems/driver.hpp>
 
 namespace Kernel::DriverSubsystem {
-    static STDLib::Vector<Driver::BaseDriver*> drivers;
-    static STDLib::Vector<Driver::BaseDriver*> loadedDrivers;
-    static STDLib::Map<Driver::Category, STDLib::Map<Driver::Type, STDLib::Vector<Driver::BaseDriver*>>> depCallbacks;
+    struct DriverEntry {
+        bool loaded = false;
+
+        Driver::BaseDriver* instance = nullptr;
+    };
+
+    static DriverID nextID = 0;
+    static STDLib::Vector<DriverID> freeIDs;
+
+    static STDLib::Map<DriverID, DriverEntry> drivers;
 
     constexpr uint8_t excludeNoneFlag = 0x01;
     constexpr uint8_t excludeLoadedFlag = 0x02;
     constexpr uint8_t excludeUnloadedFlag = 0x04;
+    
 
-    Driver::BaseDriver* findDriver(Driver::Category category, Driver::Type type, uint8_t excludeFlag, const STDLib::Vector<Driver::BaseDriver*>& excludeList = {}) {
-        auto it = std::find_if(drivers.begin(), drivers.end(), [category, type, excludeFlag, &excludeList](Driver::BaseDriver* driver) {
-            bool category_ok = driver->category() == category;
-            bool type_ok = driver->type() == type || type == Driver::Type::ANY;
-            bool loaded = isDriverLoaded(driver);
-            bool excludeVerdict = excludeFlag & excludeNoneFlag || (excludeFlag & excludeLoadedFlag && !loaded)  || (excludeFlag & excludeUnloadedFlag && loaded);
-            bool excludeListVerdict = std::find(excludeList.begin(), excludeList.end(), driver) == excludeList.end();
+    DriverID allocDriverID() {
+        DriverID id = invalidID;
 
-            return category_ok && type_ok && excludeVerdict && excludeListVerdict;
-        });
-
-        return (it != drivers.end()) ? *it : nullptr;
-    }
-
-    STDLib::Vector<Driver::BaseDriver*> findDrivers(Driver::Category category, Driver::Type type, uint8_t excludeFlag, const STDLib::Vector<Driver::BaseDriver*>& excludeList = {}) {
-        STDLib::Vector<Driver::BaseDriver*> result;
-        STDLib::Vector<Driver::BaseDriver*> exclude = excludeList;
-
-        while (true) {
-            Driver::BaseDriver* driver = findDriver(category, type, excludeFlag, exclude);
-
-            if (!driver) break;
-
-            result.push_back(driver);
-            exclude.push_back(driver);
+        if (freeIDs.size()) {
+            id = freeIDs.back();
+            freeIDs.pop_back();
         }
 
-        return result;
+        else if (nextID != invalidID) id = nextID++;
+
+        return id;
     }
 
-    bool loadInitDriver(Driver::BaseDriver* driver) {
-        if (!driver) return false;
-        if (isDriverLoaded(driver)) return true;
+    void freeDriverID(DriverID id) {
+        if (std::find(freeIDs.begin(), freeIDs.end(), id) == freeIDs.end()) freeIDs.push_back(id);
+    }
 
-        loadedDrivers.push_back(driver);
+    STDLib::Vector<DriverID> findDrivers(Driver::Category category, Driver::Type type, uint8_t excludeFlag) {
+        STDLib::Vector<DriverID> drilist;
 
-        if (driver->initialize()) return true;
+        for (const auto& [id, driver] : drivers) {
+            Driver::Info driinfo = driver.instance->info();
+            
+            bool category_ok = driinfo.category == category || category == Driver::Category::ANY;
+            bool type_ok = driinfo.type == type || type == Driver::Type::ANY;
+            bool exclude_ok = excludeFlag & excludeNoneFlag || (excludeFlag & excludeLoadedFlag && !driver.loaded)  || (excludeFlag & excludeUnloadedFlag && driver.loaded);
 
-        driver->finalize();
+            if (category_ok && type_ok && exclude_ok) drilist.push_back(id);
+        }
 
-        auto it = std::find(loadedDrivers.begin(), loadedDrivers.end(), driver);
-        if (it != loadedDrivers.end()) loadedDrivers.erase(it);
-        
-        return false;
+        return drilist;
     }
 
     //----------------------API----------------------
 
     void initialize() {
-        drivers = Driver::loadDriverList();
+        for (const auto& driver : Driver::loadDriverList()) drivers.insert(allocDriverID(), DriverEntry{false, driver});
     }
 
     void finalize() {
-        while (loadedDrivers.size() != 0) {
-            loadedDrivers.back()->finalize();
-            loadedDrivers.pop_back();
-        }
-
-        for (auto driver : drivers) delete driver;
+        for (auto& [id, driver] : drivers) drivers.at(id).instance->finalize();
+        for (auto& [id, driver] : drivers) delete driver.instance;
 
         drivers.clear();
     }
 
-    Driver::BaseDriver* loadDriver(Driver::Category category, Driver::Type type) {
-        Driver::BaseDriver* driver = findDriver(category, type, true);
-        if (driver && isDriverLoaded(driver)) return driver;
+    bool loadDriver(DriverID id) {
+        if (id == invalidID) return false;
+        if (isDriverLoaded(id)) return true;
 
-        return loadInitDriver(driver) ? driver : nullptr;
-    }
+        auto& driver = drivers.at(id);
 
-    void unloadDriver(Driver::BaseDriver* driver) {
-        auto it = std::find(loadedDrivers.begin(), loadedDrivers.end(), driver);
+        if (driver.instance->initialize()) {
+            driver.loaded = true;
 
-        if (it != loadedDrivers.end()) {
-            driver->finalize();
-
-            loadedDrivers.erase(it);
+            return true;
         }
+
+        driver.instance->finalize();
+        
+        return false;
     }
 
-    const STDLib::Vector<Driver::BaseDriver*> getLoadedDrivers() {
-        return loadedDrivers;
+    void unloadDriver(DriverID id) {
+        auto& driver = drivers.at(id);
+
+        driver.instance->finalize();
+        driver.loaded = false;
     }
 
-    const STDLib::Vector<Driver::BaseDriver*> getLoadedDrivers(Driver::Category category, Driver::Type type) {
+    STDLib::Vector<DriverID> getDrivers(Driver::Category category, Driver::Type type) {
         return findDrivers(category, type, excludeNoneFlag);
     }
 
-    bool isDriverLoaded(Driver::BaseDriver* driver) {
-        return std::find(loadedDrivers.begin(), loadedDrivers.end(), driver) != loadedDrivers.end();
+    STDLib::Vector<DriverID> getLoadedDrivers(Driver::Category category, Driver::Type type) {
+        return findDrivers(category, type, excludeUnloadedFlag);
+    }
+
+    bool isDriverLoaded(DriverID id) {
+        return drivers.at(id).loaded;
+    }
+
+    Driver::Info getDriverInfo(DriverID id) {
+        return drivers.at(id).instance->info();
     }
     
     //----------------------API----------------------
