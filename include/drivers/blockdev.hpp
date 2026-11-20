@@ -1,8 +1,15 @@
 #pragma once
-#include <kernel/subsystems/block.hpp>
+#include <limits>
+#include <cstddef>
+#include <cstdint>
+#include <libstd/vector.hpp>
 #include <drivers/driver.hpp>
 
 namespace Driver::Blockdev {
+    using BlockDeviceID = std::size_t;
+
+    constexpr BlockDeviceID invalidID = std::numeric_limits<BlockDeviceID>::max();
+    
     constexpr uint32_t sectorSize = 512;
     
     class BlockdevDriver : public BaseDriver {
@@ -10,11 +17,14 @@ namespace Driver::Blockdev {
         BlockdevDriver(Type driType) : BaseDriver{Category::BLK, driType} {}
         virtual ~BlockdevDriver() = default;
 
-        virtual void resize([[maybe_unused]] Kernel::BlockSubsystem::ResourceID resid, [[maybe_unused]] uint32_t sectors) {}
+        virtual BlockDeviceID createDevice() { return invalidID; }
+        virtual STDLib::Vector<BlockDeviceID> listDevices() { return {}; }
 
-        virtual bool read(Kernel::BlockSubsystem::ResourceID resid, uint32_t lba, void* buffer, uint32_t count = 1) const = 0;
-        virtual bool write(Kernel::BlockSubsystem::ResourceID resid, uint32_t lba, const void* buffer, uint32_t count = 1) = 0;
+        virtual void resize([[maybe_unused]] BlockDeviceID blkid, [[maybe_unused]] uint32_t sectors) {}
 
-        virtual uint32_t sectors(Kernel::BlockSubsystem::ResourceID resid) const = 0;
+        virtual bool read(BlockDeviceID blkid, uint32_t lba, void* buffer, uint32_t count = 1) const = 0;
+        virtual bool write(BlockDeviceID blkid, uint32_t lba, const void* buffer, uint32_t count = 1) = 0;
+
+        virtual uint32_t sectors(BlockDeviceID blkid) const = 0;
     };
 }
