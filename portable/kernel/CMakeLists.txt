@@ -1,4 +1,5 @@
 set(KERNEL_SOURCES
+    cxx/obsolete/block.cpp
     cxx/block.cpp
     cxx/dformat.cpp
     cxx/fat32.cpp

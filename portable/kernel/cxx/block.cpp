@@ -1,35 +1,40 @@
-#include <kernel/block.hpp>
-#include <libbase/memory.hpp>
+#include <drivers/driver.hpp>
+#include <kernel/subsystems/block.hpp>
 
-namespace Kernel::Block {
-    bool MemoryDevice::initialize(uint8_t* storage, uint32_t sectorCount) {
-        if (!storage || sectorCount == 0) return false;
+namespace Kernel::BlockSubsystem {
+    struct BlockDeviceEntry {
 
-        this->storage = storage;
-        this->sectorCount = sectorCount;
+    };
 
-        return true;
+    void initialize() {}
+
+    void finalize() {}
+
+    void registerDriver(Driver::BaseDriver* instance) {
+        if (instance->info().category != Driver::Category::BLK) return;
     }
 
-    bool MemoryDevice::read(uint32_t lba, void* buffer, uint32_t count) const {
-        if (!storage || !buffer) return false;
-        if (lba > sectorCount || count > sectorCount - lba) return false;
+    void unregisterDriver(Driver::BaseDriver* instance) {
 
-        memcpy(buffer, storage + lba * sectorSize, count * sectorSize);
-
-        return true;
     }
 
-    bool MemoryDevice::write(uint32_t lba, const void* buffer, uint32_t count) {
-        if (!storage || !buffer) return false;
-        if (lba > sectorCount || count > sectorCount - lba) return false;
+    STDLib::Vector<ResourceID> listBlockDevice() {
 
-        memcpy(storage + lba * sectorSize, buffer, count * sectorSize);
-
-        return true;
     }
 
-    uint32_t MemoryDevice::sectors() const {
-        return sectorCount;
+    bool resizeBlockDevice(ResourceID id, std::size_t size) {
+
+    }
+
+    std::size_t readBlockDevice(ResourceID id,  void* dest, std::size_t size) {
+
+    }
+
+    std::size_t writeBlockDevice(ResourceID id, const void* src, std::size_t size) {
+
+    }
+    
+    namespace Callbacks {
+        
     }
 }
