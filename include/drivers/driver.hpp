@@ -31,7 +31,7 @@ namespace Driver {
         virtual bool initialize() = 0;
         virtual void finalize() = 0;
 
-        Info info() { return driverInfo; }
+        Info info() const { return driverInfo; }
 
     protected:
         Info driverInfo;
