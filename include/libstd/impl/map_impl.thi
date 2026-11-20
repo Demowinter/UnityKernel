@@ -97,7 +97,7 @@ namespace STDLib {
     Value* Map<Key, Value, Compare>::find(const Key& key) const {
         MapNode<Key, Value>* cur = head;
         while (cur) {
-            if (!cmp(cur->key, key) && !cmp(key, cur->key)) return &cur->value;
+            if (!cmp(cur->kvpair.first, key) && !cmp(key, cur->kvpair.first)) return &cur->kvpair.second;
             cur = cur->next;
         }
 
@@ -109,13 +109,13 @@ namespace STDLib {
         MapNode<Key, Value>* prev = nullptr;
         MapNode<Key, Value>* cur = head;
 
-        while (cur && cmp(cur->key, key)) {
+        while (cur && cmp(cur->kvpair.first, key)) {
             prev = cur;
             cur = cur->next;
         }
 
-        if (cur && !cmp(cur->key, key) && !cmp(key, cur->key)) {
-            cur->value = value;
+        if (cur && !cmp(cur->kvpair.first, key) && !cmp(key, cur->kvpair.first)) {
+            cur->kvpair.second = value;
             return;
         }
 
@@ -137,7 +137,7 @@ namespace STDLib {
         MapNode<Key, Value>* prev = nullptr;
         MapNode<Key, Value>* cur = head;
 
-        while (cur && (cmp(cur->key, key) || cmp(key, cur->key))) {
+        while (cur && (cmp(cur->kvpair.first, key) || cmp(key, cur->kvpair.first))) {
             prev = cur;
             cur = cur->next;
         }
@@ -149,6 +149,11 @@ namespace STDLib {
 
         delete cur;
         --count;
+    }
+
+    template<typename Key, typename Value, typename Compare>
+    void Map<Key, Value, Compare>::erase(Iterator pos) {
+        erase(pos->first);
     }
 
     template<typename Key, typename Value, typename Compare>

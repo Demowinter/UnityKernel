@@ -8,28 +8,32 @@
 namespace STDLib {
     template<typename Key, typename Value>
     struct MapNode {
-        Key key;
-        Value value;
+        using RetValue = std::pair<Key, Value>;
+
+        MapNode(const Key& k, const Value& v) : kvpair{k, v} {}
+        MapNode(Key&& k, Value&& v) : kvpair{std::move(k), std::move(v)} {}
+
+
+        RetValue kvpair;
 
         MapNode* next = nullptr;
-
-        MapNode(const Key& k, const Value& v) : key(k), value(v) {}
-        MapNode(Key&& k, Value&& v) : key(std::move(k)), value(std::move(v)) {}
     };
 
     template<typename Key, typename Value>
     class MapIterator {
+        using MapNodeType = MapNode<Key, Value>;
+
     public:
         //-----------STL compatibility header-----------
         using iterator_category = std::forward_iterator_tag;
-        using value_type = Value;
+        using value_type = typename MapNodeType::RetValue;
         using difference_type = std::ptrdiff_t;
         using pointer = value_type*;
         using reference = value_type&;
         //-----------STL compatibility header-----------
 
         MapIterator() : node{nullptr} {}
-        MapIterator(MapNode<Key, Value>* node) : node{node} {}
+        MapIterator(MapNodeType* node) : node{node} {}
 
         MapIterator& operator++() {
             node = node->next;
@@ -38,37 +42,33 @@ namespace STDLib {
         }
 
         MapIterator operator++(int) {
-            MapNode<Key, Value>* copy = node;
+            MapNodeType* copy = node;
             node = node->next;
 
             return copy;
         }
 
         reference operator*() {
-            return node->value;
+            return node->kvpair;
         }
 
         pointer operator->() {
-            return &node->value;
-        }
-
-        const Key& key() const {
-            return node->key;
+            return &node->kvpair;
         }
 
         pointer base() {
-            return &node->value;
+            return &node->kvpair;
         }
 
         pointer base() const {
-            return &node->value;
+            return &node->kvpair;
         }
 
-        MapNode<Key, Value>* baseNode() {
+        MapNodeType* baseNode() {
             return node;
         }
 
-        const MapNode<Key, Value>* baseNode() const {
+        const MapNodeType* baseNode() const {
             return node;
         }
 
@@ -81,7 +81,7 @@ namespace STDLib {
         }
 
     private:
-        MapNode<Key, Value>* node;
+        MapNodeType* node;
     };
 
     template<typename Key, typename Value, typename Compare = std::less<Key>>
@@ -110,7 +110,9 @@ namespace STDLib {
         Value* find(const Key& key) const;
 
         void insert(const Key& key, const Value& value);
+
         void erase(const Key& key);
+        void erase(Iterator pos);
 
         Value& operator[](const Key& key);
         // Value& operator[](const Key& key) const;
