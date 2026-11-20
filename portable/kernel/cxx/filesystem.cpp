@@ -107,11 +107,11 @@ namespace Kernel::Filesystem {
     }
 
     bool initialize() {
-        FAT32::initialize();
-        auto* blockDriver = DriverSubsystem::loadDriver(
-            Driver::Category::BLK, Driver::Type::RAMDISK);
-        ramdisk = static_cast<Driver::Blockdev::RamdiskDriver*>(blockDriver);
-        if (ramdisk == nullptr) return false;
+        // FAT32::initialize();
+        // auto* blockDriver = DriverSubsystem::loadDriver(
+        //     Driver::Category::BLK, Driver::Type::RAMDISK);
+        // ramdisk = static_cast<Driver::Blockdev::RamdiskDriver*>(blockDriver);
+        // if (ramdisk == nullptr) return false;
 
         // const auto resources = ResourceSubsystem::getResourceList();
         // for (size_t id : resources) {
@@ -120,14 +120,14 @@ namespace Kernel::Filesystem {
         //         break;
         //     }
         // }
-        if (ramdiskResource == -1ULL) return false;
+        // if (ramdiskResource == BlockSubsystem::invalidID) return false;
 
-        ramdisk->resize(ramdiskResource, ramdiskSectors);
-        // ext4.useDriver(ramdisk);
-        ext4.setResource(ramdiskResource);
-        initialized = ext4.format() == Driver::FS::Status::ok;
-        backend = Backend::ext4Ram;
-        return initialized;
+        // ramdisk->resize(ramdiskResource, ramdiskSectors);
+        // // ext4.useDriver(ramdisk);
+        // ext4.setResource(ramdiskResource);
+        // initialized = ext4.format() == Driver::FS::Status::ok;
+        // backend = Backend::ext4Ram;
+        // return initialized;
     }
 
     Status mountSata(Type type, Driver::Blockdev::BlockdevDriver& device) {

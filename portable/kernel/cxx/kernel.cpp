@@ -29,20 +29,21 @@ namespace Kernel {
         Platform::PCI::initialize();
         DriverSubsystem::initialize();
 
-        auto ahci = static_cast<Driver::AHCI::AHCIDriver*>(
-            DriverSubsystem::loadDriver(Driver::Category::BLK, Driver::Type::AHCI));
-        if (ahci != nullptr) {
-            Console::ok("AHCI SATA disk initialized");
-            Console::info("AHCI port: ", false);
-            Console::println(STDLib::hex(ahci->portNumber()));
-            Console::info("Sectors: ", false);
-            Console::println(STDLib::hex(ahci->sectors(0)));
-        } else {
-            Console::warn("AHCI disk unavailable: ", false);
-            Console::println(Driver::AHCI::lastInitializationError());
-        }
+        // auto ahci = static_cast<Driver::AHCI::AHCIDriver*>(
+        //     DriverSubsystem::loadDriver(Driver::Category::BLK, Driver::Type::AHCI));
+        // if (ahci != nullptr) {
+        //     Console::ok("AHCI SATA disk initialized");
+        //     Console::info("AHCI port: ", false);
+        //     Console::println(STDLib::hex(ahci->portNumber()));
+        //     Console::info("Sectors: ", false);
+        //     Console::println(STDLib::hex(ahci->sectors(0)));
+        // } else {
+        //     Console::warn("AHCI disk unavailable: ", false);
+        //     Console::println(Driver::AHCI::lastInitializationError());
+        // }
 
         Console::warn("Filesystem initialization is temporarily disabled!");
+        Console::warn("The drivers are temporarily not working due to changes in the driver API!");
 
         // if (Filesystem::initialize()) Console::ok("Mounted ext4 ram disk");
         // else Console::warn("Could not initialize the default ext4 filesystem");

@@ -188,84 +188,86 @@ namespace Kernel::Shell {
                 return;
             }
 
-            auto* device = static_cast<Driver::AHCI::AHCIDriver*>(
-                DriverSubsystem::loadDriver(Driver::Category::BLK, Driver::Type::AHCI));
-            if (device == nullptr) {
-                Console::println("dformat: no supported SATA devices detected");
-                return;
-            }
+            // auto* device = static_cast<Driver::AHCI::AHCIDriver*>(
+            //     DriverSubsystem::loadDriver(Driver::Category::BLK, Driver::Type::AHCI));
+            // if (device == nullptr) {
+            //     Console::println("dformat: no supported SATA devices detected");
+            //     return;
+            // }
 
-            Console::println("Detected storage devices:");
-            Console::print("  1) SATA disk on AHCI port ");
-            Console::print(STDLib::toString(device->portNumber()));
-            Console::print(" (");
-            Console::print(STDLib::toString(device->sectors(0)));
-            Console::println(" sectors)");
-            Console::println("Select a device number, or press Enter to cancel:");
+            // Console::println("Detected storage devices:");
+            // Console::print("  1) SATA disk on AHCI port ");
+            // Console::print(STDLib::toString(device->portNumber()));
+            // Console::print(" (");
+            // Console::print(STDLib::toString(device->sectors(0)));
+            // Console::println(" sectors)");
+            // Console::println("Select a device number, or press Enter to cancel:");
 
-            char input[256];
-            size_t inputLength = Console::readline(input, sizeof(input));
-            std::string_view response = trim(std::string_view(input, inputLength));
-            if (response.empty()) {
-                Console::println("dformat: cancelled");
-                return;
-            }
-            if (!strcmp(response, "1")) {
-                Console::println("dformat: invalid device selection");
-                return;
-            }
+            // char input[256];
+            // size_t inputLength = Console::readline(input, sizeof(input));
+            // std::string_view response = trim(std::string_view(input, inputLength));
+            // if (response.empty()) {
+            //     Console::println("dformat: cancelled");
+            //     return;
+            // }
+            // if (!strcmp(response, "1")) {
+            //     Console::println("dformat: invalid device selection");
+            //     return;
+            // }
 
-            Console::println("Select a filesystem:");
-            Console::println("  1) FAT32");
-            Console::println("  2) ext4");
-            Console::println("Enter 1 or 2, or press Enter to cancel:");
-            inputLength = Console::readline(input, sizeof(input));
-            response = trim(std::string_view(input, inputLength));
-            const bool fat32 = strcmp(response, "1");
-            const bool ext4 = strcmp(response, "2");
-            if (response.empty()) {
-                Console::println("dformat: cancelled");
-                return;
-            }
-            if (!fat32 && !ext4) {
-                Console::println("dformat: invalid filesystem selection");
-                return;
-            }
+            // Console::println("Select a filesystem:");
+            // Console::println("  1) FAT32");
+            // Console::println("  2) ext4");
+            // Console::println("Enter 1 or 2, or press Enter to cancel:");
+            // inputLength = Console::readline(input, sizeof(input));
+            // response = trim(std::string_view(input, inputLength));
+            // const bool fat32 = strcmp(response, "1");
+            // const bool ext4 = strcmp(response, "2");
+            // if (response.empty()) {
+            //     Console::println("dformat: cancelled");
+            //     return;
+            // }
+            // if (!fat32 && !ext4) {
+            //     Console::println("dformat: invalid filesystem selection");
+            //     return;
+            // }
 
-            Console::warn("Formatting permanently destroys data on the selected disk.");
-            Console::warn("Back up any files you need before continuing.");
-            Console::print("Selected: AHCI port ");
-            Console::print(STDLib::toString(device->portNumber()));
-            Console::print(", ");
-            Console::println(fat32 ? "FAT32" : "ext4");
-            Console::println("Type FORMAT exactly and press Enter to proceed; anything else cancels:");
-            inputLength = Console::readline(input, sizeof(input));
-            response = trim(std::string_view(input, inputLength));
-            if (!strcmp(response, "FORMAT")) {
-                Console::println("dformat: cancelled");
-                return;
-            }
+            // Console::warn("Formatting permanently destroys data on the selected disk.");
+            // Console::warn("Back up any files you need before continuing.");
+            // Console::print("Selected: AHCI port ");
+            // Console::print(STDLib::toString(device->portNumber()));
+            // Console::print(", ");
+            // Console::println(fat32 ? "FAT32" : "ext4");
+            // Console::println("Type FORMAT exactly and press Enter to proceed; anything else cancels:");
+            // inputLength = Console::readline(input, sizeof(input));
+            // response = trim(std::string_view(input, inputLength));
+            // if (!strcmp(response, "FORMAT")) {
+            //     Console::println("dformat: cancelled");
+            //     return;
+            // }
 
-            Console::println("Formatting selected SATA disk...");
-            const Filesystem::Status switchStatus = Filesystem::prepareDiskFormat();
-            if (switchStatus != Filesystem::Status::ok) {
-                printFsError("dformat", "SATA", switchStatus);
-                return;
-            }
+            // Console::println("Formatting selected SATA disk...");
+            // const Filesystem::Status switchStatus = Filesystem::prepareDiskFormat();
+            // if (switchStatus != Filesystem::Status::ok) {
+            //     printFsError("dformat", "SATA", switchStatus);
+            //     return;
+            // }
 
-            const DFORMAT::Status status = fat32
-                ? DFORMAT::partitionAndFormatFat32(*device)
-                : DFORMAT::formatExt4(*device);
-            if (status == DFORMAT::Status::ok) {
-                Filesystem::setPreferredType(
-                    fat32 ? Filesystem::Type::fat32 : Filesystem::Type::ext4);
-                Console::print("dformat: ");
-                Console::print(fat32 ? "FAT32 partition" : "ext4 volume");
-                Console::println(" created successfully");
-            } else {
-                Console::print("dformat: ");
-                Console::println(DFORMAT::statusText(status));
-            }
+            // const DFORMAT::Status status = fat32
+            //     ? DFORMAT::partitionAndFormatFat32(*device)
+            //     : DFORMAT::formatExt4(*device);
+            // if (status == DFORMAT::Status::ok) {
+            //     Filesystem::setPreferredType(
+            //         fat32 ? Filesystem::Type::fat32 : Filesystem::Type::ext4);
+            //     Console::print("dformat: ");
+            //     Console::print(fat32 ? "FAT32 partition" : "ext4 volume");
+            //     Console::println(" created successfully");
+            // } else {
+            //     Console::print("dformat: ");
+            //     Console::println(DFORMAT::statusText(status));
+            // }
+
+            Console::fail("The drivers are temporarily not working due to changes in the driver API!");
         }
 
     static void cmdMnt(std::string_view args) {
@@ -274,22 +276,24 @@ namespace Kernel::Shell {
             return;
         }
 
-        auto* device = static_cast<Driver::AHCI::AHCIDriver*>(
-            DriverSubsystem::loadDriver(Driver::Category::BLK, Driver::Type::AHCI));
-        if (device == nullptr) {
-            Console::println("mnt: SATA disk is unavailable");
-            return;
-        }
+        // auto* device = static_cast<Driver::AHCI::AHCIDriver*>(
+        //     DriverSubsystem::loadDriver(Driver::Category::BLK, Driver::Type::AHCI));
+        // if (device == nullptr) {
+        //     Console::println("mnt: SATA disk is unavailable");
+        //     return;
+        // }
 
-        Filesystem::Status status = Filesystem::mountSata(
-            Filesystem::preferredType(), *device);
-        if (status == Filesystem::Status::ok) {
-            Console::println(Filesystem::preferredType() == Filesystem::Type::ext4
-                ? "mnt: SATA ext4 filesystem mounted"
-                : "mnt: SATA FAT32 filesystem mounted");
-        } else {
-            printFsError("mnt", "SATA", status);
-        }
+        // Filesystem::Status status = Filesystem::mountSata(
+        //     Filesystem::preferredType(), *device);
+        // if (status == Filesystem::Status::ok) {
+        //     Console::println(Filesystem::preferredType() == Filesystem::Type::ext4
+        //         ? "mnt: SATA ext4 filesystem mounted"
+        //         : "mnt: SATA FAT32 filesystem mounted");
+        // } else {
+        //     printFsError("mnt", "SATA", status);
+        // }
+
+        Console::fail("The drivers are temporarily not working due to changes in the driver API!");
     }
 
     static void cmdUnmnt(std::string_view args) {
